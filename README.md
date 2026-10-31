@@ -2,7 +2,7 @@
 
 > 面向 Cursor、Codex 和其他可调用工具的 Coding Agent 的「研发环境发现 + 可信映射 + 缺陷上下文」中间层。
 
-**V1.0 正在实施：T0–T3 可运行并通过离线测试，T4–T7 尚未验收。**
+**V1.0 正在实施：T0–T4 可运行并通过离线测试，T5–T7 尚未验收。**
 
 开发环境（Python 3.12+）：`uv sync --locked --dev`。
 已验证：`uv run dce --help`、`uv run dce doctor --mock`、

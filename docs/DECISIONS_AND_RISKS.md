@@ -41,14 +41,18 @@ GitConfig 只留声明字段并清除 URL 凭证/查询；StackFile 和原始 tr
 三种部署快照独立保留；只有来源、仓库路径、ref、配置路径匹配才比较声明。
 Namespace 标签与 Endpoint/Swarm ID 同时验证；不由名称判断环境或部署版本。
 
-## 风险登记
-
 ## ADR-009：Catalog 审核状态与扫描观测分离
 
 使用 SQLAlchemy + SQLite 与打包 Alembic 前向迁移；人工决定独立于 observed_status。
 所有变更保留历史和 Audit；不可变快照冲突回滚整个批次，ScanRun 单独保留失败记录。
 Entity/Edge 记录各 scope 活跃成员，来源消失不误删其他范围资源；人工确认保留但标明 stale/conflict。
 不支持破坏性 schema downgrade；恢复使用本地备份，V1 不做任何远端操作。
+
+## ADR-010：AI 候选与人工审核权限分离
+
+默认关闭，provider 可注入；只传 UUID/受控类型/证据 ID，禁止原始私有文本。
+结果严格 schema 校验且仅候选；有限超时不自动无限重试，失败可追溯并不影响规则。
+CLI 审核要求 actor/reason/期望版本，环境另行确认；MCP 不暴露审核 API。
 
 ## 风险登记
 

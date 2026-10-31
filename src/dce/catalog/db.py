@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import Connection, Table, create_engine, event, func, or_, select
+from sqlalchemy import Connection, Table, case, create_engine, event, func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from dce.catalog.schema import (
@@ -21,7 +21,7 @@ from dce.catalog.schema import (
     snapshots,
 )
 from dce.common.errors import DceError, ErrorCode
-from dce.graph.model import DiscoveryResult, now
+from dce.graph.model import DiscoveryResult, Edge, Entity, Evidence, Snapshot, now
 
 
 class Catalog:
@@ -438,7 +438,22 @@ class Catalog:
             query = query.where(edges.c.status == status)
         with self.engine.connect() as connection:
             rows = (
-                connection.execute(query.order_by(edges.c.id).offset(offset).limit(limit + 1))
+                connection.execute(
+                    query.order_by(
+                        edges.c.stale,
+                        edges.c.conflict,
+                        case(
+                            (edges.c.status == "confirmed", 0),
+                            (edges.c.status == "observed_verified", 1),
+                            (edges.c.status == "candidate", 2),
+                            else_=3,
+                        ),
+                        edges.c.confidence.desc(),
+                        edges.c.id,
+                    )
+                    .offset(offset)
+                    .limit(limit + 1)
+                )
                 .mappings()
                 .all()
             )
@@ -513,7 +528,34 @@ class Catalog:
             "max_depth": max_depth,
         }
 
-    def review(self, key: str, *, action: str, actor: str, reason: str) -> None:
+    def read_graph(self) -> DiscoveryResult:
+        with self.engine.connect() as connection:
+            return DiscoveryResult(
+                entities=[
+                    Entity.model_validate(dict(row))
+                    for row in connection.execute(
+                        select(entities).where(entities.c.deleted.is_(False))
+                    ).mappings()
+                ],
+                snapshots=[
+                    Snapshot.model_validate(dict(row))
+                    for row in connection.execute(select(snapshots)).mappings()
+                ],
+                evidence=[
+                    Evidence.model_validate(dict(row))
+                    for row in connection.execute(select(evidence)).mappings()
+                ],
+                edges=[
+                    Edge.model_validate({**dict(row), "status": row["observed_status"]})
+                    for row in connection.execute(
+                        select(edges).where(edges.c.stale.is_(False), edges.c.deleted.is_(False))
+                    ).mappings()
+                ],
+            )
+
+    def review(
+        self, key: str, *, action: str, actor: str, reason: str, expected_version: int | None = None
+    ) -> None:
         if (
             action not in {"accept", "reject", "revoke", "override"}
             or not actor.strip()
@@ -526,6 +568,10 @@ class Catalog:
             old = self._row(connection, edges, key)
             if old is None:
                 raise DceError(ErrorCode.NOT_FOUND, "Catalog edge was not found.")
+            if expected_version is not None and old["version"] != expected_version:
+                raise DceError(
+                    ErrorCode.SNAPSHOT_CONFLICT, "Review version changed; refresh preview."
+                )
             data = {
                 **old,
                 "status": {
@@ -563,6 +609,22 @@ class Catalog:
                 f"review_{action}",
                 {"review_id": review_id, "actor": actor, "reason": reason},
             )
+
+    def record_mapping_run(self, status: str, suggested: int) -> str:
+        scan_id = str(uuid4())
+        with self.engine.begin() as connection:
+            connection.execute(
+                scans.insert().values(
+                    id=scan_id,
+                    scope="mapping-ai",
+                    status="complete" if status in {"ok", "disabled"} else "failed",
+                    started_at=now(),
+                    finished_at=now(),
+                    summary={"ai_status": status, "suggested": suggested},
+                    anomalies=[],
+                )
+            )
+        return scan_id
 
     def reviews(self, key: str) -> list[dict[str, Any]]:
         with self.engine.connect() as connection:
