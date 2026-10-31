@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -170,3 +171,12 @@ def test_auth_post_not_retried() -> None:
         with pytest.raises(DceError):
             ZenTao(http).create_token("demo", SecretStr("fake"))
     assert len(calls) == 1
+
+
+def test_http_log_does_not_expose_url_or_token(caplog: pytest.LogCaptureFixture) -> None:
+    caplog.set_level(logging.DEBUG)
+    with reader("zentao", lambda _: httpx.Response(200, content=PNG)) as http:
+        http.get("/image?Token=synthetic-credential", kind="zentao")
+        logging.getLogger("httpcore.connection").debug("host='demo.example.invalid'")
+    assert "synthetic-credential" not in caplog.text
+    assert "demo.example.invalid" not in caplog.text

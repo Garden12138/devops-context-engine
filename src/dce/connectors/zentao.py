@@ -34,14 +34,29 @@ class ZenTao:
             raise DceError(ErrorCode.API_INCOMPATIBLE, "Bug ID is missing.")
         return dict(data)
 
+    def resource(self, kind: str, resource_id: str) -> dict[str, Any]:
+        if kind not in {"projects", "products"}:
+            raise DceError(ErrorCode.INVALID_PAYLOAD, "Unsupported ZenTao resource.")
+        data = self.reader.json(f"{self.prefix}/{kind}/{key(resource_id)}", kind="zentao")
+        if "id" not in data:
+            raise DceError(ErrorCode.API_INCOMPATIBLE, "ZenTao resource ID is missing.")
+        return dict(data)
+
     def resources(
-        self, kind: str, parent: str | None = None, *, max_pages: int = 1000
+        self,
+        kind: str,
+        parent: str | None = None,
+        *,
+        max_pages: int = 1000,
+        parent_kind: str = "projects",
     ) -> Iterator[dict[str, Any]]:
         if kind not in {"projects", "products", "bugs"}:
             raise DceError(ErrorCode.INVALID_PAYLOAD, "Unsupported ZenTao resource.")
         path = f"{self.prefix}/{kind}"
         if parent is not None:
-            path = f"{self.prefix}/projects/{key(parent)}/{kind}"
+            if parent_kind not in {"projects", "products"}:
+                raise DceError(ErrorCode.INVALID_PAYLOAD, "Unsupported ZenTao parent scope.")
+            path = f"{self.prefix}/{parent_kind}/{key(parent)}/{kind}"
         for page in range(1, max_pages + 1):
             data = self.reader.json(
                 path, kind="zentao", params={"page": page, "limit": self.reader.settings.page_size}

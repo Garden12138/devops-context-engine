@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from collections.abc import Callable, Iterator
 from typing import Any
@@ -8,6 +9,7 @@ import httpx
 
 from dce.common.config import PlatformConfig, Settings
 from dce.common.errors import DceError, ErrorCode
+from dce.security.redact import RedactingFilter
 
 AUTH_HEADERS = {"zentao": "Token", "gitlab": "PRIVATE-TOKEN", "portainer": "X-API-Key"}
 
@@ -31,12 +33,26 @@ class Reader:
         self.client = httpx.Client(
             transport=transport, timeout=settings.timeout, follow_redirects=False, trust_env=False
         )
+        self.log_filter = RedactingFilter(
+            (config.token.get_secret_value(), urlsplit(config.base_url).hostname or "")
+        )
+        self.loggers = [
+            logging.getLogger("httpx"),
+            *(
+                logging.getLogger(name)
+                for name in ("httpcore.connection", "httpcore.http11", "httpcore.http2")
+            ),
+        ]
+        for logger in self.loggers:
+            logger.addFilter(self.log_filter)
 
     def __enter__(self) -> "Reader":
         return self
 
     def __exit__(self, *_: object) -> None:
         self.client.close()
+        for logger in self.loggers:
+            logger.removeFilter(self.log_filter)
 
     def safe_url(self, path: str) -> str:
         # urljoin permits scheme-relative URLs; compare the full origin afterwards.
@@ -86,6 +102,7 @@ class Reader:
         headers = {AUTH_HEADERS[kind]: self.config.token.get_secret_value()}
         retry_count = self.settings.max_retries if method == "GET" else 0
         for attempt in range(retry_count + 1):
+            self.sleep(self.settings.request_interval)
             try:
                 with self.client.stream(
                     method, url, params=params, headers=headers, json=body

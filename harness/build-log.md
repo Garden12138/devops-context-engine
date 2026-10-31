@@ -1,7 +1,7 @@
 # Agent 执行日志
 
 状态：IN_PROGRESS
-当前阶段：T2（T0/T1 已验证）
+当前阶段：T3（T0–T2 已验证）
 最后更新时间：2026-10-31
 
 ## 里程碑
@@ -10,8 +10,8 @@
 |---|---|---|
 | T0 | passed | Python 3.12.11；pytest 13 passed / branch coverage 100%；mypy 10 files；CLI smoke passed |
 | T1 | passed | 47 tests / 99.48% branch coverage；ruff + mypy + doctor mock |
-| T2 | implementing | 解析器、范围与断点、三方快照差异 |
-| T3 | pending | |
+| T2 | passed | 79 tests / 97.41% branch coverage；三平台 scoped mock、快照差集、恢复与安全静态解析 |
+| T3 | implementing | Catalog 迁移、版本、审核保护与查询 |
 | T4 | pending | |
 | T5 | pending | |
 | T6 | pending | |
@@ -19,7 +19,7 @@
 
 ## 下次继续动作
 
-继续 T2：安全静态解析、显式 scope、扫描 checkpoint、三方快照与多对多发现。
+继续 T3：SQLAlchemy/SQLite Catalog、迁移与幂等、历史、人工关系保护、双向追踪。
 
 ## T0 执行记录
 
@@ -41,6 +41,21 @@
 - `ruff check .`、`mypy src`（15 files）、`dce doctor --mock`、`git diff --check` exit 0。
 - 修复首次检查暴露的闭包 lint 和动态 JSON 类型收窄错误，所有修复后检查通过。
 - 外部 API 兼容性 not_verified；未访问内网，未调用业务写接口。
+
+## 风险与阻塞
+
+## T2 执行记录
+
+- 静态解析 Maven reactor、Gradle settings、Go work/module、Node workspaces、Dockerfile、CI 显式 include、Compose。
+- 禁止执行脚本；大小/节点上限、非法 YAML/XML、alias/动态表达式 incomplete、OCI 引用验证；Compose 仅变量名。
+- 显式 scope 的 GitLab/ZenTao/Portainer crawler；固定 commit 读取、相关路径白名单、节流、私有原子 checkpoint。
+- 失败状态持久化，已完成仓库复用、commit 变化失效重读；Catalog ScanRun 将在 T3 接入。
+- 独立 git_current / portainer_saved / swarm_runtime 快照、来源实例复合身份、版本指纹和证据。
+- 合成验收：3 Stack、1 current Swarm、2 stale、78 namespace services、73 images、5 组复用；71→78 差集为 072–078。
+- 三平台 Mock HTTP 联合测试验证范围、master、Endpoint/Swarm/标签、快照差异及原始 secrets 不进入 cache。
+- HTTP 日志开启 DEBUG 时仍过滤 URL、主机与凭证；图片/写操作拦截回归通过。
+- `ruff check .`、`mypy src`（24 files）、`pytest -q --cov=dce --cov-report=term-missing`、`git diff --check` exit 0。
+- 最终 79 passed，branch coverage 97.41%；外部平台 not_verified。
 
 ## 风险与阻塞
 

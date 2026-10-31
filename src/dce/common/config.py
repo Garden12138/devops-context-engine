@@ -45,6 +45,7 @@ class Settings(BaseModel):
     catalog_path: Path = Path(".local/catalog.sqlite3")
     timeout: float = Field(default=10, gt=0, le=120)
     max_retries: int = Field(default=2, ge=0, le=5)
+    request_interval: float = Field(default=0.01, ge=0, le=5)
     page_size: int = Field(default=100, ge=1, le=100)
     output_budget: int = Field(default=16000, ge=1024, le=64000)
     zentao: PlatformConfig | None = None

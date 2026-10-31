@@ -24,7 +24,7 @@ def safe_stack(stack: dict[str, Any]) -> dict[str, Any]:
             url = urlsplit(git["URL"])
             if url.scheme in {"https", "http"} and url.hostname:
                 result["GitConfig"]["URL"] = urlunsplit(
-                    (url.scheme, url.hostname, url.path, "", "")
+                    (url.scheme, url.netloc.rsplit("@", 1)[-1], url.path, "", "")
                 )
         except ValueError:
             pass  # Unsupported repository address remains unresolved.
