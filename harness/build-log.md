@@ -1,7 +1,7 @@
 # Agent 执行日志
 
 状态：IN_PROGRESS
-当前阶段：T3（T0–T2 已验证）
+当前阶段：T4（T0–T3 已验证）
 最后更新时间：2026-10-31
 
 ## 里程碑
@@ -11,15 +11,15 @@
 | T0 | passed | Python 3.12.11；pytest 13 passed / branch coverage 100%；mypy 10 files；CLI smoke passed |
 | T1 | passed | 47 tests / 99.48% branch coverage；ruff + mypy + doctor mock |
 | T2 | passed | 79 tests / 97.41% branch coverage；三平台 scoped mock、快照差集、恢复与安全静态解析 |
-| T3 | implementing | Catalog 迁移、版本、审核保护与查询 |
-| T4 | pending | |
+| T3 | passed | 93 tests / 97.77% branch coverage；Alembic 0001→0002、事务/版本/审核与双向查询 |
+| T4 | implementing | 规则证据、可选 AI 候选、受控本地审核 |
 | T5 | pending | |
 | T6 | pending | |
 | T7 | pending | |
 
 ## 下次继续动作
 
-继续 T3：SQLAlchemy/SQLite Catalog、迁移与幂等、历史、人工关系保护、双向追踪。
+继续 T4：规则关联、AI 白名单候选与失败回退、人工审核用例。
 
 ## T0 执行记录
 
@@ -41,6 +41,21 @@
 - `ruff check .`、`mypy src`（15 files）、`dce doctor --mock`、`git diff --check` exit 0。
 - 修复首次检查暴露的闭包 lint 和动态 JSON 类型收窄错误，所有修复后检查通过。
 - 外部 API 兼容性 not_verified；未访问内网，未调用业务写接口。
+
+## 风险与阻塞
+
+## T3 执行记录
+
+- SQLAlchemy SQLite Catalog 与打包 Alembic 0001/0002；旧实体/关系版本历史回填测试通过。
+- 实体/边/证据/独立快照/ScanRun/Approval/Audit 持久化；完整批次原子导入，失败另记 scan 状态。
+- 来源复合键、幂等写入、历史版本、最近校验、有效期；不可变快照/证据冲突与缺失引用回滚。
+- Entity 与 Edge 独立 scope 成员；完整扫描来源消失软删除/过期；其他活跃 scope 保护共享资源。
+- 审核 accept/reject/revoke/override 保留 actor/reason/timestamp 与 before/after；扫描不能写 confirmed，冲突单独记录。
+- 有界分页、双向 trace、证据/版本/审计查询；本地目录 0700/数据库 0600。
+- `ruff check .`、`mypy src`（32 files）、`pytest -q --cov=src/dce --cov-report=term-missing`、`git diff --check` exit 0。
+- 93 passed，branch coverage 97.77%。修复 mypy 动态 SQL 类型注解与关系消失保护分支。
+- 覆盖率命令从包名改源码路径：包名过滤会把 Alembic 动态脚本计为未执行；源码路径正确测量迁移。README/tasks/acceptance/CI 已同步。
+- 真实外部平台仍 not_verified。
 
 ## 风险与阻塞
 

@@ -55,6 +55,8 @@
 - [ ] T7.1 合成 3 Stack/1 current Swarm/71 vs 78 service/78 current service/5 shared images 的 fixtures。
 - [ ] T7.2 模块-镜像-服务多对多、CLI bug context、图片返回 HTML/PNG、CI failure、mapping approval 情况的 E2E。
 - [ ] T7.3 运行 `pytest`, lint, typecheck，输出测试报告与覆盖率，修复失败。
+
+覆盖率命令：`uv run pytest -q --cov=src/dce --cov-report=term-missing`（包含动态迁移脚本）。
 - [ ] T7.4 写 `docs/OPERATIONS.md` 的安装、Mock 演示、真实内网只读验收、常见错误、回滚/删除本地数据方法。
 - [ ] T7.5 `git diff --check`, 查找 secrets/内网地址、License 和 GitHub 初始化审查；填写 `harness/build-log.md`。
 

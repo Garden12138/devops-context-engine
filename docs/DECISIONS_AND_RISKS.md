@@ -34,14 +34,21 @@ GitConfig 只留声明字段并清除 URL 凭证/查询；StackFile 和原始 tr
 图片缓存使用来源实例+资源引用标识、内容 SHA256、私有目录与原子写。
 所有平台兼容性以本地 Mock HTTP 契约证明，真实 API 单独标记 not_verified。
 
-## 风险登记
-
 ## ADR-008：静态解析与恢复边界
 
 不执行 YAML、CI、Dockerfile 或模块脚本；无法静态解析的值为 incomplete。
 扫描以 commit 固定仓库读取，缓存只存规范化白名单；重启复用已完成资源，变化版本重读。
 三种部署快照独立保留；只有来源、仓库路径、ref、配置路径匹配才比较声明。
 Namespace 标签与 Endpoint/Swarm ID 同时验证；不由名称判断环境或部署版本。
+
+## 风险登记
+
+## ADR-009：Catalog 审核状态与扫描观测分离
+
+使用 SQLAlchemy + SQLite 与打包 Alembic 前向迁移；人工决定独立于 observed_status。
+所有变更保留历史和 Audit；不可变快照冲突回滚整个批次，ScanRun 单独保留失败记录。
+Entity/Edge 记录各 scope 活跃成员，来源消失不误删其他范围资源；人工确认保留但标明 stale/conflict。
+不支持破坏性 schema downgrade；恢复使用本地备份，V1 不做任何远端操作。
 
 ## 风险登记
 

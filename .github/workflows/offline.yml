@@ -13,6 +13,6 @@ jobs:
       - run: uv sync --locked --dev
       - run: uv run --offline ruff check .
       - run: uv run --offline mypy src
-      - run: uv run --offline pytest -q --cov=dce --cov-report=term-missing
+      - run: uv run --offline pytest -q --cov=src/dce --cov-report=term-missing
       - run: uv run --offline dce doctor --mock
       - run: uv run --offline python scripts/check_public_data.py
