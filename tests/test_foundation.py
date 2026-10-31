@@ -29,13 +29,19 @@ def test_help_and_mock_doctor() -> None:
     [
         (["--live"], "PERMISSION_DENIED"),
         (["--mock", "--live"], "INVALID_PAYLOAD"),
-        (["--live", "--read-only"], "API_INCOMPATIBLE"),
     ],
 )
 def test_cli_safe_failures(args: list[str], code: str) -> None:
     result = runner.invoke(app, ["doctor", *args])
     assert result.exit_code == 2
     assert json.loads(result.stdout)["error"]["code"] == code
+
+
+def test_doctor_live_unconfigured() -> None:
+    result = runner.invoke(app, ["doctor", "--live", "--read-only"])
+    assert result.exit_code == 2
+    platforms = json.loads(result.stdout)["data"]["platforms"]
+    assert all(p["code"] == "AUTH_FAILED" for p in platforms.values())
 
 
 def test_config_precedence(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

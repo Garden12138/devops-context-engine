@@ -2,7 +2,12 @@
 
 > 面向 Cursor、Codex 和其他可调用工具的 Coding Agent 的「研发环境发现 + 可信映射 + 缺陷上下文」中间层。
 
-**本仓库当前是 V1.0 开发规格与 Agent 执行包（文档先行），不是已经实现的工具。**
+**V1.0 正在实施：T0/T1 可运行并通过离线测试，T2–T7 尚未验收。**
+
+开发环境（Python 3.12+）：`uv sync --locked --dev`。
+已验证：`uv run dce --help`、`uv run dce doctor --mock`、
+`uv run pytest -q --cov=dce --cov-report=term-missing`、`uv run ruff check .`、`uv run mypy src`。
+配置使用显式 TOML 与进程环境，不自动读取 `.env`。真实平台 smoke 尚未验证。
 
 ## 目标
 

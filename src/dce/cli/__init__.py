@@ -3,7 +3,7 @@ from typing import Annotated
 
 import typer
 
-from dce.app.doctor import mock_doctor
+from dce.app.doctor import doctor as run_doctor
 from dce.common.config import load_settings
 from dce.common.errors import DceError, ErrorCode
 from dce.common.output import encode, envelope
@@ -31,8 +31,10 @@ def doctor(
         if live:
             if not read_only:
                 raise DceError(ErrorCode.PERMISSION_DENIED, "Live mode requires --read-only.")
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Live probes are not implemented yet.")
-        typer.echo(encode(envelope(mock_doctor()), settings.output_budget))
+        result = run_doctor(settings, mock=not live)
+        typer.echo(encode(envelope(result), settings.output_budget))
+        if any(platform["status"] != "ok" for platform in result["platforms"].values()):
+            raise typer.Exit(2)
     except DceError as exc:
         typer.echo(encode(envelope(error=exc)))
         raise typer.Exit(2) from None
