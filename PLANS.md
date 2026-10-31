@@ -15,6 +15,9 @@
 
 ## 运行纪律
 
+当前进度（2026-10-31）：T0 passed，T1 implementing；本地分支 `work/dce-v1-offline`。
+T0：13 tests、100% 分支覆盖率、ruff、strict mypy、doctor mock 已通过。
+
 - 一次只推进一个阶段，测试不过不跳阶段；阶段完成记录测试命令、退出码与摘要。
 - 当前阶段以 `harness/build-log.md` 标记为准；每个阶段前更新进度；若不存在，创建它。
 - 每阶段在 `harness/context/TN.md` 记录结构变化、关键假设、实施决策、待解决点。避免长上下文崩溃后失去信息。
