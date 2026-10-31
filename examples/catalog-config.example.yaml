@@ -1,0 +1,28 @@
+# All IDs and URLs are synthetic. Never paste actual company secrets in repo.
+version: 1
+sources:
+  zentao:
+    base_url_env: DCE_ZENTAO_BASE_URL
+    token_env: DCE_ZENTAO_TOKEN
+    api_version: v1
+  gitlab:
+    base_url_env: DCE_GITLAB_BASE_URL
+    token_env: DCE_GITLAB_TOKEN
+  portainer:
+    base_url_env: DCE_PORTAINER_BASE_URL
+    token_env: DCE_PORTAINER_API_KEY
+scan:
+  mode: explicit
+  read_only: true
+  max_projects: 10
+  max_stack_count: 10
+  max_depth: 4
+  max_file_kb: 256
+ai:
+  enabled: false
+  allow_external: false
+  require_evidence: true
+policies:
+  mapping_review_required: true
+  disable_all_remote_write: true
+  environment_must_be_confirmed: true

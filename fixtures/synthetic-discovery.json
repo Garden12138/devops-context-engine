@@ -1,0 +1,1151 @@
+{
+  "fixture_version": "1.0",
+  "synthetic": true,
+  "source_instances": [
+    {
+      "id": "zentao-demo",
+      "kind": "zentao",
+      "base_url": "https://zentao.example.invalid"
+    },
+    {
+      "id": "gitlab-demo",
+      "kind": "gitlab",
+      "base_url": "https://gitlab.example.invalid"
+    },
+    {
+      "id": "portainer-demo",
+      "kind": "portainer",
+      "base_url": "https://portainer.example.invalid"
+    }
+  ],
+  "zentao": {
+    "projects": [
+      {
+        "id": 2801,
+        "name": "Demo Smart Marketing",
+        "product_id": 1301
+      }
+    ],
+    "bugs": [
+      {
+        "id": "DEMO-1001",
+        "project_id": 2801,
+        "product_id": 1301,
+        "title": "5G message operator approval icon should light up",
+        "steps_html": "<p>Expected: icon activated</p><img src=\"https://zentao.example.invalid/file-read-101.png\"/><img src=\"https://zentao.example.invalid/file-read-102.png\"/>",
+        "files": [],
+        "assets": [
+          {
+            "id": "demo-101",
+            "mime": "image/png",
+            "synthetic": true
+          },
+          {
+            "id": "demo-102",
+            "mime": "image/png",
+            "synthetic": true
+          }
+        ]
+      }
+    ]
+  },
+  "gitlab": {
+    "deployment_repo": {
+      "id": 1501,
+      "path": "demo/deployment",
+      "default_branch": "master",
+      "compose_file": "demo-compose.yml",
+      "current_service_count": 78,
+      "compose_services": [
+        {
+          "name": "demo-svc-001",
+          "image": "registry.example.invalid/demo/image-001:latest"
+        },
+        {
+          "name": "demo-svc-002",
+          "image": "registry.example.invalid/demo/image-002:latest"
+        },
+        {
+          "name": "demo-svc-003",
+          "image": "registry.example.invalid/demo/image-003:latest"
+        },
+        {
+          "name": "demo-svc-004",
+          "image": "registry.example.invalid/demo/image-004:latest"
+        },
+        {
+          "name": "demo-svc-005",
+          "image": "registry.example.invalid/demo/image-005:latest"
+        },
+        {
+          "name": "demo-svc-006",
+          "image": "registry.example.invalid/demo/image-006:latest"
+        },
+        {
+          "name": "demo-svc-007",
+          "image": "registry.example.invalid/demo/image-007:latest"
+        },
+        {
+          "name": "demo-svc-008",
+          "image": "registry.example.invalid/demo/image-008:latest"
+        },
+        {
+          "name": "demo-svc-009",
+          "image": "registry.example.invalid/demo/image-009:latest"
+        },
+        {
+          "name": "demo-svc-010",
+          "image": "registry.example.invalid/demo/image-010:latest"
+        },
+        {
+          "name": "demo-svc-011",
+          "image": "registry.example.invalid/demo/image-011:latest"
+        },
+        {
+          "name": "demo-svc-012",
+          "image": "registry.example.invalid/demo/image-012:latest"
+        },
+        {
+          "name": "demo-svc-013",
+          "image": "registry.example.invalid/demo/image-013:latest"
+        },
+        {
+          "name": "demo-svc-014",
+          "image": "registry.example.invalid/demo/image-014:latest"
+        },
+        {
+          "name": "demo-svc-015",
+          "image": "registry.example.invalid/demo/image-015:latest"
+        },
+        {
+          "name": "demo-svc-016",
+          "image": "registry.example.invalid/demo/image-016:latest"
+        },
+        {
+          "name": "demo-svc-017",
+          "image": "registry.example.invalid/demo/image-017:latest"
+        },
+        {
+          "name": "demo-svc-018",
+          "image": "registry.example.invalid/demo/image-018:latest"
+        },
+        {
+          "name": "demo-svc-019",
+          "image": "registry.example.invalid/demo/image-019:latest"
+        },
+        {
+          "name": "demo-svc-020",
+          "image": "registry.example.invalid/demo/image-020:latest"
+        },
+        {
+          "name": "demo-svc-021",
+          "image": "registry.example.invalid/demo/image-021:latest"
+        },
+        {
+          "name": "demo-svc-022",
+          "image": "registry.example.invalid/demo/image-022:latest"
+        },
+        {
+          "name": "demo-svc-023",
+          "image": "registry.example.invalid/demo/image-023:latest"
+        },
+        {
+          "name": "demo-svc-024",
+          "image": "registry.example.invalid/demo/image-024:latest"
+        },
+        {
+          "name": "demo-svc-025",
+          "image": "registry.example.invalid/demo/image-025:latest"
+        },
+        {
+          "name": "demo-svc-026",
+          "image": "registry.example.invalid/demo/image-026:latest"
+        },
+        {
+          "name": "demo-svc-027",
+          "image": "registry.example.invalid/demo/image-027:latest"
+        },
+        {
+          "name": "demo-svc-028",
+          "image": "registry.example.invalid/demo/image-028:latest"
+        },
+        {
+          "name": "demo-svc-029",
+          "image": "registry.example.invalid/demo/image-029:latest"
+        },
+        {
+          "name": "demo-svc-030",
+          "image": "registry.example.invalid/demo/image-030:latest"
+        },
+        {
+          "name": "demo-svc-031",
+          "image": "registry.example.invalid/demo/image-031:latest"
+        },
+        {
+          "name": "demo-svc-032",
+          "image": "registry.example.invalid/demo/image-032:latest"
+        },
+        {
+          "name": "demo-svc-033",
+          "image": "registry.example.invalid/demo/image-033:latest"
+        },
+        {
+          "name": "demo-svc-034",
+          "image": "registry.example.invalid/demo/image-034:latest"
+        },
+        {
+          "name": "demo-svc-035",
+          "image": "registry.example.invalid/demo/image-035:latest"
+        },
+        {
+          "name": "demo-svc-036",
+          "image": "registry.example.invalid/demo/image-036:latest"
+        },
+        {
+          "name": "demo-svc-037",
+          "image": "registry.example.invalid/demo/image-037:latest"
+        },
+        {
+          "name": "demo-svc-038",
+          "image": "registry.example.invalid/demo/image-038:latest"
+        },
+        {
+          "name": "demo-svc-039",
+          "image": "registry.example.invalid/demo/image-039:latest"
+        },
+        {
+          "name": "demo-svc-040",
+          "image": "registry.example.invalid/demo/image-040:latest"
+        },
+        {
+          "name": "demo-svc-041",
+          "image": "registry.example.invalid/demo/image-041:latest"
+        },
+        {
+          "name": "demo-svc-042",
+          "image": "registry.example.invalid/demo/image-042:latest"
+        },
+        {
+          "name": "demo-svc-043",
+          "image": "registry.example.invalid/demo/image-043:latest"
+        },
+        {
+          "name": "demo-svc-044",
+          "image": "registry.example.invalid/demo/image-044:latest"
+        },
+        {
+          "name": "demo-svc-045",
+          "image": "registry.example.invalid/demo/image-045:latest"
+        },
+        {
+          "name": "demo-svc-046",
+          "image": "registry.example.invalid/demo/image-046:latest"
+        },
+        {
+          "name": "demo-svc-047",
+          "image": "registry.example.invalid/demo/image-047:latest"
+        },
+        {
+          "name": "demo-svc-048",
+          "image": "registry.example.invalid/demo/image-048:latest"
+        },
+        {
+          "name": "demo-svc-049",
+          "image": "registry.example.invalid/demo/image-049:latest"
+        },
+        {
+          "name": "demo-svc-050",
+          "image": "registry.example.invalid/demo/image-050:latest"
+        },
+        {
+          "name": "demo-svc-051",
+          "image": "registry.example.invalid/demo/image-051:latest"
+        },
+        {
+          "name": "demo-svc-052",
+          "image": "registry.example.invalid/demo/image-052:latest"
+        },
+        {
+          "name": "demo-svc-053",
+          "image": "registry.example.invalid/demo/image-053:latest"
+        },
+        {
+          "name": "demo-svc-054",
+          "image": "registry.example.invalid/demo/image-054:latest"
+        },
+        {
+          "name": "demo-svc-055",
+          "image": "registry.example.invalid/demo/image-055:latest"
+        },
+        {
+          "name": "demo-svc-056",
+          "image": "registry.example.invalid/demo/image-056:latest"
+        },
+        {
+          "name": "demo-svc-057",
+          "image": "registry.example.invalid/demo/image-057:latest"
+        },
+        {
+          "name": "demo-svc-058",
+          "image": "registry.example.invalid/demo/image-058:latest"
+        },
+        {
+          "name": "demo-svc-059",
+          "image": "registry.example.invalid/demo/image-059:latest"
+        },
+        {
+          "name": "demo-svc-060",
+          "image": "registry.example.invalid/demo/image-060:latest"
+        },
+        {
+          "name": "demo-svc-061",
+          "image": "registry.example.invalid/demo/image-061:latest"
+        },
+        {
+          "name": "demo-svc-062",
+          "image": "registry.example.invalid/demo/image-062:latest"
+        },
+        {
+          "name": "demo-svc-063",
+          "image": "registry.example.invalid/demo/image-063:latest"
+        },
+        {
+          "name": "demo-svc-064",
+          "image": "registry.example.invalid/demo/image-064:latest"
+        },
+        {
+          "name": "demo-svc-065",
+          "image": "registry.example.invalid/demo/image-065:latest"
+        },
+        {
+          "name": "demo-svc-066",
+          "image": "registry.example.invalid/demo/image-066:latest"
+        },
+        {
+          "name": "demo-svc-067",
+          "image": "registry.example.invalid/demo/image-067:latest"
+        },
+        {
+          "name": "demo-svc-068",
+          "image": "registry.example.invalid/demo/image-068:latest"
+        },
+        {
+          "name": "demo-svc-069",
+          "image": "registry.example.invalid/demo/image-069:latest"
+        },
+        {
+          "name": "demo-svc-070",
+          "image": "registry.example.invalid/demo/image-070:latest"
+        },
+        {
+          "name": "demo-svc-071",
+          "image": "registry.example.invalid/demo/image-071:latest"
+        },
+        {
+          "name": "demo-svc-072",
+          "image": "registry.example.invalid/demo/image-072:latest"
+        },
+        {
+          "name": "demo-svc-073",
+          "image": "registry.example.invalid/demo/image-073:latest"
+        },
+        {
+          "name": "demo-svc-074",
+          "image": "registry.example.invalid/demo/image-001:latest"
+        },
+        {
+          "name": "demo-svc-075",
+          "image": "registry.example.invalid/demo/image-002:latest"
+        },
+        {
+          "name": "demo-svc-076",
+          "image": "registry.example.invalid/demo/image-003:latest"
+        },
+        {
+          "name": "demo-svc-077",
+          "image": "registry.example.invalid/demo/image-004:latest"
+        },
+        {
+          "name": "demo-svc-078",
+          "image": "registry.example.invalid/demo/image-005:latest"
+        }
+      ]
+    },
+    "source_repos": [
+      {
+        "id": 1001,
+        "path": "demo/multimodule",
+        "modules": [
+          "ui-template",
+          "api-template",
+          "common-lib"
+        ]
+      }
+    ],
+    "pipelines": [
+      {
+        "id": 2001,
+        "project_id": 1001,
+        "status": "failed",
+        "jobs": [
+          {
+            "id": 3001,
+            "stage": "build",
+            "status": "failed",
+            "trace_excerpt": [
+              "ERROR: No such image: moby/buildkit:buildx-stable-1",
+              "/bin/sh: make: not found"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "portainer": {
+    "endpoint": {
+      "id": 1,
+      "swarm_state": "active",
+      "manager": true,
+      "nodes": 2,
+      "current_swarm_id": "swarm-current-001"
+    },
+    "stacks": [
+      {
+        "id": 101,
+        "name": "demo-legacy-a",
+        "swarm_id": "swarm-legacy-a",
+        "status": 1,
+        "git_repo": "demo/deployment",
+        "git_branch": "refs/heads/master",
+        "compose_file": "demo-compose.yml",
+        "saved_service_count": 66
+      },
+      {
+        "id": 102,
+        "name": "demo-legacy-test",
+        "swarm_id": "swarm-legacy-test",
+        "status": 1,
+        "git_repo": "demo/deployment",
+        "git_branch": "refs/heads/master",
+        "compose_file": "demo-compose.yml",
+        "saved_service_count": 71,
+        "saved_compose_services": [
+          {
+            "name": "demo-svc-001",
+            "image": "registry.example.invalid/demo/image-001:latest"
+          },
+          {
+            "name": "demo-svc-002",
+            "image": "registry.example.invalid/demo/image-002:latest"
+          },
+          {
+            "name": "demo-svc-003",
+            "image": "registry.example.invalid/demo/image-003:latest"
+          },
+          {
+            "name": "demo-svc-004",
+            "image": "registry.example.invalid/demo/image-004:latest"
+          },
+          {
+            "name": "demo-svc-005",
+            "image": "registry.example.invalid/demo/image-005:latest"
+          },
+          {
+            "name": "demo-svc-006",
+            "image": "registry.example.invalid/demo/image-006:latest"
+          },
+          {
+            "name": "demo-svc-007",
+            "image": "registry.example.invalid/demo/image-007:latest"
+          },
+          {
+            "name": "demo-svc-008",
+            "image": "registry.example.invalid/demo/image-008:latest"
+          },
+          {
+            "name": "demo-svc-009",
+            "image": "registry.example.invalid/demo/image-009:latest"
+          },
+          {
+            "name": "demo-svc-010",
+            "image": "registry.example.invalid/demo/image-010:latest"
+          },
+          {
+            "name": "demo-svc-011",
+            "image": "registry.example.invalid/demo/image-011:latest"
+          },
+          {
+            "name": "demo-svc-012",
+            "image": "registry.example.invalid/demo/image-012:latest"
+          },
+          {
+            "name": "demo-svc-013",
+            "image": "registry.example.invalid/demo/image-013:latest"
+          },
+          {
+            "name": "demo-svc-014",
+            "image": "registry.example.invalid/demo/image-014:latest"
+          },
+          {
+            "name": "demo-svc-015",
+            "image": "registry.example.invalid/demo/image-015:latest"
+          },
+          {
+            "name": "demo-svc-016",
+            "image": "registry.example.invalid/demo/image-016:latest"
+          },
+          {
+            "name": "demo-svc-017",
+            "image": "registry.example.invalid/demo/image-017:latest"
+          },
+          {
+            "name": "demo-svc-018",
+            "image": "registry.example.invalid/demo/image-018:latest"
+          },
+          {
+            "name": "demo-svc-019",
+            "image": "registry.example.invalid/demo/image-019:latest"
+          },
+          {
+            "name": "demo-svc-020",
+            "image": "registry.example.invalid/demo/image-020:latest"
+          },
+          {
+            "name": "demo-svc-021",
+            "image": "registry.example.invalid/demo/image-021:latest"
+          },
+          {
+            "name": "demo-svc-022",
+            "image": "registry.example.invalid/demo/image-022:latest"
+          },
+          {
+            "name": "demo-svc-023",
+            "image": "registry.example.invalid/demo/image-023:latest"
+          },
+          {
+            "name": "demo-svc-024",
+            "image": "registry.example.invalid/demo/image-024:latest"
+          },
+          {
+            "name": "demo-svc-025",
+            "image": "registry.example.invalid/demo/image-025:latest"
+          },
+          {
+            "name": "demo-svc-026",
+            "image": "registry.example.invalid/demo/image-026:latest"
+          },
+          {
+            "name": "demo-svc-027",
+            "image": "registry.example.invalid/demo/image-027:latest"
+          },
+          {
+            "name": "demo-svc-028",
+            "image": "registry.example.invalid/demo/image-028:latest"
+          },
+          {
+            "name": "demo-svc-029",
+            "image": "registry.example.invalid/demo/image-029:latest"
+          },
+          {
+            "name": "demo-svc-030",
+            "image": "registry.example.invalid/demo/image-030:latest"
+          },
+          {
+            "name": "demo-svc-031",
+            "image": "registry.example.invalid/demo/image-031:latest"
+          },
+          {
+            "name": "demo-svc-032",
+            "image": "registry.example.invalid/demo/image-032:latest"
+          },
+          {
+            "name": "demo-svc-033",
+            "image": "registry.example.invalid/demo/image-033:latest"
+          },
+          {
+            "name": "demo-svc-034",
+            "image": "registry.example.invalid/demo/image-034:latest"
+          },
+          {
+            "name": "demo-svc-035",
+            "image": "registry.example.invalid/demo/image-035:latest"
+          },
+          {
+            "name": "demo-svc-036",
+            "image": "registry.example.invalid/demo/image-036:latest"
+          },
+          {
+            "name": "demo-svc-037",
+            "image": "registry.example.invalid/demo/image-037:latest"
+          },
+          {
+            "name": "demo-svc-038",
+            "image": "registry.example.invalid/demo/image-038:latest"
+          },
+          {
+            "name": "demo-svc-039",
+            "image": "registry.example.invalid/demo/image-039:latest"
+          },
+          {
+            "name": "demo-svc-040",
+            "image": "registry.example.invalid/demo/image-040:latest"
+          },
+          {
+            "name": "demo-svc-041",
+            "image": "registry.example.invalid/demo/image-041:latest"
+          },
+          {
+            "name": "demo-svc-042",
+            "image": "registry.example.invalid/demo/image-042:latest"
+          },
+          {
+            "name": "demo-svc-043",
+            "image": "registry.example.invalid/demo/image-043:latest"
+          },
+          {
+            "name": "demo-svc-044",
+            "image": "registry.example.invalid/demo/image-044:latest"
+          },
+          {
+            "name": "demo-svc-045",
+            "image": "registry.example.invalid/demo/image-045:latest"
+          },
+          {
+            "name": "demo-svc-046",
+            "image": "registry.example.invalid/demo/image-046:latest"
+          },
+          {
+            "name": "demo-svc-047",
+            "image": "registry.example.invalid/demo/image-047:latest"
+          },
+          {
+            "name": "demo-svc-048",
+            "image": "registry.example.invalid/demo/image-048:latest"
+          },
+          {
+            "name": "demo-svc-049",
+            "image": "registry.example.invalid/demo/image-049:latest"
+          },
+          {
+            "name": "demo-svc-050",
+            "image": "registry.example.invalid/demo/image-050:latest"
+          },
+          {
+            "name": "demo-svc-051",
+            "image": "registry.example.invalid/demo/image-051:latest"
+          },
+          {
+            "name": "demo-svc-052",
+            "image": "registry.example.invalid/demo/image-052:latest"
+          },
+          {
+            "name": "demo-svc-053",
+            "image": "registry.example.invalid/demo/image-053:latest"
+          },
+          {
+            "name": "demo-svc-054",
+            "image": "registry.example.invalid/demo/image-054:latest"
+          },
+          {
+            "name": "demo-svc-055",
+            "image": "registry.example.invalid/demo/image-055:latest"
+          },
+          {
+            "name": "demo-svc-056",
+            "image": "registry.example.invalid/demo/image-056:latest"
+          },
+          {
+            "name": "demo-svc-057",
+            "image": "registry.example.invalid/demo/image-057:latest"
+          },
+          {
+            "name": "demo-svc-058",
+            "image": "registry.example.invalid/demo/image-058:latest"
+          },
+          {
+            "name": "demo-svc-059",
+            "image": "registry.example.invalid/demo/image-059:latest"
+          },
+          {
+            "name": "demo-svc-060",
+            "image": "registry.example.invalid/demo/image-060:latest"
+          },
+          {
+            "name": "demo-svc-061",
+            "image": "registry.example.invalid/demo/image-061:latest"
+          },
+          {
+            "name": "demo-svc-062",
+            "image": "registry.example.invalid/demo/image-062:latest"
+          },
+          {
+            "name": "demo-svc-063",
+            "image": "registry.example.invalid/demo/image-063:latest"
+          },
+          {
+            "name": "demo-svc-064",
+            "image": "registry.example.invalid/demo/image-064:latest"
+          },
+          {
+            "name": "demo-svc-065",
+            "image": "registry.example.invalid/demo/image-065:latest"
+          },
+          {
+            "name": "demo-svc-066",
+            "image": "registry.example.invalid/demo/image-066:latest"
+          },
+          {
+            "name": "demo-svc-067",
+            "image": "registry.example.invalid/demo/image-067:latest"
+          },
+          {
+            "name": "demo-svc-068",
+            "image": "registry.example.invalid/demo/image-068:latest"
+          },
+          {
+            "name": "demo-svc-069",
+            "image": "registry.example.invalid/demo/image-069:latest"
+          },
+          {
+            "name": "demo-svc-070",
+            "image": "registry.example.invalid/demo/image-070:latest"
+          },
+          {
+            "name": "demo-svc-071",
+            "image": "registry.example.invalid/demo/image-071:latest"
+          }
+        ]
+      },
+      {
+        "id": 103,
+        "name": "demo-current",
+        "swarm_id": "swarm-current-001",
+        "status": 1,
+        "git_repo": "demo/deployment",
+        "git_branch": "refs/heads/master",
+        "compose_file": "demo-compose.yml",
+        "saved_service_count": 78
+      }
+    ],
+    "runtime_services": [
+      {
+        "name": "demo-current_demo-svc-001",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-001:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-002",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-002:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-003",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-003:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-004",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-004:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-005",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-005:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-006",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-006:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-007",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-007:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-008",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-008:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-009",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-009:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-010",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-010:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-011",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-011:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-012",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-012:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-013",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-013:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-014",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-014:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-015",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-015:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-016",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-016:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-017",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-017:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-018",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-018:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-019",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-019:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-020",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-020:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-021",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-021:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-022",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-022:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-023",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-023:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-024",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-024:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-025",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-025:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-026",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-026:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-027",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-027:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-028",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-028:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-029",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-029:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-030",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-030:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-031",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-031:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-032",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-032:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-033",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-033:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-034",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-034:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-035",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-035:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-036",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-036:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-037",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-037:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-038",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-038:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-039",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-039:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-040",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-040:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-041",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-041:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-042",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-042:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-043",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-043:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-044",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-044:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-045",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-045:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-046",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-046:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-047",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-047:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-048",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-048:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-049",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-049:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-050",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-050:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-051",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-051:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-052",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-052:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-053",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-053:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-054",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-054:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-055",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-055:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-056",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-056:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-057",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-057:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-058",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-058:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-059",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-059:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-060",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-060:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-061",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-061:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-062",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-062:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-063",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-063:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-064",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-064:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-065",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-065:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-066",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-066:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-067",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-067:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-068",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-068:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-069",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-069:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-070",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-070:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-071",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-071:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-072",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-072:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-073",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-073:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-074",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-001:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-075",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-002:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-076",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-003:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-077",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-004:latest"
+      },
+      {
+        "name": "demo-current_demo-svc-078",
+        "namespace": "demo-current",
+        "image": "registry.example.invalid/demo/image-005:latest"
+      },
+      {
+        "name": "portainer_agent",
+        "namespace": "portainer",
+        "image": "portainer/agent:demo"
+      },
+      {
+        "name": "portainer_server",
+        "namespace": "portainer",
+        "image": "portainer/portainer:demo"
+      },
+      {
+        "name": "cadvisor_cadvisor",
+        "namespace": "cadvisor",
+        "image": "google/cadvisor:demo"
+      }
+    ]
+  },
+  "expected": {
+    "current_service_count": 78,
+    "runtime_service_total": 81,
+    "current_swarm_stack_id": 103,
+    "stale_stack_ids": [
+      101,
+      102
+    ],
+    "git_current_count": 78,
+    "portainer_legacy_test_saved_count": 71,
+    "shared_image_count": 5,
+    "unique_current_images": 73
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "source": "zentao:demo:feature:template-management",
+  "target": "gitlab:demo:module:ui-template",
+  "relation_type": "implemented_by",
+  "status": "candidate",
+  "evidence_ids": ["ev-folder-01", "ev-readme-01"],
+  "confidence_band": "medium",
+  "reason": "Business term overlaps UI module description; actual call path unresolved",
+  "review_required": true,
+  "snapshot_at": "2026-10-31T00:00:00Z"
+}
