@@ -180,3 +180,11 @@ def test_http_log_does_not_expose_url_or_token(caplog: pytest.LogCaptureFixture)
         logging.getLogger("httpcore.connection").debug("host='demo.example.invalid'")
     assert "synthetic-credential" not in caplog.text
     assert "demo.example.invalid" not in caplog.text
+
+
+def test_malformed_attachment_url_is_structured(tmp_path: Path) -> None:
+    with reader("zentao", lambda _: pytest.fail("Malformed URL reached transport")) as http:
+        with pytest.raises(DceError):
+            http.get("https://[broken")
+        with pytest.raises(DceError):
+            ZenTao(http).download_image("https://[broken", tmp_path)

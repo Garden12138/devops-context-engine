@@ -2,7 +2,10 @@
 
 > 面向 Cursor、Codex 和其他可调用工具的 Coding Agent 的「研发环境发现 + 可信映射 + 缺陷上下文」中间层。
 
-**V1.0 正在实施：T0–T6 可运行并通过离线测试，T7 最终验收进行中。**
+**V1.0 离线实现已通过 T0–T7 验收。真实内网接口与实际 Agent 接入仍为 `not_verified`。**
+
+验收证据见 [离线报告](harness/acceptance-report.md) 和 [执行记录](harness/build-log.md)。
+当前 133 项测试通过，总体覆盖率 98.58%（行 99.18%、分支 96.65%）；CLI/MCP 子进程与独立 wheel 安装均已验证。
 
 开发环境（Python 3.12+）：`uv sync --locked --dev`。
 已验证：`uv run dce --help`、`uv run dce doctor --mock`、
@@ -37,7 +40,10 @@
 ├── prompts/                  # Codex / Cursor / 续跑提示词
 ├── examples/                 # 无密钥、脱敏配置示例
 ├── fixtures/                 # 合成测试数据，绝无内网原始数据
-├── harness/                  # 长任务执行记录位置（初始模板）
+├── src/dce/                  # Adapter、发现、Catalog、服务、CLI/MCP
+├── tests/                    # 离线单元、安全、CLI/MCP 集成测试
+├── uv.lock                   # 统一依赖锁
+├── harness/                  # 分阶段记录、验收与覆盖率报告
 └── .cursor/rules/            # Cursor 项目级规则
 ```
 
@@ -61,7 +67,7 @@
 Grok Bot 的具体 MCP 支持与真实内网接入均为 `not_verified`，需在用户执行器实测。
 
 - [x] V1 设计规格与可复现的脱敏测试数据
-- [ ] V1 代码实现、单元测试和离线验收（交给 Codex/Cursor 完成）
+- [x] V1 代码实现、单元测试和离线验收
 - [ ] V1 真实内网只读 smoke 测试（凭证只保存在本地）
 - [ ] V1.1 MCP + BugContext 的实际 Agent 验收
 

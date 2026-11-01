@@ -40,6 +40,7 @@ def test_live_discovery_application_scope_and_checkpoint(tmp_path: Path) -> None
         report = service.discover(ScanScope(gitlab_projects=["1"]), live=True, read_only=True)
         assert report["scope"] == ScanScope(gitlab_projects=["1"]).model_dump()
         assert report["counts"]["entities"] == 1
+        assert report["mapping"]["ai_status"] == "disabled"
         assert len(list((tmp_path / "checkpoints").glob("*.json"))) == 1
 
 
@@ -148,3 +149,4 @@ def test_cli_live_explicit_scope_uses_only_mock_transport(
         result = runner.invoke(app, [*prefix, *args])
         assert result.exit_code == 0, result.output
         assert json.loads(result.stdout)["data"]["verification"] == "live_read_only"
+        assert json.loads(result.stdout)["data"]["mapping"]["ai_status"] == "disabled"

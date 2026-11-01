@@ -35,7 +35,9 @@ class Entity(BaseModel):
 class Snapshot(BaseModel):
     source_instance: str
     resource_key: str
-    kind: Literal["git_current", "portainer_saved", "swarm_runtime", "repository", "business"]
+    kind: Literal[
+        "git_current", "portainer_saved", "swarm_runtime", "repository", "business", "ai_candidate"
+    ]
     version: str
     observed_at: str = Field(default_factory=now)
     metadata: dict[str, Any] = Field(default_factory=dict)

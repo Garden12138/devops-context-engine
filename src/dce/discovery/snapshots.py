@@ -54,6 +54,14 @@ def stack_runtime(
         observed_namespace = service.get("namespace", labels.get("com.docker.stack.namespace"))
         if namespace and observed_namespace == namespace:
             selected.append(service)
+    if not selected:
+        return {
+            "status": "stale_candidate",
+            "services": [],
+            "environment": "unresolved",
+            "health": "unknown",
+            "reason": "No runtime namespace label evidence",
+        }
     return {
         "status": "observed_verified",
         "services": selected,

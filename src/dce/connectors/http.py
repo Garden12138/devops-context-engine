@@ -56,8 +56,13 @@ class Reader:
 
     def safe_url(self, path: str) -> str:
         # urljoin permits scheme-relative URLs; compare the full origin afterwards.
-        url = urljoin(self.config.base_url + "/", path)
         try:
+            route = (
+                path.lstrip("/")
+                if not urlsplit(path).scheme and not path.startswith("//")
+                else path
+            )
+            url = urljoin(self.config.base_url + "/", route)
             parsed, base = urlsplit(url), urlsplit(self.config.base_url)
             if (
                 (parsed.scheme, parsed.hostname, parsed.port)

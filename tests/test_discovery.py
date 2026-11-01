@@ -76,6 +76,7 @@ def test_stack_empty_namespace_and_mismatch() -> None:
     )
     assert stack_runtime(stack, {}, services)["status"] == "stale_candidate"
     assert stack_runtime({**stack, "Type": 2}, endpoint, services)["status"] == "stale_candidate"
+    assert stack_runtime(stack, endpoint, [])["status"] == "stale_candidate"
 
 
 def test_snapshot_diff() -> None:

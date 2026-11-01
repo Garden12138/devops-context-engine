@@ -85,9 +85,11 @@ class ZenTao:
         return soup.get_text(" ", strip=True), list(dict.fromkeys(sources))
 
     def download_image(self, source: str, cache: Path) -> dict[str, str]:
-        response = self.reader.get(
-            urljoin(self.reader.config.base_url + "/", source), kind="zentao"
-        )
+        try:
+            url = urljoin(self.reader.config.base_url + "/", source)
+        except ValueError:
+            raise DceError(ErrorCode.UNSAFE_URL, "Invalid attachment URL.") from None
+        response = self.reader.get(url, kind="zentao")
         mime = response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
         content = response.content
         signatures = {

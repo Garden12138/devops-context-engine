@@ -66,6 +66,13 @@ AppServices 统一 scope、BugContext、Pipeline、Stack 和图查询；入口�
 六工具共用服务层，无审核/写工具；structuredContent 不重复大文本。
 附件引用仅在当前会话注册，读取重新验证路径/大小/指纹；live 上游访问需显式 allowlist。
 
+## ADR-013：离线完成与真实平台核验分离
+
+以合成 HTTP、真实 CLI/MCP 子进程、迁移及独立 wheel 安装证明离线 P0。
+不把 Mock 的成功等同公司接口/部署事实；真实 smoke 与 Agent 执行器始终明确 not_verified。
+覆盖率区分行、纯分支与组合总体；报告移除框架自动写入的本机主机名。
+暂存区与历史扫描不读取凭证文件；许可证/公开发布按所有者另行授权，不自动发布。
+
 ## 风险登记
 
 | ID | 风险 | 后果 | 缓解 |

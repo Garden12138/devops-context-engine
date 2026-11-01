@@ -37,12 +37,12 @@ def doctor(
                 if name == "zentao":
                     adapter = ZenTao(reader)
                     probes = {
-                        "projects_v1": partial(list, adapter.resources("projects")),
-                        "products_v1": partial(list, adapter.resources("products")),
+                        "projects_v1": partial(next, adapter.resources("projects"), None),
+                        "products_v1": partial(next, adapter.resources("products"), None),
                     }
                 elif name == "gitlab":
                     gitlab = GitLab(reader)
-                    probes = {"projects_v4": partial(list, gitlab.projects())}
+                    probes = {"projects_v4": partial(next, gitlab.projects(), None)}
                 else:
                     portainer = Portainer(reader)
                     probes = {"stacks": portainer.stacks, "endpoints": portainer.endpoints}

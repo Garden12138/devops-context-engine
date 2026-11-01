@@ -104,3 +104,22 @@ def test_import_cannot_escalate_candidate_to_human_confirmed(tmp_path: Path) -> 
         with pytest.raises(DceError):
             catalog.import_scan(result, scope="hostile-provider")
         assert catalog.counts()["edges"] == 0
+
+
+def test_catalog_storage_redacts_accidentally_supplied_secrets(tmp_path: Path) -> None:
+    result = sample()
+    result.entities[0].attributes.update(
+        {"Token": "synthetic-private", "name": "password=synthetic-private"}
+    )
+    result.snapshots[0].metadata["Cookie"] = "synthetic-private"
+    result.evidence[0].summary = "Token=synthetic-private"
+    path = tmp_path / "db.sqlite3"
+    with Catalog(path) as catalog:
+        catalog.import_scan(result, scope="demo")
+        assert "synthetic-private" not in str(catalog.get_entity(result.entities[0].id))
+        assert "synthetic-private" not in str(catalog.snapshot(result.snapshots[0].id))
+        catalog.review(
+            result.edges[0].id, action="reject", actor="owner", reason="Token=synthetic-private"
+        )
+        assert "synthetic-private" not in str(catalog.reviews(result.edges[0].id))
+    assert b"synthetic-private" not in path.read_bytes()

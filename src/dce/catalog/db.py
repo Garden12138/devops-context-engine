@@ -22,6 +22,7 @@ from dce.catalog.schema import (
 )
 from dce.common.errors import DceError, ErrorCode
 from dce.graph.model import DiscoveryResult, Edge, Entity, Evidence, Snapshot, now
+from dce.security.redact import redact
 
 
 class Catalog:
@@ -80,6 +81,24 @@ class Catalog:
     def import_scan(self, result: DiscoveryResult, *, scope: str, complete: bool = True) -> str:
         if not scope.strip():
             raise DceError(ErrorCode.INVALID_PAYLOAD, "Scan scope is required.")
+        result = result.model_copy(
+            update={
+                "entities": [
+                    item.model_copy(update={"attributes": redact(item.attributes)})
+                    for item in result.entities
+                ],
+                "snapshots": [
+                    item.model_copy(update={"metadata": redact(item.metadata)})
+                    for item in result.snapshots
+                ],
+                "evidence": [
+                    item.model_copy(update={"summary": redact(item.summary)})
+                    for item in result.evidence
+                ],
+                "warnings": redact(result.warnings),
+                "anomalies": redact(result.anomalies),
+            }
+        )
         scan_id = str(uuid4())
         with self.engine.begin() as connection:
             connection.execute(
@@ -623,6 +642,7 @@ class Catalog:
             raise DceError(
                 ErrorCode.REVIEW_REQUIRED, "Explicit human action, actor and reason required."
             )
+        actor, reason = redact(actor), redact(reason)
         with self.engine.begin() as connection:
             old = self._row(connection, edges, key)
             if old is None:

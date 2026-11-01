@@ -138,10 +138,39 @@ def normalize_fixture(data: dict[str, Any]) -> DiscoveryResult:
         b.link(service, img, "declares_image", git_snapshot, f"services/{spec['name']}/image")
     for source in data["gitlab"]["source_repos"]:
         source_repo = b.entity(git, "repository", source["id"], role="source", path=source["path"])
-        snapshot = b.snapshot(git, source_repo.id, "repository", {"modules": source["modules"]})
+        jobs = [
+            {
+                "name": job["name"],
+                "module_paths": job["module_paths"],
+                "images": [image(value)["reference"] for value in job["images"]],
+            }
+            for job in source.get("build_jobs", [])
+        ]
+        snapshot = b.snapshot(
+            git, source_repo.id, "repository", {"modules": source["modules"], "build_jobs": jobs}
+        )
         for name in source["modules"]:
             module = b.entity(git, "module", f"{source['id']}:{name}", path=name)
             b.link(source_repo, module, "contains_module", snapshot, f"modules/{name}")
+        for job in jobs:
+            build = b.entity(
+                git,
+                "build_job",
+                f"{source['id']}:{job['name']}",
+                name=job["name"],
+                module_paths=job["module_paths"],
+                dockerfiles=[],
+            )
+            b.link(source_repo, build, "declares_build_job", snapshot, f"build_jobs/{job['name']}")
+            for reference in job["images"]:
+                img = b.image_entity(reference)
+                b.link(
+                    build,
+                    img,
+                    "declares_build_image",
+                    snapshot,
+                    f"build_jobs/{job['name']}/images/{fingerprint(reference)[:16]}",
+                )
     endpoint = data["portainer"]["endpoint"]
     endpoint_entity = b.entity(
         port, "endpoint", endpoint["id"], current_swarm_id=endpoint["current_swarm_id"]

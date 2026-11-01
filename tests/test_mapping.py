@@ -66,6 +66,12 @@ def test_ai_candidate_schema_and_minimal_input(tmp_path: Path) -> None:
         )
         assert ai["confidence"] <= 0.79
         assert ai["status"] == "candidate"
+        records = catalog.get_evidence(ai["evidence_ids"])
+        proposal = next(
+            record for record in records if record["source_instance"] == "ai-candidate-provider"
+        )
+        assert "Metadata is ambiguous" in proposal["summary"]
+        assert catalog.snapshot(proposal["snapshot_id"])["kind"] == "ai_candidate"
 
 
 @pytest.mark.parametrize(

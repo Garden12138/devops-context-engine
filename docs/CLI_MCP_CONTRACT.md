@@ -4,7 +4,7 @@
 
 - `dce --help`
 - `dce doctor [--mock | --live --read-only]`
-- `dce init --fixture <path> [--no-ai]` / `dce init --live --read-only --scope <name>`
+- `dce init --fixture <path> [--no-ai]` / `dce init --live --read-only --scope '<ScanScope JSON>'`
 - `dce discover --zentao-project <id>`、`--gitlab-group <group>`、`--gitlab-project <id>`、`--portainer-stack <id>`、`--portainer-endpoint <id>`；可组合。
 - `dce catalog list [--kind <type>] [--format json|table]`
 - `dce catalog anomalies [--format json|table]`
@@ -29,6 +29,8 @@
   "warnings": [],
   "uncertainties": [],
   "truncated": false,
+  "omissions": [],
+  "next_action": null,
   "snapshot_at": "2026-10-31T00:00:00Z"
 }
 ```
@@ -58,9 +60,13 @@ MCP 绝不暴露 `mapping_approve`, `deploy_execute`, `trigger_pipeline`, `bug_r
 - 扫描原始配置、脚本、数据库变量值不直接进入 LLM 上下文。
 - Pipeline Logs 默认只提取最后 100 行与错误关键上下文，敏感字段经脱敏处理；工具可分次拉取。
 
-## 6. 接入示例（实现后）
+## 6. 已实现的 stdio 接入
 
-Cursor `.cursor/mcp.json`（示意，不在文档阶段直接可运行）：
+结果在 `structuredContent`，文本部分只给极简状态，避免重复 JSON 消耗预算。
+默认 fixture；启动时显式 `--live --read-only`，Bug/流水线上游读取还需 `--zentao-bug`/`--gitlab-project` allowlist。
+资源仅当前会话授权，读取重新校验 SHA256、路径与大小；完整绝对路径配置见 README。
+
+Cursor `.cursor/mcp.json`（从仓库根目录启动的简写）：
 
 ```json
 {

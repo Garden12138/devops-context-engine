@@ -1,4 +1,3 @@
-import fnmatch
 import re
 from functools import partial
 from pathlib import PurePosixPath
@@ -16,6 +15,7 @@ from dce.discovery.fixture import Builder
 from dce.discovery.snapshots import compare_services, stack_runtime
 from dce.graph.model import DiscoveryResult, Edge, fingerprint
 from dce.parsers.metadata import ci, compose, dockerfile, modules, safe_path
+from dce.security.redact import redact
 
 
 class ScanScope(BaseModel):
@@ -223,7 +223,8 @@ class Crawler:
                             {
                                 str(PurePosixPath(f).parent)
                                 for f in files
-                                if fnmatch.fnmatch(str(PurePosixPath(f).parent), full)
+                                if PurePosixPath(f).name == "package.json"
+                                and PurePosixPath(f).parent.match(full)
                             }
                         )
                     for module_path in matches:
@@ -407,7 +408,14 @@ class Crawler:
                 )
                 bugs = list(adapter.resources("bugs", parent_id, parent_kind=parent_kind))
                 safe_bugs = [
-                    {"id": str(bug["id"]), "title": str(bug.get("title", ""))[:500]} for bug in bugs
+                    {
+                        "id": str(bug["id"]),
+                        "title": redact(
+                            str(bug.get("title", ""))[:500],
+                            (adapter.reader.config.token.get_secret_value(),),
+                        ),
+                    }
+                    for bug in bugs
                 ]
                 snapshot = b.snapshot(source, parent.id, "business", {"bugs": safe_bugs})
                 for bug in safe_bugs:

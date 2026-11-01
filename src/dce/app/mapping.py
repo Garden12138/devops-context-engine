@@ -6,8 +6,9 @@ from pydantic import ValidationError
 from dce.ai.provider import CandidateBatch, CandidateProvider
 from dce.catalog.db import Catalog
 from dce.common.errors import DceError, ErrorCode
-from dce.graph.model import Edge
+from dce.graph.model import Edge, Evidence, Snapshot, fingerprint
 from dce.graph.rules import provider_summary, suggestions
+from dce.security.redact import redact
 
 
 class MappingService:
@@ -52,6 +53,27 @@ class MappingService:
                             evidence_ids=candidate.evidence_ids,
                         )
                     )
+                if candidates:
+                    metadata = {"candidates": redact(batch.model_dump()["candidates"])}
+                    snapshot = Snapshot(
+                        source_instance="ai-candidate-provider",
+                        resource_key="mapping-proposals",
+                        kind="ai_candidate",
+                        version=fingerprint(metadata),
+                        metadata=metadata,
+                    )
+                    additions.snapshots.append(snapshot)
+                    for candidate, edge in zip(batch.candidates, candidates, strict=True):
+                        proposal = Evidence(
+                            source_instance="ai-candidate-provider",
+                            snapshot_id=snapshot.id,
+                            locator=f"candidate/{edge.id}",
+                            version=snapshot.version,
+                            summary="AI candidate (untrusted rationale): "
+                            + redact(candidate.rationale),
+                        )
+                        additions.evidence.append(proposal)
+                        edge.evidence_ids = sorted(set(edge.evidence_ids + [proposal.id]))
                 additions.edges.extend(candidates)
                 ai_status = "ok"
             except TimeoutError:

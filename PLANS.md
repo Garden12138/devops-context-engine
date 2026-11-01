@@ -15,8 +15,9 @@
 
 ## 运行纪律
 
-当前进度（2026-11-01）：T0–T6 passed，T7 implementing；本地分支 `work/dce-v1-offline`。
-T6 完成时：123 tests、97.93% 分支覆盖率、ruff、strict mypy、CLI/MCP 子进程已通过。
+当前进度（2026-11-01）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`。
+最终：133 tests，总体覆盖率 98.58%（行 99.18%、纯分支 96.65%）；ruff、strict mypy、CLI/MCP、独立 wheel 安装通过。
+逐项证据：harness/acceptance-report.md。真实内网与实际 Agent 接入 not_verified。
 
 - 一次只推进一个阶段，测试不过不跳阶段；阶段完成记录测试命令、退出码与摘要。
 - 当前阶段以 `harness/build-log.md` 标记为准；每个阶段前更新进度；若不存在，创建它。

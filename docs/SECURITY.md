@@ -34,9 +34,11 @@
 
 ## 5. 检查表
 
-- [ ] `.env`, 密钥、截图、原始 Compose 全部被 `.gitignore` 拦截
-- [ ] `git grep` 未发现真实 Token、内部域名/IP、私有仓库名称或账户信息
-- [ ] Mock 测试覆盖 HTML 图片下载、SSRF、外部重定向、超大图片、恶意 SVG、敏感日志
-- [ ] Runtime/Stack 关联出现 Swarm mismatch 时禁止认为可部署
-- [ ] AI 输出不具有自动确认权或写平台权限
-- [ ] 没有真实公司地址/密钥的 GitHub CI 依旧能完整执行
+- [x] `.env`, 密钥、截图、原始 Compose 全部被 `.gitignore` 拦截
+- [x] `git grep` 未发现真实 Token、内部域名/IP、私有仓库名称或账户信息
+- [x] Mock 测试覆盖 HTML 图片下载、SSRF、外部重定向、超大图片、恶意 SVG、敏感日志
+- [x] Runtime/Stack 关联出现 Swarm mismatch 时禁止认为可部署
+- [x] AI 输出不具有自动确认权或写平台权限
+- [x] 没有真实公司地址/密钥的 GitHub CI 依旧能完整执行
+
+验收证据：harness/acceptance-report.md（合成测试、暂存区/历史模式检查）；真实平台仍 not_verified。

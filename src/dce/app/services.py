@@ -109,9 +109,11 @@ class AppServices:
             )
             result = Crawler(scope, checkpoint, **adapters).run()
             scan_id = self.catalog.import_scan(result, scope=scope_id)
+            mapping = asyncio.run(MappingService(self.catalog).suggest(no_ai=True))
             return {
                 "scan_id": scan_id,
                 "counts": self.catalog.counts(),
+                "mapping": mapping,
                 "warnings": result.warnings,
                 "verification": "live_read_only",
                 "scope": scope.model_dump(),

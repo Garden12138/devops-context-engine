@@ -37,7 +37,11 @@ def test_explicit_modules_to_shared_build_image(tmp_path: Path) -> None:
     with Catalog(tmp_path / "catalog.sqlite3") as catalog:
         catalog.import_scan(result, scope="fixture")
         asyncio.run(MappingService(catalog, provider=NoopProvider()).suggest())
-        inputs = [e for e in catalog.read_graph().edges if e.relation == "declares_module_input"]
+        inputs = [
+            e
+            for e in catalog.read_graph().edges
+            if e.relation == "declares_module_input" and e.target_id == job.id
+        ]
         assert len(inputs) == 2
         assert all(e.target_id == job.id and e.status == "observed_verified" for e in inputs)
         assert all(catalog.get_evidence(e.evidence_ids) for e in inputs)

@@ -29,10 +29,16 @@ class Checkpoint:
                     state["schema_version"] != 1
                     or state["scope_key"] != scope_key
                     or not isinstance(state["resources"], dict)
+                    or any(
+                        not isinstance(item, dict)
+                        or not isinstance(item.get("version"), str)
+                        or not isinstance(item.get("result"), dict)
+                        for item in state["resources"].values()
+                    )
                 ):
                     raise ValueError
                 self.state = state
-            except (ValueError, KeyError, TypeError):
+            except (ValueError, KeyError, TypeError, OSError):
                 raise DceError(
                     ErrorCode.SNAPSHOT_CONFLICT, "Checkpoint scope/schema mismatch."
                 ) from None
