@@ -1,8 +1,8 @@
 # Agent 执行日志
 
 状态：IN_PROGRESS
-当前阶段：T5（T0–T4 已验证）
-最后更新时间：2026-10-31
+当前阶段：T6（T0–T5 已验证）
+最后更新时间：2026-11-01
 
 ## 里程碑
 
@@ -13,13 +13,13 @@
 | T2 | passed | 79 tests / 97.41% branch coverage；三平台 scoped mock、快照差集、恢复与安全静态解析 |
 | T3 | passed | 93 tests / 97.77% branch coverage；Alembic 0001→0002、事务/版本/审核与双向查询 |
 | T4 | passed | 107 tests / 98.02% branch coverage；规则/AI/review/Catalog 关键分支 100% |
-| T5 | implementing | CLI 与共享 Application Services |
-| T6 | pending | |
+| T5 | passed | 119 tests / 97.86% branch coverage；CLI 全流程/子进程/预算/授权门禁 |
+| T6 | implementing | 六个只读 MCP 工具与 stdio 客户端契约 |
 | T7 | pending | |
 
 ## 下次继续动作
 
-继续 T5：init/discover/catalog/trace/bug/pipeline/stack/mapping CLI 与共享服务层。
+继续 T6：MCP SDK stdio、六工具 schema、安全输出和真实客户端离线集成。
 
 ## T0 执行记录
 
@@ -79,6 +79,18 @@
 - 107 passed，branch coverage 98.02%；rules、AI、MappingService、Catalog 100% 分支覆盖。
 - 无外部 AI 请求，真实平台 not_verified。
 
+## T5 执行记录
+
+- 完整 CLI 命令树与共用 AppServices；默认离线、JSON/table、统一错误、预算截断、全命令帮助。
+- init/discover 显式 live/read_only/Scope；MockTransport 测试 CLI 调用路径，无内网请求。
+- BugContext 同一 Adapter Token 认证获取两张合成 PNG；摘要/证据/候选/人工状态、附件私有路径。
+- 修复拒绝映射被 fixture 回退重新召回的问题；来源实例歧义 fail closed。
+- Pipeline 摘要区分 Buildx 与 missing_make，保留 master，不触发 Pipeline。
+- Stack 三类快照摘要，stale/unknown health/environment/version；分页/trace 与 review 版本门禁。
+- 真实 CLI 子进程 smoke、1024 字节预算、损坏 SQLite/URL/参数安全失败通过。
+- `ruff check .`、`mypy src`（37 files）、`pytest -q --cov=src/dce --cov-report=term-missing`、`git diff --check` exit 0。
+- 119 passed，branch coverage 97.86%；真实平台 not_verified。
+
 ## 风险与阻塞
 
-无。缺少真实内网凭证不阻塞离线开发。
+无。真实平台仍 not_verified。

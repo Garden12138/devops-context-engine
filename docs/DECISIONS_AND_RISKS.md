@@ -54,6 +54,12 @@ Entity/Edge 记录各 scope 活跃成员，来源消失不误删其他范围资�
 结果严格 schema 校验且仅候选；有限超时不自动无限重试，失败可追溯并不影响规则。
 CLI 审核要求 actor/reason/期望版本，环境另行确认；MCP 不暴露审核 API。
 
+## ADR-011：CLI 与工具共享应用服务
+
+AppServices 统一 scope、BugContext、Pipeline、Stack 和图查询；入口只处理参数、格式和错误。
+固定 JSON envelope，UTF-8 字节上限保守控制 token；附件只返回私有缓存路径/受控引用。
+默认 fixture；真实扫描需显式 live/read_only 与 scope，所有平台请求仍只读。
+
 ## 风险登记
 
 | ID | 风险 | 后果 | 缓解 |

@@ -347,6 +347,44 @@ class Catalog:
             raise DceError(ErrorCode.NOT_FOUND, "Catalog entity was not found.")
         return row
 
+    def find(self, kind: str, key: str, source: str | None = None) -> dict[str, Any]:
+        query = select(entities).where(
+            entities.c.kind == kind,
+            or_(entities.c.id == key, entities.c.external_id == key),
+            entities.c.deleted.is_(False),
+        )
+        if source:
+            query = query.where(entities.c.source_instance == source)
+        with self.engine.connect() as connection:
+            rows = connection.execute(query.limit(2)).mappings().all()
+        if not rows:
+            raise DceError(ErrorCode.NOT_FOUND, "Resource was not found in catalog.")
+        if len(rows) > 1:
+            raise DceError(
+                ErrorCode.SNAPSHOT_CONFLICT, "Ambiguous resource ID; use source instance or UUID."
+            )
+        return dict(rows[0])
+
+    def anomalies(self, limit: int = 20, offset: int = 0) -> dict[str, Any]:
+        self._page(limit, offset)
+        found: list[dict[str, Any]] = []
+        seen = set()
+        with self.engine.connect() as connection:
+            for row in connection.execute(
+                select(scans)
+                .where(scans.c.status == "complete")
+                .order_by(scans.c.started_at.desc())
+            ).mappings():
+                if row["scope"] in seen or row["scope"].startswith("mapping"):
+                    continue
+                seen.add(row["scope"])
+                found.extend(row["anomalies"])
+        return {
+            "items": found[offset : offset + limit],
+            "more_available": len(found) > offset + limit,
+            "cursor": offset + limit if len(found) > offset + limit else None,
+        }
+
     def edge(self, key: str) -> dict[str, Any]:
         with self.engine.connect() as connection:
             row = self._row(connection, edges, key)
@@ -477,6 +515,13 @@ class Catalog:
                 .all()
             )
         return {"items": [dict(row) for row in rows[:limit]], "more_available": len(rows) > limit}
+
+    def get_scan(self, key: str) -> dict[str, Any]:
+        with self.engine.connect() as connection:
+            row = self._row(connection, scans, key)
+        if row is None:
+            raise DceError(ErrorCode.NOT_FOUND, "Scan was not found.")
+        return row
 
     def trace(
         self, key: str, *, direction: str = "both", max_depth: int = 2, limit: int = 20

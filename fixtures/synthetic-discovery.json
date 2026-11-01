@@ -375,6 +375,7 @@
       {
         "id": 1001,
         "path": "demo/multimodule",
+        "default_branch": "master",
         "modules": [
           "ui-template",
           "api-template",
