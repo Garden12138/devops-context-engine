@@ -1,7 +1,7 @@
 # Agent 执行日志
 
 状态：IN_PROGRESS
-当前阶段：T6（T0–T5 已验证）
+当前阶段：T7（T0–T6 已验证）
 最后更新时间：2026-11-01
 
 ## 里程碑
@@ -14,12 +14,12 @@
 | T3 | passed | 93 tests / 97.77% branch coverage；Alembic 0001→0002、事务/版本/审核与双向查询 |
 | T4 | passed | 107 tests / 98.02% branch coverage；规则/AI/review/Catalog 关键分支 100% |
 | T5 | passed | 119 tests / 97.86% branch coverage；CLI 全流程/子进程/预算/授权门禁 |
-| T6 | implementing | 六个只读 MCP 工具与 stdio 客户端契约 |
-| T7 | pending | |
+| T6 | passed | 123 tests / 97.93% branch coverage；真实 SDK stdio 六工具/资源/错误/注入 |
+| T7 | implementing | 逐项验收、运维指南、安全与完整质量门槛 |
 
 ## 下次继续动作
 
-继续 T6：MCP SDK stdio、六工具 schema、安全输出和真实客户端离线集成。
+继续 T7：对照全部 P0 和任务清单审计当前实现，修复差距，完成运维与离线报告。
 
 ## T0 执行记录
 
@@ -90,6 +90,17 @@
 - 真实 CLI 子进程 smoke、1024 字节预算、损坏 SQLite/URL/参数安全失败通过。
 - `ruff check .`、`mypy src`（37 files）、`pytest -q --cov=src/dce --cov-report=term-missing`、`git diff --check` exit 0。
 - 119 passed，branch coverage 97.86%；真实平台 not_verified。
+
+## T6 执行记录
+
+- MCP SDK stdio，仅六个只读工具；CLI/MCP 共用 AppServices，严格 schema、固定 error_code。
+- 真实 Python ClientSession 子进程完成 initialize/list_tools/六工具/错误/资源读取；stdout 仅协议。
+- structuredContent 单份 payload，预留协议预算；discovery_status 压缩为进度/异常计数/待审核数。
+- 附件只返回当前会话注册 URI；资源读取验证 SHA256、边界、大小和 symlink，拒绝未知/篡改引用。
+- 默认离线，live/read_only 与 Bug/项目 allowlist 显式启用；不注册审核/部署/触发工具。
+- 恶意指令文本仅数据，未创建标记文件；URL/Token 脱敏与预算测试通过。
+- `ruff check .`、`mypy src`（39 files）、`pytest -q --cov=src/dce --cov-report=term-missing`、`git diff --check` exit 0。
+- 123 passed，branch coverage 97.93%；README 增加 Cursor 可运行配置，Grok/真实内网 not_verified。
 
 ## 风险与阻塞
 

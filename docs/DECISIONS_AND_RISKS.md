@@ -60,6 +60,12 @@ AppServices 统一 scope、BugContext、Pipeline、Stack 和图查询；入口�
 固定 JSON envelope，UTF-8 字节上限保守控制 token；附件只返回私有缓存路径/受控引用。
 默认 fixture；真实扫描需显式 live/read_only 与 scope，所有平台请求仍只读。
 
+## ADR-012：MCP 协议与资源授权
+
+使用 SDK 低层 Server，统一参数校验失败为固定 error_code；stdio stdout 仅协议帧。
+六工具共用服务层，无审核/写工具；structuredContent 不重复大文本。
+附件引用仅在当前会话注册，读取重新验证路径/大小/指纹；live 上游访问需显式 allowlist。
+
 ## 风险登记
 
 | ID | 风险 | 后果 | 缓解 |

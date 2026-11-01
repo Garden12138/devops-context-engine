@@ -302,3 +302,40 @@ def doctor(
     except DceError as exc:
         typer.echo(encode(envelope(error=exc)))
         raise typer.Exit(2) from None
+
+
+mcp_app = typer.Typer(no_args_is_help=True)
+app.add_typer(mcp_app, name="mcp")
+
+
+@mcp_app.command("serve")
+def mcp_serve(
+    ctx: typer.Context,
+    transport: str = "stdio",
+    fixture: Path | None = None,
+    live: bool = False,
+    read_only: bool = False,
+    zentao_bug: list[str] | None = None,
+    gitlab_project: list[str] | None = None,
+) -> None:
+    from dce.mcp.server import serve
+
+    try:
+        if transport != "stdio":
+            raise DceError(ErrorCode.INVALID_PAYLOAD, "V1 MCP supports stdio only.")
+        with AppServices(ctx.obj, fixture=fixture or DEFAULT_FIXTURE) as services:
+            serve(
+                services,
+                live=live,
+                read_only=read_only,
+                allowed_bug_ids=set(zentao_bug or []),
+                allowed_gitlab_projects=set(gitlab_project or []),
+            )
+    except (DceError, OSError, SQLAlchemyError) as exc:
+        error = (
+            exc
+            if isinstance(exc, DceError)
+            else DceError(ErrorCode.INVALID_PAYLOAD, "MCP initialization failed.")
+        )
+        typer.echo(encode(envelope(error=error)), err=True)
+        raise typer.Exit(2) from None

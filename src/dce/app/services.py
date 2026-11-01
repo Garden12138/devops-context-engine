@@ -370,4 +370,16 @@ class AppServices:
             resource_key(scan_id)
             page["items"] = [self.catalog.get_scan(scan_id)]
             page["more_available"] = False
+        page["items"] = [
+            {
+                **{
+                    key: row[key]
+                    for key in ("id", "scope", "status", "started_at", "finished_at", "error_code")
+                },
+                "summary": row["summary"],
+                "anomaly_count": len(row["anomalies"]),
+            }
+            for row in page["items"]
+        ]
+        page["pending_reviews"] = self.catalog.pending_reviews()
         return page

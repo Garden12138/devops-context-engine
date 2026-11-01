@@ -523,6 +523,20 @@ class Catalog:
             raise DceError(ErrorCode.NOT_FOUND, "Scan was not found.")
         return row
 
+    def pending_reviews(self) -> int:
+        with self.engine.connect() as connection:
+            return int(
+                connection.execute(
+                    select(func.count())
+                    .select_from(edges)
+                    .where(
+                        edges.c.status.in_(["candidate", "unresolved"]),
+                        edges.c.stale.is_(False),
+                        edges.c.deleted.is_(False),
+                    )
+                ).scalar_one()
+            )
+
     def trace(
         self, key: str, *, direction: str = "both", max_depth: int = 2, limit: int = 20
     ) -> dict[str, Any]:

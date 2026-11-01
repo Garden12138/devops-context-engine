@@ -2,7 +2,7 @@
 
 > 面向 Cursor、Codex 和其他可调用工具的 Coding Agent 的「研发环境发现 + 可信映射 + 缺陷上下文」中间层。
 
-**V1.0 正在实施：T0–T5 可运行并通过离线测试，T6/T7 尚未验收。**
+**V1.0 正在实施：T0–T6 可运行并通过离线测试，T7 最终验收进行中。**
 
 开发环境（Python 3.12+）：`uv sync --locked --dev`。
 已验证：`uv run dce --help`、`uv run dce doctor --mock`、
@@ -49,6 +49,16 @@
 - 真实部署目标必须校验 Portainer Endpoint/Swarm ID/Stack/Service，并独立审批；V1 不暴露部署工具。
 
 ## 状态
+
+本地 Cursor MCP 配置（先执行 fixture init；将路径换成当前工作区的绝对路径）：
+
+```json
+{"mcpServers":{"dce-local":{"command":"/absolute/path/to/repo/.venv/bin/dce","args":["--catalog","/absolute/path/to/repo/.local/catalog.sqlite3","mcp","serve","--transport","stdio","--fixture","/absolute/path/to/repo/fixtures/synthetic-discovery.json"]}}}
+```
+
+服务提供六个只读工具，结果在 `structuredContent`；无审核/构建/部署工具。
+附件为当前会话授权的 `dce://assets/…` 资源，不暴露上游 URL。
+Grok Bot 的具体 MCP 支持与真实内网接入均为 `not_verified`，需在用户执行器实测。
 
 - [x] V1 设计规格与可复现的脱敏测试数据
 - [ ] V1 代码实现、单元测试和离线验收（交给 Codex/Cursor 完成）
