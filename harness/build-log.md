@@ -132,6 +132,18 @@
 - 本轮没有产品代码或架构变化，不重跑离线测试替代真实验收；本地文档检查结果另记于下。
 - `git diff --check` exit 0；`git check-ignore` 确认两个案例文件均被忽略；暂存前 `scripts/check_public_data.py` exit 0（暂存后另由提交钩子检查）。
 
+## 真实案例只读验证接续（2026-11-02，Git 远端已验证）
+
+- 读取用户填写的非密钥私有定位表：人工明确测试环境与 Endpoint/Stack；GitLab HTTP 只读已允许。平台 API 凭证未进入当前进程、聊天或文件。
+- 首次 `git ls-remote` 在沙箱内网络失败；按环境要求申请沙箱外只读执行后成功，没有绕过网络权限。
+- 对五个限定仓库查询指定远端 refs 全部 exit 0；两个用户明确指定的目标分支，均用真实远端 SHA 与本地已有 Git 对象证实包含相应远端 feature HEAD。没有 fetch、checkout、push 或触发 CI。
+- 另记录默认分支与指定分支的差异，以及一个前端远端 HEAD 已不在本地对象库的情况：缺少对象时 ancestry 保留 `not_verified`，不把默认分支当作部署分支或伪称完成全部版本验证。
+- 远端 SHA、来源实例指纹与本次时间戳仅存 gitignored 私有目录；未将真实名称、地址、ID 或版本写入公开报告。
+- 为后续 API 证据准备私有本机运行入口：交互式 `getpass`；拒绝非终端和不隐藏输入的回退；凭证仅存在进程内。HTTP 逐平台确认；跨 GitLab origin 在传凭证前拒绝；GET 仅限 Bug 元数据、指定仓库/ref/pipeline 元数据及所选 Endpoint/Stack/Swarm 标签。
+- 不获取图片、源码 raw、job trace 或 StackFile，不执行业务测试脚本、不调用构建/部署/审核/回调。运行报告 0600、目录 0700；错误和部分成功保留诊断，不标记功能通过。
+- 本机入口的 9 项合成安全检查通过（unittest，0.006s）；表单路径/API 基址/目标选择器检查通过；私有脚本 ruff 通过。此结果独立于已验收的 133 项产品测试，不能充当真实 API 成功证据。
+- 已向用户提供本机终端运行命令，等待其不回显输入只读 API 凭证。GitLab REST、ZenTao、Portainer、运行版本和业务功能仍为 `not_verified`。
+
 ## 风险与边界
 
 离线 P0 无未解决阻塞。真实平台/API版本/企业网络及实际 Agent 接入 not_verified；P1 递归 CI include、云模型 HTTP 插件和共享鉴权服务为后续扩展，不虚报完成。

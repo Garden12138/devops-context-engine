@@ -36,6 +36,8 @@
 - 本次完整案例、版本和证据仅保留在 gitignored 的 `.local/live-validation/`；公开记录不包含真实资源名称、地址或 ID。
 - 接续先获取缺失连接条件，再核对指定 ref；现有 `discover` 只读取默认分支，不能代替案例指定分支的验证。
 
+接续进展（同日）：用户已在私有表中确认测试环境及目标 Endpoint/Stack，并允许 GitLab HTTP 只读查询。五个限定仓库的真实 `ls-remote` 已成功；两个明确目标分支均包含相应远端 feature HEAD。三个前端的实际部署分支尚待确认，默认分支不作为部署事实。GitLab REST、ZenTao、Portainer 与功能回归仍 `not_verified`；已提供本机不回显输入凭证的限定 API 核验入口，等待用户在本机运行。
+
 ## 约定
 
 - 以 `.env.example` 为示例，真实配置 `.env` gitignored。
