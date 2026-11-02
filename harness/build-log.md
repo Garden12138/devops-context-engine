@@ -166,6 +166,17 @@
 - 产品最终检查：139 passed（11.69s），0 failures/skipped；总体覆盖率 98.58%、行 99.19%、分支 96.66%；ruff、strict mypy（39 files）、git diff --check exit 0。摘要见 reports/http-encoding-summary.json；完整本次报告位于 gitignored 私有目录，历史基线报告未覆盖。
 - 确认本机运行入口加载工作区修复后的 Reader。GitLab 修复后真实请求及 ZenTao 即时登录还需用户输入本机凭证；未伪称通过。业务页面、调度器、审核通过及回调均未执行。
 
+## 第三轮 API 与真实元数据本地集成（2026-11-02，限定范围通过）
+
+- 用户重跑选择 GitLab/ZenTao 的本机入口：GitLab 五个仓库的 project/ref/commit/有限 pipeline 元数据全部读取成功；两个用户明确目标分支的当前 SHA 流水线均 success。修复后的 Reader 已通过真实 REST 复验，无需更换 GitLab Token。
+- ZenTao 一次 v1 登录后立刻读取十四个 Bug 全部成功；只记录字段白名单，不存 Token/密码。前轮 401 的确切失效原因与会话有效期仍不作断言。
+- 保留上一轮 Portainer 成功快照；汇总分别列出两轮采集时间，不声称形成当前同步部署快照。三个前端仍只有默认分支观测；manual 和有限查询未命中当前 SHA 均不被当作部署失败或构建不存在。
+- 在 gitignored 私有目录，以实际响应白名单元数据和用户案例期望分别建 Snapshot/Evidence；未经过 synthetic fixture 加载器，也未模拟 API 响应。来源实例/资源种类/外部 ID 分离；Bug→仓库只保留 candidate。
+- 实跑 Catalog 两次导入：185 Entity / 213 Edge / 213 Evidence / 8 Snapshot，第二次元素数量不变。198 条直接观测、15 条 candidate，无自动 confirmed，证据引用有效。
+- 真实 DCE CLI 子进程：两页 Bug 列表无重复；service trace 有观测关系；mapping verify 无缺失证据；stack inspect 保留 version_match=not_verified。五次 exit 0、未截断且满足默认输出预算。
+- 私有案例报告和 JSON 汇总已更新；真实名称、ID、SHA、digest 和采集时间仅存私有区。公开结论见 live-readonly-report.md。此轮无产品代码变化，不以重复离线 pytest 冒充新的真实测试。
+- 尚未执行完整 live discover、实际 Agent MCP Host、源码 commit→构建镜像→Service 指纹链、页面请求/调度器/审核/回调功能回归。未执行公司业务写入；原有本地工作分支继续保存脱敏记录。
+
 ## 风险与边界
 
-离线 P0 无未解决阻塞。已验证 Git 远端及限定范围 Portainer 元数据；完整真实平台链路、API 版本兼容性、部署/功能与实际 Agent 接入仍未完成。P1 递归 CI include、云模型 HTTP 插件和共享鉴权服务为后续扩展，不虚报完成。
+离线 P0 无未解决阻塞。三平台限定元数据及捕获数据的 Catalog/CLI 已验证；完整真实平台链路、部署/功能与实际 Agent 接入仍未完成。P1 递归 CI include、云模型 HTTP 插件和共享鉴权服务为后续扩展，不虚报完成。

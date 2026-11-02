@@ -1,5 +1,7 @@
 # DCE V1.0 离线验收报告
 
+本文件保留 2026-11-01 离线基线。后续限定真实只读核验见 [真实报告](live-readonly-report.md)，不覆盖本基线的原始结果和未验证声明。
+
 验证时间：2026-11-01；Python 3.12.11；分支 `work/dce-v1-offline`。
 
 结论：T0–T7 离线范围与全部 P0 通过。真实 ZenTao/GitLab/Portainer、Cursor/Grok 执行器为 `not_verified`。

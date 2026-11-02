@@ -51,9 +51,9 @@ uv run --offline dce mapping review EDGE_UUID --action revoke --actor OWNER --re
 AI 默认关闭；Python 集成可注入 CandidateProvider/NoopProvider/FakeProvider，只有 ID/类型/证据白名单出域。
 CLI 未注册云模型 HTTP 客户端；无 API Key 仍能运行全部核心流程。
 
-## 用户本地真实平台 smoke（not_verified）
+## 用户本地真实平台 smoke
 
-以下步骤由具备授权的用户执行。此仓库没有执行真实内网 smoke，没有真实平台成功报告。
+以下步骤由具备授权的用户执行。2026-11-02 已取得三平台限定元数据认证读取及捕获数据 Catalog/CLI 成功证据，见 [限定只读报告](../harness/live-readonly-report.md)。完整 discover、部署指纹、业务回归及实际 Agent Host 仍未验证；下列通用命令不能整体视为已在真实环境通过。
 先通过系统密钥链或受保护进程环境注入 DCE_ZENTAO_URL/TOKEN、DCE_GITLAB_URL/TOKEN、DCE_PORTAINER_URL/TOKEN。
 不将 Token 放在 CLI 参数、配置文件或公开报告中；DCE 不自动读取 .env。
 使用 GitLab read_api、Portainer 限制 Environment 的只读账号、ZenTao 最小查看权限。

@@ -41,4 +41,4 @@
 - [x] AI 输出不具有自动确认权或写平台权限
 - [x] 没有真实公司地址/密钥的 GitHub CI 依旧能完整执行
 
-验收证据：harness/acceptance-report.md（合成测试、暂存区/历史模式检查）；真实平台仍 not_verified。
+验收证据：harness/acceptance-report.md（离线基线）；harness/live-readonly-report.md（限定真实元数据验证）。完整发现、部署版本与业务功能仍未验证；限定成功不扩展为额外权限或写操作授权。

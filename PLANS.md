@@ -15,7 +15,7 @@
 
 ## 运行纪律
 
-当前进度（2026-11-02）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；限定范围真实只读核验进行中。
+当前进度（2026-11-02）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；三平台限定元数据只读核验及捕获数据 Catalog/CLI 通过。
 离线基线：133 tests，总体覆盖率 98.58%（行 99.18%、纯分支 96.65%）；ruff、strict mypy、CLI/MCP、独立 wheel 安装通过。
 最新 HTTP 修复回归：139 tests，总体 98.58%（行 99.19%、纯分支 96.66%），ruff 与 strict mypy 通过；摘要见 harness/reports/http-encoding-summary.json。
 基线逐项证据：harness/acceptance-report.md。完整真实链路与实际 Agent 接入 not_verified。
@@ -42,6 +42,8 @@
 首轮 API 实跑（同日）：GitLab/Portainer 为 `NETWORK_UNAVAILABLE`；ZenTao 首个 Bug 为 `AUTH_FAILED`，余项未请求。随后在授权执行器做无凭证诊断，三平台直连均可建立 TCP 并返回 JSON HTTP 响应；这不能证明用户终端当时的网络条件或 API 凭证有效。私有入口已增加同终端无凭证预检、安全异常分类和单段凭证校验，14 项安全检查通过；需用户再次在本机输入凭证，收集可定位的诊断。尚未取得认证成功或业务功能通过的证据。
 
 第二轮 API 实跑（同日）：Portainer 已通过认证及 Endpoint/Swarm/Namespace 一致性核对，实际服务定义与 digest 证据仅保存在私有报告；没有源码 revision，健康与部署版本仍未验证。GitLab 底层为 `DecodingError`：已用合成 gzip/deflate 流复现 Reader 重复解压并修复，同时将损坏编码归为 `INVALID_PAYLOAD` 而非可重试网络错误。ZenTao 仍 401；用户确认凭证来自 v1 登录，私有入口已支持一次现取 v1 Token 后立即执行限定 GET，登录不附旧 Token、不重试、不保存凭证。等待只重试 GitLab/ZenTao 的新报告，保留 Portainer 成功证据，不重复索取其凭证。
+
+第三轮 API 实跑（同日）：GitLab 修复后五个仓库的限定元数据读取成功；ZenTao 现取 v1 Token 后十四个 Bug 全部读取成功。结合前轮 Portainer 保留快照，三平台均取得实际成功证据；明确各自采集时间不同。将已捕获白名单元数据导入独立私有 Catalog，185 个实体、213 条关系、213 条证据、8 个快照；重复导入幂等、五次 CLI 查询通过。15 条 Bug→仓库关系仍为 candidate，无自动 confirmed。脱敏结论见 harness/live-readonly-report.md；无需再次运行同一轮认证检查。后续缺口为前端实际部署分支、源码/镜像/运行版本链与页面/审核/回调回归；尚未验证完整 live discover 或实际 Agent Host。
 
 ## 约定
 
