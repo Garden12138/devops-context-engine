@@ -120,6 +120,18 @@
 - 补齐 AI 候选独立 ai_candidate 快照与脱敏 rationale Evidence；无效输出不留伪证据、重复候选幂等；再次完整 133 tests 通过。
 - T7 由本地提交 test: certify offline V1 acceptance and operations 保存；提交钩子再次执行暂存区检查。
 
+## 真实案例只读验证尝试（2026-11-02，未完成）
+
+- 边界：按用户提供的 14 个 Bug、5 组组件与最终闭环限定核验；不执行公司构建、部署、审核通过或回调，不读取凭证文件、真实图片、私有日志或原始 Compose。
+- `.venv/bin/dce doctor --live --read-only` exit 2：ZenTao/GitLab/Portainer 均 `AUTH_FAILED` / `Platform configuration is missing.`；请求在配置检查处停止，无平台响应或网络成功证据。
+- 注意该命令本次 JSON 顶层 `status` 为 `ok`，但三平台均错误且退出码为 2；不得将顶层字段当作连通验收通过。
+- 只读核对 5 个实际本地仓库：模块标记存在；2 条案例明确指定的本地目标分支包含 feature HEAD。此项仅证明本地提交包含关系，不能证明每个 Bug 已修复或远端/构建/部署状态。
+- 案例和本地版本仅写入 gitignored 私有目录 `.local/live-validation/`。报告断言通过：14 个去重 Bug、5 个顺序组件、2 条本地证据关系、模块标记存在；所有远端与功能结果保持 `not_verified`。未把真实案例加入 fixtures，也未伪造 API 响应。
+- 未执行现有 HTTP 远端查询：按 SECURITY 已请求明确确认；安全凭证注入方式、测试入口和环境/Stack/Service 范围待补充。
+- 发现现有 `discover` 仅采集默认分支；指定部署 ref 需独立核对，不能以默认分支扫描结果冒充。
+- 本轮没有产品代码或架构变化，不重跑离线测试替代真实验收；本地文档检查结果另记于下。
+- `git diff --check` exit 0；`git check-ignore` 确认两个案例文件均被忽略；暂存前 `scripts/check_public_data.py` exit 0（暂存后另由提交钩子检查）。
+
 ## 风险与边界
 
 离线 P0 无未解决阻塞。真实平台/API版本/企业网络及实际 Agent 接入 not_verified；P1 递归 CI include、云模型 HTTP 插件和共享鉴权服务为后续扩展，不虚报完成。
