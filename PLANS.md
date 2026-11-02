@@ -15,9 +15,10 @@
 
 ## 运行纪律
 
-当前进度（2026-11-01）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`。
-最终：133 tests，总体覆盖率 98.58%（行 99.18%、纯分支 96.65%）；ruff、strict mypy、CLI/MCP、独立 wheel 安装通过。
-逐项证据：harness/acceptance-report.md。真实内网与实际 Agent 接入 not_verified。
+当前进度（2026-11-02）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；限定范围真实只读核验进行中。
+离线基线：133 tests，总体覆盖率 98.58%（行 99.18%、纯分支 96.65%）；ruff、strict mypy、CLI/MCP、独立 wheel 安装通过。
+最新 HTTP 修复回归：139 tests，总体 98.58%（行 99.19%、纯分支 96.66%），ruff 与 strict mypy 通过；摘要见 harness/reports/http-encoding-summary.json。
+基线逐项证据：harness/acceptance-report.md。完整真实链路与实际 Agent 接入 not_verified。
 
 - 一次只推进一个阶段，测试不过不跳阶段；阶段完成记录测试命令、退出码与摘要。
 - 当前阶段以 `harness/build-log.md` 标记为准；每个阶段前更新进度；若不存在，创建它。
@@ -39,6 +40,8 @@
 接续进展（同日）：用户已在私有表中确认测试环境及目标 Endpoint/Stack，并允许 GitLab HTTP 只读查询。五个限定仓库的真实 `ls-remote` 已成功；两个明确目标分支均包含相应远端 feature HEAD。三个前端的实际部署分支尚待确认，默认分支不作为部署事实。GitLab REST、ZenTao、Portainer 与功能回归仍 `not_verified`；已提供本机不回显输入凭证的限定 API 核验入口，等待用户在本机运行。
 
 首轮 API 实跑（同日）：GitLab/Portainer 为 `NETWORK_UNAVAILABLE`；ZenTao 首个 Bug 为 `AUTH_FAILED`，余项未请求。随后在授权执行器做无凭证诊断，三平台直连均可建立 TCP 并返回 JSON HTTP 响应；这不能证明用户终端当时的网络条件或 API 凭证有效。私有入口已增加同终端无凭证预检、安全异常分类和单段凭证校验，14 项安全检查通过；需用户再次在本机输入凭证，收集可定位的诊断。尚未取得认证成功或业务功能通过的证据。
+
+第二轮 API 实跑（同日）：Portainer 已通过认证及 Endpoint/Swarm/Namespace 一致性核对，实际服务定义与 digest 证据仅保存在私有报告；没有源码 revision，健康与部署版本仍未验证。GitLab 底层为 `DecodingError`：已用合成 gzip/deflate 流复现 Reader 重复解压并修复，同时将损坏编码归为 `INVALID_PAYLOAD` 而非可重试网络错误。ZenTao 仍 401；用户确认凭证来自 v1 登录，私有入口已支持一次现取 v1 Token 后立即执行限定 GET，登录不附旧 Token、不重试、不保存凭证。等待只重试 GitLab/ZenTao 的新报告，保留 Portainer 成功证据，不重复索取其凭证。
 
 ## 约定
 

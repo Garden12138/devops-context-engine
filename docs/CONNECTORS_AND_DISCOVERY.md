@@ -13,9 +13,13 @@ class SourceReader(Protocol):
 
 所有 SourceReader 需要 `allowlisted_base_url`、传输超时、rate-limit、分页、请求 ID、可撤销凭证源及模拟传输。Adapter 不允许创建/更新/删除任何外部资源。`httpx` 的 `trust_env` 应按用户代理与公司网络策略配置，不能悄悄全局禁用企业代理或 CA 验证。
 
+HTTP 压缩响应契约：Reader 的大小上限按 `iter_bytes()` 解码后的字节计算。将流缓冲为新 Response 时，删除上游 `Content-Encoding`、`Content-Length` 和 `Transfer-Encoding`，让新 Response 按实际正文生成长度；保留 MIME、分页等业务头，避免已解压内容被再次解压。损坏的压缩正文返回 `INVALID_PAYLOAD` 且不重试；真正的传输异常仍按有界网络重试处理。合成测试须覆盖 gzip/deflate、分页头、解压后大小限制和损坏压缩数据；真实接口成功需独立实跑证明。
+
 ## 2. 禅道（ZenTao REST v1）
 
 已验证的 v1 使用 `POST /api.php/v1/tokens`（获取 Token）、`GET /api.php/v1/bugs/{id}` 和 `Token: <token>`。系统需避免记录登录密码，即使刷新 Token 也不能输出。Bug steps 通常为 HTML，图片可能嵌入 `src=".../file-read-xxx.png"`，且 `files=[]`。图片端点在 HTTP 200 时可能返回 `text/html`；必须带 Token 再读取并做 MIME/字节校验。
+
+登录只请求 v1 tokens，不附带已有 Token、不重试登录 POST；取得的临时 Token 用于随后同源的只读请求。账号/密码只由用户本机不回显输入；报告不保留认证响应、Token 或密码。401 只证明认证被拒绝，不据此推定有效期，不自动切换到 v2 或反复登录。
 
 安全实践：
 - 通过 HTML 解析器提取图片，而非依赖正则做 HTML 语法分析。

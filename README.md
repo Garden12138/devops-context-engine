@@ -2,15 +2,17 @@
 
 > 面向 Cursor、Codex 和其他可调用工具的 Coding Agent 的「研发环境发现 + 可信映射 + 缺陷上下文」中间层。
 
-**V1.0 离线实现已通过 T0–T7 验收。真实内网接口与实际 Agent 接入仍为 `not_verified`。**
+**V1.0 离线实现已通过 T0–T7 验收。真实只读验证进行中，完整平台链路与实际 Agent 接入仍为 `not_verified`。**
 
 验收证据见 [离线报告](harness/acceptance-report.md) 和 [执行记录](harness/build-log.md)。
-当前 133 项测试通过，总体覆盖率 98.58%（行 99.18%、分支 96.65%）；CLI/MCP 子进程与独立 wheel 安装均已验证。
+离线基线为 133 项测试，含 CLI/MCP 子进程和独立 wheel 安装验证。
+真实验证暴露的 HTTP 压缩响应问题已修复，当前 139 项测试通过，总体覆盖率 98.58%（行 99.19%、分支 96.66%）；见[修复回归摘要](harness/reports/http-encoding-summary.json)。
+已取得限定范围的 Git 远端与 Portainer Endpoint/Swarm/Namespace 证据；GitLab REST 修复后复验、ZenTao 认证、部署版本及业务功能仍待验证。
 
 开发环境（Python 3.12+）：`uv sync --locked --dev`。
 已验证：`uv run dce --help`、`uv run dce doctor --mock`、
 `uv run pytest -q --cov=src/dce --cov-report=term-missing`、`uv run ruff check .`、`uv run mypy src`。
-配置使用显式 TOML 与进程环境，不自动读取 `.env`。真实平台 smoke 尚未验证。
+配置使用显式 TOML 与进程环境，不自动读取 `.env`。完整三平台 smoke 尚未通过。
 
 ## 目标
 

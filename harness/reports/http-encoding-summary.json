@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "scope": "offline_http_encoding_regression",
+  "date": "2026-11-02",
+  "tests": {
+    "passed": 139,
+    "failed": 0,
+    "skipped": 0
+  },
+  "regression_before_fix": {
+    "passed": 1,
+    "failed": 5
+  },
+  "regression_after_fix": {
+    "passed": 6,
+    "failed": 0
+  },
+  "coverage": {
+    "overall_percent": 98.58,
+    "line_percent": 99.19,
+    "branch_percent": 96.66
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "live_gitlab_after_fix": "not_verified",
+  "functional_regression": "not_verified",
+  "authentication_post": {
+    "old_token_forwarded": false,
+    "automatic_retry": false,
+    "regression": "passed"
+  }
+}

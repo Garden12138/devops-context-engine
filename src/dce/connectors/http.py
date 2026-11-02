@@ -104,7 +104,9 @@ class Reader:
         ):
             raise DceError(ErrorCode.PERMISSION_DENIED, "Platform mutation is forbidden.")
         url = self.safe_url(path)
-        headers = {AUTH_HEADERS[kind]: self.config.token.get_secret_value()}
+        headers = (
+            {AUTH_HEADERS[kind]: self.config.token.get_secret_value()} if method == "GET" else {}
+        )
         retry_count = self.settings.max_retries if method == "GET" else 0
         for attempt in range(retry_count + 1):
             self.sleep(self.settings.request_interval)
@@ -141,12 +143,21 @@ class Reader:
                             raise DceError(
                                 ErrorCode.INVALID_PAYLOAD, "Response size limit exceeded."
                             )
+                    # iter_bytes() has decoded content/transfer encodings already.
+                    # A buffered Response must not apply them again or reuse wire length.
+                    buffered_headers = httpx.Headers(response.headers)
+                    for name in ("Content-Encoding", "Content-Length", "Transfer-Encoding"):
+                        buffered_headers.pop(name, None)
                     return httpx.Response(
                         status,
-                        headers=response.headers,
+                        headers=buffered_headers,
                         content=bytes(content),
                         request=response.request,
                     )
+            except httpx.DecodingError:
+                raise DceError(
+                    ErrorCode.INVALID_PAYLOAD, "Platform returned invalid content encoding."
+                ) from None
             except httpx.RequestError:
                 if attempt == retry_count:
                     raise DceError(

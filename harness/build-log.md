@@ -155,6 +155,17 @@
 - 官方 REST v1 认证说明核对：https://www.zentao.net/book/api/1397.html 及 https://www.zentao.net/book/api/664.html；当前路径和 `Token` 头符合说明，首轮 401 只能确认认证被拒绝，不能认定具体过期或权限原因。已询问用户凭证获取渠道，不索取值。
 - 历史 API 报告保持原样；无凭证诊断存独立 `network-check` 报告，避免与认证 API 报告混淆。等待用户运行加强入口后继续定位；未执行任何业务写入。
 
+## 第二轮 API 结果与 HTTP 修复（2026-11-02，部分验证）
+
+- 真实 Portainer 认证成功，所选 Endpoint/Stack 的 Swarm ID 及实际 Namespace 标签一致；属于限定资源的 `observed_verified`，不代表服务副本健康、修复版本已部署或业务功能通过。原始资源标识与服务摘要仅保留在私有目录。
+- GitLab 同终端无凭证预检有 JSON 响应，认证请求下层为 `DecodingError`；不再归咎于网络或 Token 可用性。用合成 gzip、deflate、嵌套编码与分页响应复现本地 Reader 重复解压缺陷：修复前 5 failed / 1 passed，修复后 6 passed。
+- Reader 继续用解码后的正文执行大小上限，缓冲为 Response 前删除上游内容编码、内容长度与分块传输头，保留 MIME/分页头。坏压缩数据按 `INVALID_PAYLOAD` 失败且不重试，真正网络异常仍维持原有限重试。
+- 用户说明禅道 Token 来自 v1 登录；官方源码示例返回 session_id()。具体部署版本/有效期未验证，不把 401 直接断定为过期，也不切换 v2。
+- 唯一登录 POST 不再附带已有 Token：先用扩展的认证测试观察 1 failed，再修复至通过；现有不重试登录测试继续通过。私有入口新增一次现取 v1 Token 的本机账号/密码输入，不把秘密放进 argv、文件或报告；密码保留原有空格/Unicode。用户选择此模式并明确同意 HTTP 认证后才发送登录请求。
+- 已支持只重试 GitLab/ZenTao，保留 Portainer 历史成功快照，不再次索取其凭证。合成检查覆盖登录 POST 后限定 GET、认证失败不重试、不读取 Bug、密码保真、无敏感报告及平台选择；私有 unittest 19 passed，ruff passed。
+- 产品最终检查：139 passed（11.69s），0 failures/skipped；总体覆盖率 98.58%、行 99.19%、分支 96.66%；ruff、strict mypy（39 files）、git diff --check exit 0。摘要见 reports/http-encoding-summary.json；完整本次报告位于 gitignored 私有目录，历史基线报告未覆盖。
+- 确认本机运行入口加载工作区修复后的 Reader。GitLab 修复后真实请求及 ZenTao 即时登录还需用户输入本机凭证；未伪称通过。业务页面、调度器、审核通过及回调均未执行。
+
 ## 风险与边界
 
-离线 P0 无未解决阻塞。真实平台/API版本/企业网络及实际 Agent 接入 not_verified；P1 递归 CI include、云模型 HTTP 插件和共享鉴权服务为后续扩展，不虚报完成。
+离线 P0 无未解决阻塞。已验证 Git 远端及限定范围 Portainer 元数据；完整真实平台链路、API 版本兼容性、部署/功能与实际 Agent 接入仍未完成。P1 递归 CI include、云模型 HTTP 插件和共享鉴权服务为后续扩展，不虚报完成。

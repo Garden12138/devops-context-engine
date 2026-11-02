@@ -254,6 +254,7 @@ def test_zentao_auth_only_post() -> None:
     def handle(request: httpx.Request) -> httpx.Response:
         assert request.method == "POST"
         assert request.url.path == "/api.php/v1/tokens"
+        assert "Token" not in request.headers
         return httpx.Response(201, json={"token": "new-synthetic"})
 
     with reader("zentao", handle) as http:
