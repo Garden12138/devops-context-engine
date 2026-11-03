@@ -18,6 +18,7 @@
 当前进度（2026-11-03）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；三平台限定只读、源码项目 live discover 与六个已实现 MCP 工具处理的真实补验通过。仅验收已实现 V1 功能，不纳入业务页面/修复执行。
 离线基线：133 tests，总体覆盖率 98.58%（行 99.18%、纯分支 96.65%）；ruff、strict mypy、CLI/MCP、独立 wheel 安装通过。
 最新 HTTP 修复回归：139 tests，总体 98.58%（行 99.19%、纯分支 96.66%），ruff 与 strict mypy 通过；摘要见 harness/reports/http-encoding-summary.json。
+最新 MCP 契约修复回归：144 tests，总体 98.73%，ruff 与 strict mypy（40 files）通过；摘要见 harness/reports/mcp-contract-summary.json。
 基线逐项证据：harness/acceptance-report.md。完整真实链路与 Agent 内实际工具调用 not_verified；Cursor 配置及进程启动见本文接入记录。
 
 - 一次只推进一个阶段，测试不过不跳阶段；阶段完成记录测试命令、退出码与摘要。
@@ -61,6 +62,16 @@ V1 补验结果（同日，当前）：用户已执行入口，本轮限定 V1 �
 - 验证计划：标准 MCP SDK 初始化、六工具列表、四类查询、两个越界拒绝、未知写工具拒绝、预算与 Catalog 数量不变；提供可重复运行的本地检查命令。
 - 实际结果：全局 JSONC 新增 `dce`，备份并保留四个已有服务，不含 DCE 凭证；Cursor 3.27.6 已启动 DCE 子进程（父进程链包含 Cursor）。真实库副本 191 实体/219 关系/219 证据/11 快照；SDK 四类查询通过、两类上游拒绝和未知写拒绝通过，输出 1991–12289 字节、数量不变。缺失库检查 exit 1 且不建空库。
 - 新增 `docs/CURSOR_MCP_SETUP.md` 和可重复的 `scripts/check_mcp_stdio.py`；本机路径、原配置备份、报告与可直接粘贴的提示词只留在 gitignored 私有区。MCP 相关 4 tests、ruff、strict mypy（39 files）、diff check 通过。实际 Agent 会话调用及实时上游配置仍 not_verified；摘要见 harness/reports/cursor-mcp-summary.json。
+
+## Cursor 能力检查暴露的 MCP 契约修正（2026-11-03，修复并重载）
+
+- 用户真实 Cursor 能力检查确认：工具描述模板化、返回 Schema 无业务字段、部署参数互斥约束未发布；连接 ready 与实际平台读取条件未分开。
+- 先完善 CLI_MCP_CONTRACT 的边界、失败处理和验收：六工具保持不变；补平台/数据源/会话状态、字段说明、完整数据与错误/截断 Schema、参数互斥；list_tools 不探测网络、不输出凭证和私有范围。
+- 核对现有服务：MCP 只在 bug_context / pipeline_diagnose 可请求上游；四类查询读取 Catalog，部署检查未实时比较 Swarm，snapshot_at 为响应生成时间。修正文档和实际发布契约，不把未配置或 CLI-only 能力当作未开发，也不新增业务功能。
+- 验证计划为 JSON Schema 正反例、合成受控上游、SDK stdio、全库回归/覆盖率、lint/typecheck；已按下述结果执行，宿主缓存更新单列。
+- 实际结果：先以三项失败复现描述/互斥/输出约束缺口，修复后新增五项契约测试；完整 144 passed（11.66s），总体覆盖率 98.73%（行 99.29%、分支 96.88%），契约模块 100%，ruff 和 strict mypy（40 files）通过。输出先做严格模型校验，后端不符合契约时只返回固定安全错误。
+- 真实 Catalog 的新 SDK stdio 子进程 revision 1.1：四类查询及已发布 Schema 校验通过；两个 scope 拒绝和未知写工具拒绝保持，输出 1991–12340 字节、数量不变。没有新增上游范围、常驻凭证或公司请求；本轮先完成契约修复，实时接入需明确安全凭证来源。
+- 保留原有 MCP/启动范围，只显式设置既有 16KB 输出预算触发重载；实际观察到 Cursor 创建一个新 DCE 子进程，但同时仍有一个原连接进程。不能声称所有窗口已刷新；当前窗口关开 dce 后在新会话再枚举。更新后 Agent 枚举及业务调用仍 not_verified；新子进程、SDK 和宿主缓存证据分开。见 harness/reports/mcp-contract-summary.json。
 
 ## 约定
 

@@ -74,6 +74,21 @@ uv sync --locked --dev
 3. 确认显示六个工具。若未更新，先关闭再开启 `dce`；必要时保存工作后执行 `Developer: Reload Window`。通常不需要重启电脑。
 4. 在 Agent 会话发送下面第一条提示词，检查真实宿主调用。
 
+工具契约修正后需要重新加载 MCP，已运行的 Python 子进程不会自动导入磁盘上的新代码。若旧聊天仍显示模板化描述，重启 `dce` 后再开一个 Agent 会话执行能力检查。
+同机多个 Cursor 窗口可能保留不同的 MCP 连接；观察到一个新进程不能证明其他窗口已刷新。应在实际使用的窗口关闭再开启 `dce`，再在新会话检查 revision 1.1。
+
+### 只检查能力，不查询业务数据
+
+```text
+先读取 DCE 的 tools/list，仅依据实际 description、inputSchema、outputSchema
+以及 _meta.dce（若宿主提供），列出六工具的平台、输入输出、数据源与当前会话状态。
+区分 blocked、configured_not_verified、local_catalog 和 synthetic。
+不要按名称推测，不读取仓库实现，不调用业务工具，不把 ready 当作平台认证成功。
+若看到 mcp_auth，注明它由宿主注入，不算 DCE 工具。
+```
+
+契约 revision 1.1 的描述会直接说明 ZenTao/GitLab/Portainer 及本地/实时来源；每个 data 有独立 Schema，错误和预算截断另有约束。当前快照配置下，四个工具为 `local_catalog`，Bug/流水线为 `blocked`。完整状态定义见 [MCP 契约](CLI_MCP_CONTRACT.md)。
+
 可直接使用的提示词：
 
 ```text
@@ -122,6 +137,8 @@ direction=both，max_depth=2；说明源码、镜像和服务之间已知与缺�
 
 检查器从 `/` 工作目录启动实际 DCE 子进程，验证 initialize、六工具 schema、四类成功查询、两类 scope 拒绝、未知写工具拒绝、16 KB 输出预算和 Catalog 数量不变。只打印状态/计数，不打印私有工具正文或原始错误；失败退出码为 1。
 
+检查器还要求 `_meta.dce.contract_revision=1.1`，校验已发布的输入/输出 JSON Schema，并用返回的 Schema 验证真实查询和拒绝响应。它验证新启动子进程的契约，不能据此推定已有 Cursor 会话缓存已更新。
+
 检查器刻意移除继承的 `DCE_*` 配置，并使用无上游 allowlist 的只读参数；它只验证本文的 Catalog 模式。`status=passed` 证明 DCE stdio 可运行，不能代替 Cursor 界面的启用状态或一次 Agent 实际调用。
 
 本机配置位置、数据来源、检查结果及 Host 状态保存在 gitignored 的 `.local/cursor/`。更新真实 Catalog 时先停用 Cursor 的 `dce`，对新的授权数据库使用 SQLite backup API 替换副本，再运行检查器并重新启用；不要用 fixture init 覆盖真实库，也不要在数据库使用中直接复制 SQLite/WAL 文件。
@@ -140,6 +157,8 @@ direction=both，max_depth=2；说明源码、镜像和服务之间已知与缺�
 
 本次配置没有开启这两类实时上游能力。更多平台范围、附件和失败日志的真实验证继续按 [V1 验收状态](../harness/v1-acceptance-status.md) 记录。
 
+`ready` 只表示 MCP 连接已就绪；实时读取条件以工具自身描述的 availability/blockers 为准。即使显示 `configured_not_verified`，也要经过授权的只读成功调用才能证明目标平台读取可用。
+
 ## 6. 常见故障与停用
 
 | 现象 | 处理 |
@@ -150,6 +169,7 @@ direction=both，max_depth=2；说明源码、镜像和服务之间已知与缺�
 | Bug/流水线 PERMISSION_DENIED | 本次空上游 allowlist 的预期行为；按第 5 节配置后再启用 |
 | AUTH_FAILED / NETWORK_UNAVAILABLE | 仅实时模式涉及；本机安全更新凭证或检查内网，不在聊天粘贴 Token/原始日志 |
 | stdio 检查通过但 Cursor 不显示 | 确认编辑的是全局文件或当前项目配置，检查同名项目级配置、启用开关及组织 MCP 策略；重载窗口 |
+| 描述仍是 `Read-only <name>` | Cursor 正在用旧子进程或旧聊天缓存；重启 `dce` 后在新 Agent 会话重新枚举工具 |
 
 临时停用：在 Cursor 的 MCP 页面关闭 `dce`。卸载接入：仅删除 `mcpServers.dce` 条目，保留其他 MCP。本机配置安装前应备份；备份可能含其他服务凭证，需保留在本机并限制权限，不提交 Git。
 

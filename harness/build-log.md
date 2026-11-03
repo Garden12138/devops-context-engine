@@ -229,6 +229,18 @@
 - 运行 `.venv/bin/pytest -q tests/test_mcp.py tests/test_mcp_boundaries.py`：4 passed（5.08s）；`.venv/bin/ruff check .`、`.venv/bin/mypy src`（39 files）和 `git diff --check` 通过。产品源码未变，不重复全库测试充当新的 Host 证据；139 项完整回归仍为前轮基线。
 - 公共机器摘要见 reports/cursor-mcp-summary.json；真实来源路径、安装备份位置、进程记录、检查结果和本机提示词保留在 gitignored `.local/cursor/`。所有私有文件已验证被 gitignore 拦截。实时 Bug/流水线凭证与 allowlist 尚未配置；不得把六工具可见写成六类实时上游均可用。
 
-## 当前风险与边界
+## Cursor 能力检查的 MCP 契约修复（2026-11-03）
+
+- 用户报告实际 Cursor 命名空间 ready、可枚举六个业务工具与宿主 mcp_auth，但未调用业务工具；模板化描述、空 data Schema、互斥输入未发布导致必须翻代码推断平台能力。按实际代码核实报告，先定义契约边界/失败处理/测试，不扩充工具或上游范围。
+- 三个新回归测试先观察 3 failed：无平台/状态说明、部署空参数被 Schema 接受、缺少业务必需字段仍被输出 Schema 接受。新增 contracts.py，平台/来源/当前条件在描述与 _meta.dce 中发布；修复 SDK 的 _meta 别名后条件与隐私测试通过，不以 meta 伪字段冒充协议元数据。
+- 输入逐字段说明语义/默认值/限制，资源键长度与受控字符可检查；部署参数 oneOf 与运行时一致。六类 data 使用显式模型，完整 envelope/error/truncation Schema；错误兼容 code/error_code。严格校验服务返回，异常内容不进入错误。合成 HTTP 验证 live Bug/失败流水线返回、空 stage/default_branch 及秘密脱敏；所有请求均为合成 GET。
+- 枚举不创建 Reader、不调用平台，也不输出 URL/Token/allowlist ID。六种启动条件测试覆盖 fixture、空 scope、缺配置、HTTP 未授权与配置齐全；configured_not_verified 不被写成认证成功。四类本地工具 openWorldHint=false；注册工具仍为六个，无认证/发现/审批/部署工具。
+- 纠正时间语义：envelope snapshot_at 是响应生成时间；部署摘要补充已有 Snapshot.observed_at，不读取 Portainer。明确健康 unknown、环境 unresolved、版本 not_verified 的实现局限；CLI 的扫描/审核与 Adapter 能力不等于 MCP 全部可调用。
+- 最终全库 `.venv/bin/pytest -q --cov=src/dce --cov-report=term-missing --cov-report=json:<private>`：144 passed（11.66s），总体 98.73%、行 99.29%、分支 96.88%，契约模块 100%；ruff、strict mypy（40 files）通过。SDK stdio 自检在真实 Catalog 副本上通过，四类返回匹配公布 Schema，两个 scope 拒绝与未知写拒绝保留；输出 1991–12340 字节、无截断、数量不变。
+- 接入文档新增仅枚举检查提示词、四种 availability 说明及旧进程/旧会话缓存的更新方法。公共摘要见 reports/mcp-contract-summary.json；旧启动报告保留，不覆盖历史记录。实时凭证与 allowlist 未开启，未发新公司请求；Cursor 重载进程、更新后实际 Agent 枚举及业务调用按证据分别记录。
+
+- 执行器批准后，精确更新全局 DCE 非秘密输出预算项以重载，其他 MCP、入口和空上游 allowlist 未变；配置预先备份、原子替换且权限 0600。观察到 Cursor 生成一个新的 DCE 子进程，同时仍有一个原连接进程，不能声称所有旧连接已替换；没有读取宿主聊天/私有日志。新进程启动后独立 SDK 再验 revision 1.1 与真实 Catalog 返回通过。需要在当前使用的 Cursor 窗口关开 dce 后，在新 Agent 会话重新枚举；更新后实际枚举和业务工具调用继续 not_verified。
+
+## 最终风险与边界
 
 离线 P0 无未解决阻塞，已实现核心路径的本轮限定真实补验通过；Cursor 配置与进程启动已观察到。更多平台/发现范围、真实图片、Compose、私有失败日志与实际 Host 内工具调用未覆盖，继续标记 not_verified。业务页面、修复/发布执行、GUI 自动化不属于 V1 验收门槛；业务映射候选须人工确认。

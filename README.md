@@ -6,7 +6,8 @@
 
 验收证据见 [离线报告](harness/acceptance-report.md) 和 [执行记录](harness/build-log.md)。
 离线基线为 133 项测试，含 CLI/MCP 子进程和独立 wheel 安装验证。
-真实验证暴露的 HTTP 压缩响应问题已修复，当前 139 项测试通过，总体覆盖率 98.58%（行 99.19%、分支 96.66%）；见[修复回归摘要](harness/reports/http-encoding-summary.json)。
+真实验证暴露的 HTTP 压缩响应问题已修复，该次 139 项测试通过，总体覆盖率 98.58%（行 99.19%、分支 96.66%）；见[修复回归摘要](harness/reports/http-encoding-summary.json)。
+Cursor 能力检查发现的契约缺口已修复：最新 144 项测试通过，总体覆盖率 98.73%，ruff 与 strict mypy 通过；见 [MCP 契约修复摘要](harness/reports/mcp-contract-summary.json)。
 已取得三平台限定只读、源码项目 live discover、真实 BugContext/成功流水线诊断与六工具处理证据，捕获数据的 Catalog/CLI 和独立 MCP stdio 集成通过；见 [V1 验收状态](harness/v1-acceptance-status.md)。业务系统自身的 Bug 修复回归不属于 DCE V1 验收。
 
 开发环境（Python 3.12+）：`uv sync --locked --dev`。
@@ -70,6 +71,8 @@ stdio 子进程由 Cursor 管理，无需单独运行后台服务或开放端口
 Grok Bot 的具体 MCP 支持与真实内网接入均为 `not_verified`，需在用户执行器实测。
 
 本机已完成 Cursor 配置安装并观察到由 Cursor 启动的 DCE 进程；标准 SDK stdio 自检通过。Cursor Agent 实际调用仍单独记录，见 [接入检查摘要](harness/reports/cursor-mcp-summary.json)。
+
+契约 revision 1.1 已在工具描述中声明平台、数据源和会话状态，并为每个返回数据发布完整 Schema；无需翻查服务端代码判断能力。`ready` 不代表上游认证成功，`snapshot_at` 是响应时间；刷新 MCP 后可在新会话按接入文档重新做仅枚举检查。
 
 ## 状态
 

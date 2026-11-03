@@ -18,9 +18,10 @@
 | MCP Catalog 读取工具 | 六工具离线成功路径通过 | 标准 SDK stdio 已有五次正向调用；本轮再经产品工具处理逻辑调用 project_context、service_trace、deployment_inspect、discovery_status 全部成功 |
 | MCP 上游工具 | bug_context、pipeline_diagnose 离线成功路径通过 | 真实 BugContext（include_assets=false）成功，成功流水线诊断成功；均经既有 McpApplication.call_tool 与真实 HTTP，不是模拟响应 |
 | Cursor 桌面版接入 | 标准 SDK stdio 与宿主独立验证 | 用户另行要求接入后，已安装全局 dce 配置并观察到 Cursor 启动 DCE 子进程；真实 Catalog 副本四类查询自检通过。Agent 内实际工具调用仍 not_verified，详见 reports/cursor-mcp-summary.json |
+| MCP 能力自描述契约 | revision 1.1 覆盖平台/来源/会话条件、输入互斥和完整输出/错误/截断 Schema | 用户已在 Cursor 枚举到六个 DCE 工具并报告契约缺口；已修复且真实 Catalog 的标准 SDK 读取与 Schema 校验通过。更新后 Cursor 会话内再枚举结果仍需单独记录 |
 | 权限和输出边界 | 只读、最小 scope、预算、脱敏及不执行外部指令测试通过 | 六工具本轮处理全部成功，输出 519–12289 UTF-8 字节；受控出网 15 次 GitLab GET、1 次 Bug GET，另有一次已授权 v1 登录认证，无图片/Compose/trace 请求；旧 SDK 越界/未知写工具拒绝证据保留 |
 
-产品离线回归为 139 passed，ruff 与 strict mypy 通过。真实验证发现的 HTTP 重复解压问题已经修复并通过 GitLab REST 复验；不是以报告或文档代替代码修复。
+产品最新离线回归为 144 passed，总体覆盖率 98.73%，ruff 与 strict mypy（40 files）通过。契约修正见 reports/mcp-contract-summary.json。真实验证发现的 HTTP 重复解压问题已经修复并通过 GitLab REST 复验；不是以报告或文档代替代码修复。
 
 ## 不作为 V1 未完成项
 

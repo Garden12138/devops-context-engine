@@ -337,6 +337,7 @@ class AppServices:
                     "snapshot_id": s.id,
                     "kind": s.kind,
                     "version": s.version,
+                    "observed_at": s.observed_at,
                     "service_count": s.metadata.get(
                         "service_count", len(s.metadata.get("services", []))
                     ),

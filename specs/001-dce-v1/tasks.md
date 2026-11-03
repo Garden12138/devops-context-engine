@@ -46,7 +46,7 @@
 
 ## T6 MCP
 
-- [x] T6.1 6 个只读 MCP Tools；schema 明确、结构化输出小于预算，错误分级。
+- [x] T6.1 6 个只读 MCP Tools；schema 明确、结构化输出小于预算，错误分级。Cursor 实测暴露的契约缺口已补平台/来源/会话条件、完整 data/error/truncation Schema 与参数互斥，见 CLI_MCP_CONTRACT.md revision 1.1。
 - [x] T6.2 `stdio` 服务与 CLI 相同 AppServices；`stdout` 无多余文本。
 - [x] T6.3 MCP Inspector 或 Python 客户端离线测试；README 添加 Cursor 连接示例，说明 Grok Bot 是否支持需实测。
 

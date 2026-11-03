@@ -88,7 +88,13 @@ Cursor 使用 DCE 虚拟环境入口和 Catalog 的绝对路径启动子进程�
 Cursor 配置不包含凭证、envFile 或 HTTP 放行；实时读取需另行提供受保护的进程环境与明确范围。禅道会话失效须安全重新认证，不能承诺自动续期。
 标准 SDK 检查只输出状态/计数，不输出内部名称、资源 ID、工具正文或原始错误；缺失库、协议错误、预算超限、读取改变数量应失败。SDK 握手与 Cursor 实际激活分别记录，不能互相替代。
 
-## 风险登记
+## ADR-016：MCP 必须通过发布契约说明能力与当前会话条件
+
+Cursor 的真实能力检查暴露描述模板化、无业务 data Schema、互斥参数只在运行时检查的问题。保持六个只读工具，独立定义输入/输出模型并发布完整 envelope、错误及截断约束；部署的两种结果分支均建模，未知动态平台字段只允许出现在 attributes/summary 等显式元数据容器。
+描述明确平台/来源，`_meta.dce` 提供 contract_revision=1.1 和配置可判定的 availability/blockers；枚举时不调用平台、不泄露地址/凭证/allowlist ID。配置就绪用 configured_not_verified，不声称认证已通过。Catalog 数据是否真实及是否过期由证据判断，不能由 live 标志或 ready 推断。
+响应 snapshot_at 的旧命名保留兼容，公开其生成时间语义；部署快照添加已有 observed_at。无实时 Portainer 查询、健康或版本验证时保留 unknown/unresolved/not_verified，不通过描述扩张产品能力。Schema 用真实服务返回的成功/错误/截断正反例及 SDK stdio 验证，仍与实际宿主缓存、业务调用及平台验收分别记录。
+
+## 当前风险登记
 
 | ID | 风险 | 后果 | 缓解 |
 |---|---|---|---|

@@ -9,6 +9,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
+from jsonschema import Draft202012Validator
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
@@ -79,14 +80,22 @@ async def check(catalog_path: Path) -> dict[str, Any]:
                         and t.annotations.readOnlyHint
                         and t.annotations.destructiveHint is False
                         and t.inputSchema.get("additionalProperties") is False
+                        and t.meta
+                        and t.meta.get("dce", {}).get("contract_revision") == "1.1"
                         for t in listed.tools
                     ):
                         raise CheckFailure("Read-only tool contract mismatch.")
+                    validators = {}
+                    for tool in listed.tools:
+                        Draft202012Validator.check_schema(tool.inputSchema)
+                        Draft202012Validator.check_schema(tool.outputSchema)
+                        validators[tool.name] = Draft202012Validator(tool.outputSchema)
                     for name, arguments in requests:
                         response = await session.call_tool(name, arguments)
                         payload = response.structuredContent
                         if response.isError or not payload or payload.get("status") != "ok":
                             raise CheckFailure("Catalog query failed.")
+                        validators[name].validate(payload)
                         size = len(json.dumps(payload, ensure_ascii=False).encode())
                         if size > 16000 or payload.get("truncated"):
                             raise CheckFailure("Response exceeded the configured budget.")
@@ -107,6 +116,8 @@ async def check(catalog_path: Path) -> dict[str, Any]:
                             or payload.get("error", {}).get("error_code") != expected
                         ):
                             raise CheckFailure("Scope guard did not fail closed.")
+                        if name in validators:
+                            validators[name].validate(payload)
         if catalog.counts() != before:
             raise CheckFailure("MCP reads changed Catalog counts.")
         return {
@@ -114,6 +125,7 @@ async def check(catalog_path: Path) -> dict[str, Any]:
             "mode": "catalog_only",
             "transport": "stdio",
             "server_version": initialized.serverInfo.version,
+            "contract_revision": "1.1",
             "tool_count": len(listed.tools),
             "successful_reads": len(requests),
             "scope_denials": 2,
