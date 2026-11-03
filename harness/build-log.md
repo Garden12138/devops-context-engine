@@ -177,6 +177,17 @@
 - 私有案例报告和 JSON 汇总已更新；真实名称、ID、SHA、digest 和采集时间仅存私有区。公开结论见 live-readonly-report.md。此轮无产品代码变化，不以重复离线 pytest 冒充新的真实测试。
 - 尚未执行完整 live discover、实际 Agent MCP Host、源码 commit→构建镜像→Service 指纹链、页面请求/调度器/审核/回调功能回归。未执行公司业务写入；原有本地工作分支继续保存脱敏记录。
 
+## 第二阶段部署与页面验收启动（2026-11-03，进行中）
+
+- 用户授权继续验收，限定原测试环境和五个组件；保持业务只读，未保存模板、审核通过、触发回调、构建或部署。
+- 按 plugin-management 检查浏览器能力：发现未连接的云端工具，未找到适合本机内网窗口的已连接工具，不发起云端连接。采用已安装本机 computer-use/browser-use 技能；两次 doctor 均 ready=false、accessibility=false、screen_recording=true。未绕过缺失权限，已请求人工开启。
+- 不带凭证 GET 指定业务入口：同源 301 后 200 HTML；记录正文摘要和同源静态资源路径，不保存 HTML、不访问图片。这不等于页面功能验收通过。
+- 只在本机对已定位仓库的受限 CI/Dockerfile 做静态元数据分析，未执行其中脚本或读取 .env。三个前端声明 dist 构建产物；本轮所需 commit/revision 标记未观察到，未按名称补造版本关系。
+- 准备私有第二阶段入口：GitLab job-ID 单文件产物与部署 JS/CSS 字节摘要比较；限定 ref/pipeline/job/逻辑请求数和解码后字节；不保存源码、不下载 archive/trace。作业 SHA 不一致不取产物，多 commit 同产物不声称唯一来源。
+- 运行侧再校验用户目标 Endpoint/Stack/Swarm/Namespace；名称匹配仅候选。仅针对当前 endpoint Node 的任务容器取 Image/Health 白名单；不执行 exec、不跨未验证节点路由，不把远端服务与本机缓存镜像混为一谈。
+- 新 13 项合成部署检查 passed（0.031s）；原私有入口 19 项检查 passed；ruff passed。原私有入口补充传播 not_verified，避免 API 内层失败被包装为通过；无产品代码更改，未重跑全库 pytest 充当新真实证据。
+- 已提供需本机不回显输入 GitLab/Portainer 凭证的实际运行命令，等待部署证据报告；同时请求三个前端的人工部署分支。真实版本与业务结果继续 not_verified。脱敏进展见 phase2-readonly-progress.md，真实数据与代码仅在 gitignored 私有目录。
+
 ## 风险与边界
 
 离线 P0 无未解决阻塞。三平台限定元数据及捕获数据的 Catalog/CLI 已验证；完整真实平台链路、部署/功能与实际 Agent 接入仍未完成。P1 递归 CI include、云模型 HTTP 插件和共享鉴权服务为后续扩展，不虚报完成。
