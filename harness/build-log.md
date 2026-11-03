@@ -188,6 +188,25 @@
 - 新 13 项合成部署检查 passed（0.031s）；原私有入口 19 项检查 passed；ruff passed。原私有入口补充传播 not_verified，避免 API 内层失败被包装为通过；无产品代码更改，未重跑全库 pytest 充当新真实证据。
 - 已提供需本机不回显输入 GitLab/Portainer 凭证的实际运行命令，等待部署证据报告；同时请求三个前端的人工部署分支。真实版本与业务结果继续 not_verified。脱敏进展见 phase2-readonly-progress.md，真实数据与代码仅在 gitignored 私有目录。
 
+## 验收范围纠正与已实现 MCP 补验（2026-11-03）
+
+- 用户明确：仅验收 DCE V1 已开发能力；业务 Bug 表作为输入案例，不要求业务系统页面和修复回归。此前页面/发布验收扩大了范围，已明确纠正，停止 GUI 和辅助功能权限要求，不增加产品功能或验收门槛。
+- 读取用户已执行的附加部署报告：两个平台成功读取元数据，一个前端入口资源摘要相等，另外两个未取得完整摘要；一个名称候选服务有一个运行任务与镜像元数据。仅保留附加只读观察，不作为 V1 通过/失败或代码能力声明，不继续追索页面权限、发布分支与业务回调。
+- 在此前捕获真实元数据的 Catalog 上，用标准产品 dce mcp serve --live --read-only 和 MCP SDK stdio 实跑既有接口；未授权任何上游 Bug/Project，无凭证、无新增平台请求、无模拟 API 响应，也未加载 synthetic fixture。
+- 六工具列表、readOnly/non-destructive 与严格参数声明通过。project_context（两个来源）、service_trace、deployment_inspect、discovery_status 共五次正向调用通过；未截断，结构化输出 948–12289 UTF-8 字节，均在预算内。
+- bug_context/pipeline_diagnose 越界 ID 返回 PERMISSION_DENIED，未知 deploy_execute 返回 NOT_FOUND；仅证明拒绝边界，不声称这两类真实上游成功路径已验收。附件列表为空，未访问真实图片或私有日志。
+- 调用前后 Catalog 元素数量不变，15 个候选保留，无自动 confirmed；已有 version_match=not_verified、health=unknown 正确保留。此为真实数据 Catalog 的 SDK stdio 集成，不是实际 Cursor/Grok Host 验收。
+- 统一验收状态写入 v1-acceptance-status.md，纠正 README/PLANS/运维与额外观察记录。无产品代码更改，不重跑全库测试代替真实验证；现有 139 passed 基线保持，未验证 live discover 与两类上游成功路径单列 not_verified。
+
+## V1 既有上游路径继续补验准备（2026-11-03）
+
+- 用户再次要求继续，保持刚明确的 V1 边界，不新增产品功能。已准备只调用现有 AppServices.discover/McpApplication.call_tool 的私有验收入口；此前标准 SDK stdio 证据独立保留，不混称调用层次。
+- 选择原授权范围内本地未发现 Compose 的一个前端源码项目，按已有默认分支语义发现；不将其当部署分支。其他源码项目本地存在 Compose，未把它们放入此轮原文读取范围。
+- 出网护栏委托真实 HTTPTransport，无模拟响应：指定项目/commit/tree、固定 SHA 下 manifest/CI/Dockerfile、单个指定 Bug 和指定流水线/jobs。禁止所有写、越源、图片、Compose、.env、任意源码、私有 trace 和越界 IDs；每平台最多 160 次实际请求。
+- 护栏六项合成检查通过（0.002s），涵盖分类允许/拒绝、固定 SHA、分页/query、预算和同源默认端口；私有入口与既有 SDK 检查 ruff 通过。无产品代码变化，139 项产品基线未被这些私有测试替代。
+- 使用 SQLite backup API 创建独立私有 Catalog 副本，不覆盖旧库；凭证仅进程内不回显输入，一次 v1 登录后执行既有工具。实际结果仅保留计数、状态、长度和诊断，不保存 Bug 正文、图片或日志。
+- 已提供运行命令；当前等待用户本机运行，不能声称 live discover 或两类上游成功已通过。辅助功能、浏览器/发布凭证及前端部署分支不再是本轮必要输入。
+
 ## 风险与边界
 
-离线 P0 无未解决阻塞。三平台限定元数据及捕获数据的 Catalog/CLI 已验证；完整真实平台链路、部署/功能与实际 Agent 接入仍未完成。P1 递归 CI include、云模型 HTTP 插件和共享鉴权服务为后续扩展，不虚报完成。
+离线 P0 无未解决阻塞。三平台限定元数据及捕获数据的 Catalog/CLI/MCP 读取已验证；完整 live discover 与两类 MCP 真实上游成功路径尚未实跑。业务页面、修复/发布执行、GUI 自动化不属于 V1 验收门槛。后续扩展及实际 Host 接入不冒充已验结果。

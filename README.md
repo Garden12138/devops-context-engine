@@ -7,7 +7,7 @@
 验收证据见 [离线报告](harness/acceptance-report.md) 和 [执行记录](harness/build-log.md)。
 离线基线为 133 项测试，含 CLI/MCP 子进程和独立 wheel 安装验证。
 真实验证暴露的 HTTP 压缩响应问题已修复，当前 139 项测试通过，总体覆盖率 98.58%（行 99.19%、分支 96.66%）；见[修复回归摘要](harness/reports/http-encoding-summary.json)。
-已取得 Git 远端、GitLab REST、ZenTao v1、Portainer Endpoint/Swarm/Namespace 的限定只读证据，捕获数据的 Catalog/CLI 集成通过；见[真实只读报告](harness/live-readonly-report.md)。部署版本和业务功能仍待验证。
+已取得 Git 远端、GitLab REST、ZenTao v1、Portainer Endpoint/Swarm/Namespace 的限定只读证据，捕获数据的 Catalog/CLI 与 MCP 读取集成通过；见 [V1 验收状态](harness/v1-acceptance-status.md)。尚未实跑的 V1 路径单列 `not_verified`，业务系统自身的 Bug 修复回归不属于 DCE V1 验收。
 
 开发环境（Python 3.12+）：`uv sync --locked --dev`。
 已验证：`uv run dce --help`、`uv run dce doctor --mock`、
@@ -71,7 +71,7 @@ Grok Bot 的具体 MCP 支持与真实内网接入均为 `not_verified`，需在
 - [x] V1 设计规格与可复现的脱敏测试数据
 - [x] V1 代码实现、单元测试和离线验收
 - [x] 三平台限定元数据真实只读 smoke 与捕获数据 Catalog/CLI 验证（凭证仅进程内使用）
-- [ ] 完整发现、构建镜像到部署版本的指纹核验及业务功能回归
+- [ ] V1 完整 live discover 与剩余工具真实上游成功路径验证
 - [ ] V1.1 MCP + BugContext 的实际 Agent 验收
 
 ## 开发建议

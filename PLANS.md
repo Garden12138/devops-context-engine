@@ -15,7 +15,7 @@
 
 ## 运行纪律
 
-当前进度（2026-11-02）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；三平台限定元数据只读核验及捕获数据 Catalog/CLI 通过。
+当前进度（2026-11-03）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；三平台限定元数据及捕获数据 Catalog/CLI/MCP 读取验证通过。仅验收已实现 V1 功能，不纳入业务页面/修复执行。
 离线基线：133 tests，总体覆盖率 98.58%（行 99.18%、纯分支 96.65%）；ruff、strict mypy、CLI/MCP、独立 wheel 安装通过。
 最新 HTTP 修复回归：139 tests，总体 98.58%（行 99.19%、纯分支 96.66%），ruff 与 strict mypy 通过；摘要见 harness/reports/http-encoding-summary.json。
 基线逐项证据：harness/acceptance-report.md。完整真实链路与实际 Agent 接入 not_verified。
@@ -46,6 +46,10 @@
 第三轮 API 实跑（同日）：GitLab 修复后五个仓库的限定元数据读取成功；ZenTao 现取 v1 Token 后十四个 Bug 全部读取成功。结合前轮 Portainer 保留快照，三平台均取得实际成功证据；明确各自采集时间不同。将已捕获白名单元数据导入独立私有 Catalog，185 个实体、213 条关系、213 条证据、8 个快照；重复导入幂等、五次 CLI 查询通过。15 条 Bug→仓库关系仍为 candidate，无自动 confirmed。脱敏结论见 harness/live-readonly-report.md；无需再次运行同一轮认证检查。后续缺口为前端实际部署分支、源码/镜像/运行版本链与页面/审核/回调回归；尚未验证完整 live discover 或实际 Agent Host。
 
 第二阶段（2026-11-03，进行中）：用户要求继续验收，推进 CI 产物/部署静态资源摘要和目标服务任务/镜像证据。实际测试首页同源跳转后 HTTP 200；原生 GUI helper 两次辅助功能未允许，未操作页面。已准备有界、只读、不回显输入的私有部署核验入口并给出运行命令，等待实际报告；13 项新安全检查和原 19 项检查通过。三个前端实际部署分支待补充；不得以候选 develop/master 替代确认。详细状态见 harness/phase2-readonly-progress.md。此阶段尚未通过版本或业务验收。
+
+范围纠正（2026-11-03，当前依据）：用户明确只验收 DCE V1 已开发能力，业务 Bug 表是输入案例，不要求执行公司页面/业务修复回归。停止浏览器操作与辅助功能请求；前端发布分支、审批/回调、完整发布指纹不作为新增 V1 门槛。已运行的额外脚本报告仅保留补充只读观察。使用真实数据 Catalog 补验标准 MCP stdio：四类读取工具五次成功；两类上游工具越界拒绝及未知写工具拒绝通过，预算/只读/候选保留通过。未执行两类工具真实上游成功调用和完整 live discover，继续标 not_verified，不把补充脚本当作产品功能。统一结论见 harness/v1-acceptance-status.md；无需再输入部署或浏览器凭证。
+
+V1 继续补验准备（同日）：用户要求继续，仅为既有 AppServices.discover 与 MCP 上游处理准备私有本机入口。选定原范围内无本地 Compose 的源码项目，只允许固定 commit 的模块 manifest/CI/Dockerfile；BugContext 禁图片，Pipeline Diagnose 禁 trace。真实 HTTPTransport 加范围护栏，无模拟响应或新产品业务实现。护栏六项合成检查通过，入口/SDK 检查 ruff 通过；已提供本机运行命令，需 GitLab Token 与一次禅道登录，等待实际报告。不要重跑额外部署/GUI 脚本；本轮尚未实跑的路径不能标为已通过。
 
 ## 约定
 
