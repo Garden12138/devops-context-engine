@@ -53,7 +53,7 @@ CLI 未注册云模型 HTTP 客户端；无 API Key 仍能运行全部核心流�
 
 ## 用户本地真实平台 smoke
 
-以下步骤由具备授权的用户执行。已取得三平台限定元数据和捕获数据 Catalog/CLI/MCP 读取证据，见 [V1 验收状态](../harness/v1-acceptance-status.md)。完整 live discover 及部分工具真实上游成功路径尚未实跑；下列通用命令不能整体视为已在真实环境通过。业务系统页面操作、修复回归与发布执行不属于 DCE V1 验收，无需为此配置浏览器或辅助功能权限。
+以下步骤由具备授权的用户执行。已取得三平台限定元数据、代表性源码项目 live discover、六工具处理与独立 SDK stdio 证据，见 [V1 验收状态](../harness/v1-acceptance-status.md)。更多发现范围、真实附件/Compose/失败日志仍未覆盖；下列通用命令不能整体视为所有外部路径均通过。业务系统页面操作、修复回归与发布执行不属于 DCE V1 验收，无需为此配置浏览器或辅助功能权限。
 先通过系统密钥链或受保护进程环境注入 DCE_ZENTAO_URL/TOKEN、DCE_GITLAB_URL/TOKEN、DCE_PORTAINER_URL/TOKEN。
 不将 Token 放在 CLI 参数、配置文件或公开报告中；DCE 不自动读取 .env。
 使用 GitLab read_api、Portainer 限制 Environment 的只读账号、ZenTao 最小查看权限。

@@ -2,17 +2,17 @@
 
 > 面向 Cursor、Codex 和其他可调用工具的 Coding Agent 的「研发环境发现 + 可信映射 + 缺陷上下文」中间层。
 
-**V1.0 离线实现已通过 T0–T7 验收，三平台限定元数据只读验证通过。完整平台链路与实际 Agent 接入仍为 `not_verified`。**
+**V1.0 离线实现已通过 T0–T7 验收，三平台限定只读与本轮已实现核心路径真实补验通过。尚未覆盖的外部路径与实际 Agent Host 接入单列 `not_verified`。**
 
 验收证据见 [离线报告](harness/acceptance-report.md) 和 [执行记录](harness/build-log.md)。
 离线基线为 133 项测试，含 CLI/MCP 子进程和独立 wheel 安装验证。
 真实验证暴露的 HTTP 压缩响应问题已修复，当前 139 项测试通过，总体覆盖率 98.58%（行 99.19%、分支 96.66%）；见[修复回归摘要](harness/reports/http-encoding-summary.json)。
-已取得 Git 远端、GitLab REST、ZenTao v1、Portainer Endpoint/Swarm/Namespace 的限定只读证据，捕获数据的 Catalog/CLI 与 MCP 读取集成通过；见 [V1 验收状态](harness/v1-acceptance-status.md)。尚未实跑的 V1 路径单列 `not_verified`，业务系统自身的 Bug 修复回归不属于 DCE V1 验收。
+已取得三平台限定只读、源码项目 live discover、真实 BugContext/成功流水线诊断与六工具处理证据，捕获数据的 Catalog/CLI 和独立 MCP stdio 集成通过；见 [V1 验收状态](harness/v1-acceptance-status.md)。业务系统自身的 Bug 修复回归不属于 DCE V1 验收。
 
 开发环境（Python 3.12+）：`uv sync --locked --dev`。
 已验证：`uv run dce --help`、`uv run dce doctor --mock`、
 `uv run pytest -q --cov=src/dce --cov-report=term-missing`、`uv run ruff check .`、`uv run mypy src`。
-配置使用显式 TOML 与进程环境，不自动读取 `.env`。完整三平台 smoke 尚未通过。
+配置使用显式 TOML 与进程环境，不自动读取 `.env`。本轮限定真实验收通过，未覆盖的范围按验收矩阵标记。
 
 ## 目标
 
@@ -71,7 +71,8 @@ Grok Bot 的具体 MCP 支持与真实内网接入均为 `not_verified`，需在
 - [x] V1 设计规格与可复现的脱敏测试数据
 - [x] V1 代码实现、单元测试和离线验收
 - [x] 三平台限定元数据真实只读 smoke 与捕获数据 Catalog/CLI 验证（凭证仅进程内使用）
-- [ ] V1 完整 live discover 与剩余工具真实上游成功路径验证
+- [x] 限定源码项目 live discover 与六个既有 MCP 工具处理的真实补验
+- [ ] 更多真实平台范围/版本及受本轮安全边界排除的路径验证（分别记录 not_verified）
 - [ ] V1.1 MCP + BugContext 的实际 Agent 验收
 
 ## 开发建议

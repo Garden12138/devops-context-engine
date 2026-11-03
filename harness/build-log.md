@@ -207,6 +207,17 @@
 - 使用 SQLite backup API 创建独立私有 Catalog 副本，不覆盖旧库；凭证仅进程内不回显输入，一次 v1 登录后执行既有工具。实际结果仅保留计数、状态、长度和诊断，不保存 Bug 正文、图片或日志。
 - 已提供运行命令；当前等待用户本机运行，不能声称 live discover 或两类上游成功已通过。辅助功能、浏览器/发布凭证及前端部署分支不再是本轮必要输入。
 
+## 已实现 V1 核心路径真实补验结果（2026-11-03，限定范围通过）
+
+- 读取用户本机真实报告：status=passed_for_scoped_v1_paths；未新增产品功能，无浏览器依赖，无原始业务正文保留。
+- AppServices.discover 按原有默认分支语义对一个授权源码项目 live/read_only 实跑成功；固定 commit 下读取三个元数据文件，发现六个 build_job。实际出网含 7 页 tree，未读取 Compose、.env 或任意源码。
+- 独立验收 Catalog 实核：191 Entity / 219 Edge / 219 Evidence / 11 Snapshot；204 条直接观测、15 条候选、confirmed 0，scan complete。CI incomplete 一条保留；Dockerfile/package 元数据解析非 incomplete，未隐藏警告或执行 CI 脚本。
+- 既有 MCP 工具处理六次全部成功：BugContext 真上游、Pipeline Diagnose 真上游、ProjectContext、ServiceTrace、DeploymentInspect、DiscoveryStatus。成功路径输出 519–12289 UTF-8 字节，无截断，工具读取前后 Catalog 数量不变。
+- BugContext include_assets=false，取得真实摘要并保留 BUSINESS_MAPPING_UNCONFIRMED，模块数 0；不冒称模块关联完成。Pipeline 本次为 success、failure_count=0，不冒称真实失败日志诊断已验证。
+- 出网护栏实际允许 15 次 GitLab GET（项目/commit/tree/manifest/选定流水线/jobs）及 1 次指定 Bug GET，denied=0；另有一次已授权 v1 登录认证。未读取图片、Compose 或私有 trace，无公司业务写入、无自动 confirmed。
+- 六工具处理层真实证据与前次标准 SDK stdio 证据独立保留，不把本次 in-process handler 调用称作 Cursor/Grok Host 实测。所有凭证仅本机进程内，私有原报告/数据库保留，公开仅脱敏汇总。
+- 更新 V1 验收矩阵和机器摘要，不再要求用户重跑本轮入口。未覆盖更多发现范围、真实附件、私有失败日志、Compose 和实际 Host；业务页面和修复执行不属于本次 V1 门槛。
+
 ## 风险与边界
 
-离线 P0 无未解决阻塞。三平台限定元数据及捕获数据的 Catalog/CLI/MCP 读取已验证；完整 live discover 与两类 MCP 真实上游成功路径尚未实跑。业务页面、修复/发布执行、GUI 自动化不属于 V1 验收门槛。后续扩展及实际 Host 接入不冒充已验结果。
+离线 P0 无未解决阻塞，已实现核心路径的本轮限定真实补验通过。更多平台/发现范围、真实图片、Compose、私有失败日志与实际 Host 未覆盖，继续标记 not_verified。业务页面、修复/发布执行、GUI 自动化不属于 V1 验收门槛；业务映射候选须人工确认。

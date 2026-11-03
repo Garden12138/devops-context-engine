@@ -25,7 +25,7 @@
     "mypy": "passed"
   },
   "live_gitlab_after_fix": "passed_for_scoped_repository_metadata",
-  "functional_regression": "not_verified",
+  "functional_regression": "business_application_out_of_v1_scope",
   "authentication_post": {
     "old_token_forwarded": false,
     "automatic_retry": false,

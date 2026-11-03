@@ -15,7 +15,7 @@
 
 ## 运行纪律
 
-当前进度（2026-11-03）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；三平台限定元数据及捕获数据 Catalog/CLI/MCP 读取验证通过。仅验收已实现 V1 功能，不纳入业务页面/修复执行。
+当前进度（2026-11-03）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；三平台限定只读、源码项目 live discover 与六个已实现 MCP 工具处理的真实补验通过。仅验收已实现 V1 功能，不纳入业务页面/修复执行。
 离线基线：133 tests，总体覆盖率 98.58%（行 99.18%、纯分支 96.65%）；ruff、strict mypy、CLI/MCP、独立 wheel 安装通过。
 最新 HTTP 修复回归：139 tests，总体 98.58%（行 99.19%、纯分支 96.66%），ruff 与 strict mypy 通过；摘要见 harness/reports/http-encoding-summary.json。
 基线逐项证据：harness/acceptance-report.md。完整真实链路与实际 Agent 接入 not_verified。
@@ -50,6 +50,8 @@
 范围纠正（2026-11-03，当前依据）：用户明确只验收 DCE V1 已开发能力，业务 Bug 表是输入案例，不要求执行公司页面/业务修复回归。停止浏览器操作与辅助功能请求；前端发布分支、审批/回调、完整发布指纹不作为新增 V1 门槛。已运行的额外脚本报告仅保留补充只读观察。使用真实数据 Catalog 补验标准 MCP stdio：四类读取工具五次成功；两类上游工具越界拒绝及未知写工具拒绝通过，预算/只读/候选保留通过。未执行两类工具真实上游成功调用和完整 live discover，继续标 not_verified，不把补充脚本当作产品功能。统一结论见 harness/v1-acceptance-status.md；无需再输入部署或浏览器凭证。
 
 V1 继续补验准备（同日）：用户要求继续，仅为既有 AppServices.discover 与 MCP 上游处理准备私有本机入口。选定原范围内无本地 Compose 的源码项目，只允许固定 commit 的模块 manifest/CI/Dockerfile；BugContext 禁图片，Pipeline Diagnose 禁 trace。真实 HTTPTransport 加范围护栏，无模拟响应或新产品业务实现。护栏六项合成检查通过，入口/SDK 检查 ruff 通过；已提供本机运行命令，需 GitLab Token 与一次禅道登录，等待实际报告。不要重跑额外部署/GUI 脚本；本轮尚未实跑的路径不能标为已通过。
+
+V1 补验结果（同日，当前）：用户已执行入口，本轮限定 V1 路径 passed。产品 AppServices.discover 对一个授权源码项目实跑成功，读取 commit/tree/三个元数据文件，新增六个 build_job；独立库 191 实体/219 关系/219 证据/11 快照。CI incomplete 一条、业务映射未确认、BugContext 模块数 0 均正确保留。真实 BugContext 与 success 流水线诊断成功，六个 McpApplication 工具处理全部成功，输出 519–12289 字节，读取不改变 Catalog、无自动 confirmed。受控出网 GitLab 15 GET / ZenTao 1 GET，无拒绝或非法请求；另一次授权 v1 登录。标准 SDK stdio 证据与本轮处理层证据分开。无需再次运行入口；更多发现范围、图片/Compose/私有失败日志及实际 Host 仍不作已验声明。结果见 harness/v1-acceptance-status.md 与 harness/reports/v1-live-summary.json。
 
 ## 约定
 
