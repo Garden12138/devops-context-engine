@@ -81,6 +81,13 @@ AppServices 统一 scope、BugContext、Pipeline、Stack 和图查询；入口�
 
 真实验证暴露出 `DecodingError` 被归为网络错误的诊断缺口。Reader 已通过 `iter_bytes()` 解码响应，缓冲后的 Response 必须移除原始内容编码、长度与分块传输头，保留 MIME/分页头；大小上限继续约束解码后的正文。损坏编码属于 `INVALID_PAYLOAD`，不应按网络异常重复请求。修复用合成压缩字节流回归证明，不将合成通过替代真实平台复验，不关闭压缩、代理或 TLS 防护来掩盖问题。
 
+## ADR-015：Cursor 由本地 stdio 管理进程，真实 Catalog 与演示数据分离
+
+Cursor 使用 DCE 虚拟环境入口和 Catalog 的绝对路径启动子进程，不假定宿主的 PATH、工作目录或交互终端；V1 不新增监听端口或后台网络服务。
+无常驻上游凭证时，接入已授权真实元数据的独立 Catalog 副本，显式 `--live --read-only` 并保持 Bug/Project allowlist 为空。四类 Catalog 工具读取保存快照，另外两类返回 PERMISSION_DENIED，不以合成 Bug/流水线替代真实结果。六个工具可见不代表六类真实上游访问均已启用。
+Cursor 配置不包含凭证、envFile 或 HTTP 放行；实时读取需另行提供受保护的进程环境与明确范围。禅道会话失效须安全重新认证，不能承诺自动续期。
+标准 SDK 检查只输出状态/计数，不输出内部名称、资源 ID、工具正文或原始错误；缺失库、协议错误、预算超限、读取改变数量应失败。SDK 握手与 Cursor 实际激活分别记录，不能互相替代。
+
 ## 风险登记
 
 | ID | 风险 | 后果 | 缓解 |

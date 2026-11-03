@@ -218,6 +218,17 @@
 - 六工具处理层真实证据与前次标准 SDK stdio 证据独立保留，不把本次 in-process handler 调用称作 Cursor/Grok Host 实测。所有凭证仅本机进程内，私有原报告/数据库保留，公开仅脱敏汇总。
 - 更新 V1 验收矩阵和机器摘要，不再要求用户重跑本轮入口。未覆盖更多发现范围、真实附件、私有失败日志、Compose 和实际 Host；业务页面和修复执行不属于本次 V1 门槛。
 
-## 风险与边界
+## Cursor 桌面版 MCP 接入（2026-11-03）
 
-离线 P0 无未解决阻塞，已实现核心路径的本轮限定真实补验通过。更多平台/发现范围、真实图片、Compose、私有失败日志与实际 Host 未覆盖，继续标记 not_verified。业务页面、修复/发布执行、GUI 自动化不属于 V1 验收门槛；业务映射候选须人工确认。
+- 用户要求把现有 MCP 跑起来并编写启动接入文档。先定义现有工具/数据模式边界与验证步骤；不新增业务能力、端口或公司平台写操作。ADR-015 记录 stdio 生命周期和真实/合成数据分离。
+- 本机 Cursor 3.27.6、DCE 虚拟环境已安装；全局 MCP 为 JSONC。使用 Cursor 随附 JSONC parser 做精确新增，校验原有四个服务器对象完全保留；写入前备份、原子替换、权限 0600。原配置/备份中的其他秘密未输出或提交。
+- 从此前真实验收库通过 SQLite backup API 创建独立 `.local/cursor/` 副本，原始验收库不变。配置使用绝对入口/库路径、`--live --read-only`、空上游 allowlist、AI 与 HTTP 关闭；四类本地查询可用，两类上游访问拒绝，不把真实库与 synthetic fixture 混用。
+- 经执行器允许修改全局配置并打开 Cursor；仅观察进程名和父进程链，确认 Cursor 实际启动 DCE 子进程。未读取 Cursor 私有日志、聊天或凭证，没有关闭/重启现有工作窗口。进程启动不等于一次 Agent 工具调用，该项继续 not_verified。
+- 标准 MCP SDK 以 `/` 为工作目录运行真实 DCE 子进程：initialize、六工具 schema/只读声明、project_context/service_trace/deployment_inspect/discovery_status 四次成功、Bug/Project 两次 PERMISSION_DENIED、未知 deploy_execute 返回 NOT_FOUND。响应 1991–12289 字节，均未截断；Catalog 191 Entity / 219 Edge / 219 Evidence / 11 Snapshot，数量不变，无新平台请求。
+- 新增可重复的 `scripts/check_mcp_stdio.py`，只打印安全状态/计数，失败不输出上游异常正文。另实跑缺失库检查：exit 1、固定诊断、不创建空库。文档覆盖安装、全局/项目配置、启动、提示词、数据模式、凭证环境、禅道会话失效、排错和停用。
+- 运行 `.venv/bin/pytest -q tests/test_mcp.py tests/test_mcp_boundaries.py`：4 passed（5.08s）；`.venv/bin/ruff check .`、`.venv/bin/mypy src`（39 files）和 `git diff --check` 通过。产品源码未变，不重复全库测试充当新的 Host 证据；139 项完整回归仍为前轮基线。
+- 公共机器摘要见 reports/cursor-mcp-summary.json；真实来源路径、安装备份位置、进程记录、检查结果和本机提示词保留在 gitignored `.local/cursor/`。所有私有文件已验证被 gitignore 拦截。实时 Bug/流水线凭证与 allowlist 尚未配置；不得把六工具可见写成六类实时上游均可用。
+
+## 当前风险与边界
+
+离线 P0 无未解决阻塞，已实现核心路径的本轮限定真实补验通过；Cursor 配置与进程启动已观察到。更多平台/发现范围、真实图片、Compose、私有失败日志与实际 Host 内工具调用未覆盖，继续标记 not_verified。业务页面、修复/发布执行、GUI 自动化不属于 V1 验收门槛；业务映射候选须人工确认。

@@ -78,7 +78,9 @@ Checkpoint 位于 Catalog 同目录 checkpoints/，仅存规范化元数据。�
 
 ## MCP
 
-先完成 init；Cursor 配置见 README。启动命令：
+Cursor 桌面版的安装、全局配置、启动、自检和排错见 [Cursor MCP 接入文档](CURSOR_MCP_SETUP.md)。stdio 由宿主管理进程；真实 Catalog、合成演示与实时上游模式分开配置，凭证不写 MCP JSON。
+
+先准备对应模式的 Catalog；真实库不可用 fixture init 覆盖。下面仅为在仓库根目录手动启动合成演示的命令，Cursor 日常使用不需先运行它：
 
 ```bash
 uv run --offline dce mcp serve --transport stdio --fixture fixtures/synthetic-discovery.json
@@ -88,7 +90,7 @@ uv run --offline dce mcp serve --transport stdio --fixture fixtures/synthetic-di
 附件仅当前会话注册的 dce://assets 引用可读，校验大小/路径/指纹，不暴露上游 URL。
 用户显式开启 live 时还需 --read-only；Bug/流水线分别由 --zentao-bug、--gitlab-project 重复参数限定上游读取。
 未授权 ID 在请求前拒绝；Catalog 查询限于当前本地库。共享 HTTP 服务与多人鉴权属于后续版本。
-Grok Bot 执行器与真实内网 MCP 接入仍 not_verified。
+Grok Bot 执行器与实际宿主的实时上游读取仍 not_verified；Cursor 的配置及进程启动证据单列在接入文档。
 
 ## 本地备份、回滚与移除数据
 

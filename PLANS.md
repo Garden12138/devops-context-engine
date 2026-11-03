@@ -18,7 +18,7 @@
 当前进度（2026-11-03）：T0–T7 passed（离线目标完成）；本地分支 `work/dce-v1-offline`；三平台限定只读、源码项目 live discover 与六个已实现 MCP 工具处理的真实补验通过。仅验收已实现 V1 功能，不纳入业务页面/修复执行。
 离线基线：133 tests，总体覆盖率 98.58%（行 99.18%、纯分支 96.65%）；ruff、strict mypy、CLI/MCP、独立 wheel 安装通过。
 最新 HTTP 修复回归：139 tests，总体 98.58%（行 99.19%、纯分支 96.66%），ruff 与 strict mypy 通过；摘要见 harness/reports/http-encoding-summary.json。
-基线逐项证据：harness/acceptance-report.md。完整真实链路与实际 Agent 接入 not_verified。
+基线逐项证据：harness/acceptance-report.md。完整真实链路与 Agent 内实际工具调用 not_verified；Cursor 配置及进程启动见本文接入记录。
 
 - 一次只推进一个阶段，测试不过不跳阶段；阶段完成记录测试命令、退出码与摘要。
 - 当前阶段以 `harness/build-log.md` 标记为准；每个阶段前更新进度；若不存在，创建它。
@@ -52,6 +52,15 @@
 V1 继续补验准备（同日）：用户要求继续，仅为既有 AppServices.discover 与 MCP 上游处理准备私有本机入口。选定原范围内无本地 Compose 的源码项目，只允许固定 commit 的模块 manifest/CI/Dockerfile；BugContext 禁图片，Pipeline Diagnose 禁 trace。真实 HTTPTransport 加范围护栏，无模拟响应或新产品业务实现。护栏六项合成检查通过，入口/SDK 检查 ruff 通过；已提供本机运行命令，需 GitLab Token 与一次禅道登录，等待实际报告。不要重跑额外部署/GUI 脚本；本轮尚未实跑的路径不能标为已通过。
 
 V1 补验结果（同日，当前）：用户已执行入口，本轮限定 V1 路径 passed。产品 AppServices.discover 对一个授权源码项目实跑成功，读取 commit/tree/三个元数据文件，新增六个 build_job；独立库 191 实体/219 关系/219 证据/11 快照。CI incomplete 一条、业务映射未确认、BugContext 模块数 0 均正确保留。真实 BugContext 与 success 流水线诊断成功，六个 McpApplication 工具处理全部成功，输出 519–12289 字节，读取不改变 Catalog、无自动 confirmed。受控出网 GitLab 15 GET / ZenTao 1 GET，无拒绝或非法请求；另一次授权 v1 登录。标准 SDK stdio 证据与本轮处理层证据分开。无需再次运行入口；更多发现范围、图片/Compose/私有失败日志及实际 Host 仍不作已验声明。结果见 harness/v1-acceptance-status.md 与 harness/reports/v1-live-summary.json。
+
+## Cursor 桌面版 stdio 接入（2026-11-03，已落地）
+
+- 用户要求启动现有 MCP 并补充接入文档；不增加业务工具、HTTP 服务或公司写操作。
+- 默认接入独立的真实 Catalog 副本：四类本地查询可用；使用 `--live --read-only` 且不设置上游 allowlist，使 Bug/流水线读取明确拒绝，不混入合成结果。
+- 安装使用绝对路径，保留已有 Cursor JSONC 配置和其他 MCP；凭证不写配置。系统目录修改按执行器权限申请，实际 Host 未观察到前保留 not_verified。
+- 验证计划：标准 MCP SDK 初始化、六工具列表、四类查询、两个越界拒绝、未知写工具拒绝、预算与 Catalog 数量不变；提供可重复运行的本地检查命令。
+- 实际结果：全局 JSONC 新增 `dce`，备份并保留四个已有服务，不含 DCE 凭证；Cursor 3.27.6 已启动 DCE 子进程（父进程链包含 Cursor）。真实库副本 191 实体/219 关系/219 证据/11 快照；SDK 四类查询通过、两类上游拒绝和未知写拒绝通过，输出 1991–12289 字节、数量不变。缺失库检查 exit 1 且不建空库。
+- 新增 `docs/CURSOR_MCP_SETUP.md` 和可重复的 `scripts/check_mcp_stdio.py`；本机路径、原配置备份、报告与可直接粘贴的提示词只留在 gitignored 私有区。MCP 相关 4 tests、ruff、strict mypy（39 files）、diff check 通过。实际 Agent 会话调用及实时上游配置仍 not_verified；摘要见 harness/reports/cursor-mcp-summary.json。
 
 ## 约定
 

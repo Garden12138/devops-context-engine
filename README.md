@@ -2,7 +2,7 @@
 
 > 面向 Cursor、Codex 和其他可调用工具的 Coding Agent 的「研发环境发现 + 可信映射 + 缺陷上下文」中间层。
 
-**V1.0 离线实现已通过 T0–T7 验收，三平台限定只读与本轮已实现核心路径真实补验通过。尚未覆盖的外部路径与实际 Agent Host 接入单列 `not_verified`。**
+**V1.0 离线实现已通过 T0–T7 验收，三平台限定只读与本轮已实现核心路径真实补验通过。Cursor 已配置并启动 MCP；尚未覆盖的外部路径与 Host 内实际工具调用单列 `not_verified`。**
 
 验收证据见 [离线报告](harness/acceptance-report.md) 和 [执行记录](harness/build-log.md)。
 离线基线为 133 项测试，含 CLI/MCP 子进程和独立 wheel 安装验证。
@@ -56,17 +56,22 @@
 - 保留证据、版本和环境维度；任何 AI 推测只是候选，无法仅凭相似名称自动批准。
 - 真实部署目标必须校验 Portainer Endpoint/Swarm ID/Stack/Service，并独立审批；V1 不暴露部署工具。
 
-## 状态
+## Cursor 桌面版接入
 
-本地 Cursor MCP 配置（先执行 fixture init；将路径换成当前工作区的绝对路径）：
+安装、全局配置、启动、自检、使用提示词与排错见 [Cursor MCP 接入文档](docs/CURSOR_MCP_SETUP.md)。
+stdio 子进程由 Cursor 管理，无需单独运行后台服务或开放端口。真实 Catalog 查询配置（库须预先存在，路径替换为本机绝对路径）：
 
 ```json
-{"mcpServers":{"dce-local":{"command":"/absolute/path/to/repo/.venv/bin/dce","args":["--catalog","/absolute/path/to/repo/.local/catalog.sqlite3","mcp","serve","--transport","stdio","--fixture","/absolute/path/to/repo/fixtures/synthetic-discovery.json"]}}}
+{"mcpServers":{"dce":{"type":"stdio","command":"/absolute/path/to/repo/.venv/bin/dce","args":["--catalog","/absolute/path/to/repo/.local/cursor/catalog.sqlite3","mcp","serve","--transport","stdio","--live","--read-only"],"env":{"DCE_AI_ENABLED":"false","DCE_ALLOW_HTTP":"false"}}}}
 ```
 
-服务提供六个只读工具，结果在 `structuredContent`；无审核/构建/部署工具。
+服务提供六个只读工具，结果在 `structuredContent`；无审核/构建/部署工具。上述配置使四类 Catalog 查询可用；未指定上游 allowlist 的 Bug/流水线工具返回 PERMISSION_DENIED，不读取 fixture 或公司平台。合成演示与实时模式的条件见接入文档。
 附件为当前会话授权的 `dce://assets/…` 资源，不暴露上游 URL。
 Grok Bot 的具体 MCP 支持与真实内网接入均为 `not_verified`，需在用户执行器实测。
+
+本机已完成 Cursor 配置安装并观察到由 Cursor 启动的 DCE 进程；标准 SDK stdio 自检通过。Cursor Agent 实际调用仍单独记录，见 [接入检查摘要](harness/reports/cursor-mcp-summary.json)。
+
+## 状态
 
 - [x] V1 设计规格与可复现的脱敏测试数据
 - [x] V1 代码实现、单元测试和离线验收

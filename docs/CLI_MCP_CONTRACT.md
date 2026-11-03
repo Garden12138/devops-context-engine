@@ -64,19 +64,8 @@ MCP 绝不暴露 `mapping_approve`, `deploy_execute`, `trigger_pipeline`, `bug_r
 
 结果在 `structuredContent`，文本部分只给极简状态，避免重复 JSON 消耗预算。
 默认 fixture；启动时显式 `--live --read-only`，Bug/流水线上游读取还需 `--zentao-bug`/`--gitlab-project` allowlist。
-资源仅当前会话授权，读取重新校验 SHA256、路径与大小；完整绝对路径配置见 README。
+资源仅当前会话授权，读取重新校验 SHA256、路径与大小。
 
-Cursor `.cursor/mcp.json`（从仓库根目录启动的简写）：
-
-```json
-{
-  "mcpServers": {
-    "dce-local": {
-      "command": "uv",
-      "args": ["run", "dce", "mcp", "serve", "--transport", "stdio"]
-    }
-  }
-}
-```
-
-工作目录与 `uv` 路径需在本地实际设置；所有 Token 由本机受控进程注入。Grok Bot 连接方案依其执行器实际能力选本地 CLI 代理或内网认证 API，禁止假设外部 Bot 可以直接访问公司内网。
+Cursor 使用虚拟环境入口和 Catalog 的绝对路径，避免宿主 PATH / 工作目录差异；完整配置及独立 stdio 自检见 [Cursor 桌面版接入](CURSOR_MCP_SETUP.md)。
+真实 Catalog 模式使用 `--live --read-only` 且上游 allowlist 为空：四类本地读取可用，Bug/流水线读取在发出请求前明确拒绝；默认 fixture 模式只适合独立的合成演示库。
+所有 Token 由本机受控进程注入，不写 MCP JSON。Grok Bot 连接方案依其执行器实际能力选本地 CLI 代理或内网认证 API，禁止假设外部 Bot 可以直接访问公司内网。

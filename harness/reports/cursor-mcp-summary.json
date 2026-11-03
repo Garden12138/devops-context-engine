@@ -1,0 +1,57 @@
+{
+  "checked_at": "2026-11-03T09:33:08.151686+00:00",
+  "status": "passed_for_catalog_connection",
+  "mode": "catalog_only",
+  "cursor": {
+    "version": "3.27.6",
+    "global_config_installed": true,
+    "other_servers_preserved": 4,
+    "process_started_by_cursor": true,
+    "agent_tool_call": "not_verified"
+  },
+  "stdio_sdk": {
+    "status": "passed",
+    "mode": "catalog_only",
+    "transport": "stdio",
+    "server_version": "1.0.0",
+    "tool_count": 6,
+    "successful_reads": 4,
+    "scope_denials": 2,
+    "unknown_write_denied": true,
+    "response_bytes": [
+      7980,
+      11593,
+      12289,
+      1991
+    ],
+    "catalog_counts": {
+      "entities": 191,
+      "edges": 219,
+      "evidence": 219,
+      "snapshots": 11
+    },
+    "catalog_counts_unchanged": true,
+    "cursor_host": "not_verified"
+  },
+  "negative_check": {
+    "missing_catalog_exit": 1,
+    "missing_catalog_not_created": true
+  },
+  "security": {
+    "credentials_in_dce_config": false,
+    "upstream_allowlists_empty": true,
+    "company_requests_enabled": false,
+    "synthetic_data_imported": false
+  },
+  "validation": {
+    "mcp_tests_passed": 4,
+    "ruff": "passed",
+    "mypy_source_files": 39,
+    "diff_check": "passed"
+  },
+  "limitations": [
+    "Four Catalog tools use captured metadata, not current upstream state.",
+    "Live BugContext and Pipeline Diagnose are disabled in this Cursor config.",
+    "SDK handshake and Cursor process startup do not prove an Agent tool invocation."
+  ]
+}
