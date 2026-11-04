@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "date": "2026-11-04",
+  "resource_summary": {
+    "fact_tools": 3,
+    "legacy_tools_retained": 6,
+    "model_provider_required": false
+  },
+  "relationships": {
+    "authority": "host_workspace_project_yaml",
+    "automatic_confirmed": false,
+    "real_business_workspace": "not_verified"
+  },
+  "evidence": {
+    "pytest": {
+      "passed": 185,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 15.649
+    },
+    "coverage": {
+      "combined_percent": 98.21,
+      "line_percent": 98.77,
+      "branch_percent": 96.44
+    },
+    "ruff": "passed",
+    "strict_mypy": "passed (47 files)",
+    "wheel_build_and_isolated_import_schema_migration": "passed",
+    "stdio_loopback_synthetic_fact_reads_and_image": "passed",
+    "live_doctor": {
+      "exit_code": 2,
+      "platforms": {
+        "zentao": {
+          "code": "AUTH_FAILED",
+          "reason": "configuration_missing",
+          "verification": "not_verified"
+        },
+        "gitlab": {
+          "code": "AUTH_FAILED",
+          "reason": "configuration_missing",
+          "verification": "not_verified"
+        },
+        "portainer": {
+          "code": "AUTH_FAILED",
+          "reason": "configuration_missing",
+          "verification": "not_verified"
+        }
+      },
+      "platform_requests": 0
+    },
+    "process_config_presence_checked_without_printing_values": true,
+    "dce_mcp_mounted_in_current_host": false
+  },
+  "confidence_status": {
+    "offline": "passed",
+    "overall_acceptance": "incomplete",
+    "real_platform_reads": "not_verified",
+    "real_agent_host": "not_verified",
+    "real_image_received_by_model": "not_verified"
+  },
+  "versions": {
+    "package": "1.0.0",
+    "fact_contract": "2.0",
+    "legacy_contract": "1.1",
+    "project_schema": 1,
+    "catalog_migration": "0003"
+  },
+  "omissions": [
+    "full_zentao_module_inventory_route_not_verified",
+    "target_business_workspace_not_provided",
+    "protected_platform_configuration_missing",
+    "real_host_connect_and_three_real_reads_and_initialization_dialogue_not_verified",
+    "real_image_delivery_and_named_real_samples_not_revalidated",
+    "real_legacy_catalog_not_selected_or_migrated"
+  ],
+  "next_actions": [
+    "Provide target business workspace and authorized non-secret platform scope/config.",
+    "Load credentials only in protected DCE process environment; never chat or project YAML.",
+    "Reload actual Host MCP, run prompts/agent-led/initialize.md and record real calls.",
+    "Verify version-specific full module inventory and scoped real image/model delivery.",
+    "Review unresolved relations with a human; Host writes diff-approved project.yaml."
+  ]
+}

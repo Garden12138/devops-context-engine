@@ -201,3 +201,128 @@ def test_failures_are_safe_and_no_fixture_fallback(facts):
     app.services.transports["gitlab"] = httpx.MockTransport(lambda _: httpx.Response(403))
     result = call(app, "gitlab", operation="project", project_id="g")
     assert result.structuredContent["error"]["code"] == "PERMISSION_DENIED"
+
+
+def test_pagination_and_malformed_cursor(facts):
+    app, calls = facts
+
+    def handle(request):
+        calls.append(request)
+        return httpx.Response(200, json=[{"id": "entry"}], headers={"X-Next-Page": "3"})
+
+    app.services.transports["gitlab"] = httpx.MockTransport(handle)
+    result = call(app, "gitlab", operation="tree", project_id="g", ref="sha", page=2, limit=1)
+    assert result.structuredContent["data"]["pagination"]["next_page"] == 3
+    assert result.structuredContent["truncated"]
+    assert calls[-1].url.params["page"] == "2"
+    result = call(app, "gitlab", operation="tree", project_id="g", ref="sha", page=1, limit=1)
+    assert result.isError and result.structuredContent["error"]["code"] == "INVALID_PAYLOAD"
+
+
+def test_attachments_no_image_html_redirect_and_wrong_stack_endpoint(facts):
+    app, calls = facts
+
+    def html(request):
+        if "/bugs/" in request.url.path:
+            return httpx.Response(200, json={"id": "b", "steps": '<img src="/image.png">'})
+        return httpx.Response(
+            200, text="<html>not image</html>", headers={"Content-Type": "text/html"}
+        )
+
+    app.services.transports["zentao"] = httpx.MockTransport(html)
+    assert call(app, "zentao", operation="image", bug_id="b").isError
+
+    def cross_origin(request):
+        return httpx.Response(
+            200, json={"id": "b", "steps": '<img src="https://other.invalid/img">'}
+        )
+
+    app.services.transports["zentao"] = httpx.MockTransport(cross_origin)
+    assert call(app, "zentao", operation="image", bug_id="b").isError
+
+    def mismatch(request):
+        calls.append(request)
+        return httpx.Response(200, json={"Id": "t", "EndpointId": "foreign"})
+
+    app.services.transports["portainer"] = httpx.MockTransport(mismatch)
+    result = call(app, "portainer", operation="stack_file", stack_id="t", endpoint_id="e")
+    assert result.isError
+    assert not any(r.url.path.endswith("/file") for r in calls)
+
+
+def test_compose_with_unusual_name_does_not_return_environment(facts):
+    app, _ = facts
+    app.services.transports["gitlab"] = httpx.MockTransport(
+        lambda _: httpx.Response(
+            200,
+            text="services:\n  api:\n    image: app:v1\n    environment:\n      FOO: hidden-value",
+        )
+    )
+    result = call(app, "gitlab", operation="file", project_id="g", ref="sha", path="deployment.yml")
+    assert not result.isError
+    assert "hidden-value" not in json.dumps(result.structuredContent)
+    assert result.structuredContent["data"]["records"][0]["services"][0]["environment_names"] == [
+        "FOO"
+    ]
+
+
+def test_call_audit_never_contains_input_or_upstream_body(facts, caplog):
+    app, _ = facts
+    with caplog.at_level("INFO", logger="dce.audit"):
+        result = call(app, "gitlab", operation="project", project_id="g")
+    assert not result.isError and "mcp_call tool=gitlab_query status=ok" in caplog.text
+    assert all(
+        secret not in caplog.text for secret in ("synthetic-private", "project_id", "instance")
+    )
+
+
+@pytest.mark.parametrize(
+    "platform,args",
+    [
+        ("gitlab", {"operation": "project"}),
+        ("gitlab", {"operation": "file", "project_id": "g", "ref": "sha"}),
+        ("gitlab", {"operation": "pipeline", "project_id": "g"}),
+        ("gitlab", {"operation": "trace", "project_id": "g"}),
+        ("zentao", {"operation": "project"}),
+        ("zentao", {"operation": "product"}),
+        ("zentao", {"operation": "bugs"}),
+        ("zentao", {"operation": "bug"}),
+        ("portainer", {"operation": "endpoint"}),
+        ("portainer", {"operation": "stack"}),
+        ("portainer", {"operation": "service", "endpoint_id": "e"}),
+    ],
+)
+def test_missing_operation_arguments_fail_before_transport(facts, platform, args):
+    app, requests = facts
+    assert call(app, platform, **args).isError
+    assert requests == []
+
+
+def test_empty_scope_searches_fail_closed_for_every_platform(facts):
+    from dce.app.facts import FactScope
+
+    app, requests = facts
+    app.facts.scope = FactScope()
+    for platform, operation in (
+        ("gitlab", "projects"),
+        ("zentao", "projects"),
+        ("zentao", "products"),
+        ("portainer", "stacks"),
+        ("portainer", "endpoints"),
+    ):
+        assert call(app, platform, operation=operation).isError
+    assert requests == []
+
+
+def test_malformed_service_and_collection_and_missing_asset_are_safe(facts):
+    app, _ = facts
+    for spec in ({"Spec": ["invalid"]}, {"Spec": {"TaskTemplate": {"ContainerSpec": []}}}):
+        app.services.transports["portainer"] = httpx.MockTransport(
+            lambda _, data=spec: httpx.Response(200, json=data)
+        )
+        assert call(app, "portainer", operation="service", endpoint_id="e", service_id="s").isError
+    app.services.transports["zentao"] = httpx.MockTransport(
+        lambda _: httpx.Response(200, json={"id": "b"})
+    )
+    assert call(app, "zentao", operation="bugs", product_id="p").isError
+    assert call(app, "zentao", operation="image", bug_id="b").isError

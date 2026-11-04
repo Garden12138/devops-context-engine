@@ -12,3 +12,5 @@
 - 2026-11-04 T4: 已提供 initialize/refresh/review/bug-context/service-trace/pipeline-diagnose 六提示词、MCP 实际参数清单、Host 协议，更新 SDK 检查兼容九工具。事实工具条件必填参数同步发布 JSON Schema；工作流/facts/MCP 契约 10 passed（1.99s），ruff passed，strict mypy 修正动态 JSON Schema 类型后 passed（45 files）。真实 Host 调用尚无证据，not_verified。
 
 - 2026-11-04 T5: SQLite 0003 增加 cache/history 角色，所有旧表/边/审批/历史保留；旧库升级前 online backup+quick_check，失败阻止迁移；新增 catalog backup/status，迁移与回滚指南。首次 19 failed 根因是旧 0001 动态建表提前创建角色表，固定历史表集合后 Catalog/CLI 19 passed（1.60s），ruff/mypy exit 0。合成旧库证实备份版本、0600、行数、审批/历史及二次打开幂等；未改动真实旧库。
+
+- 2026-11-04 T6: 完整离线回归 pytest 185 passed/0 failed/0 skipped（15.65s）；总体覆盖率 98.21%、行 98.77%、分支 96.44%；ruff/strict mypy（47 files）/diff/index secret scan passed。标准 stdio→真实 HTTPTransport→本机合成三平台 E2E、原生 ImageContent、双 workspace、审批/拒绝、多对多、迁移和安全边界通过；local wheel 离线打包与隔离导入/Schema/迁移通过。默认沙箱 socket bind/uv cache 受限，经执行器允许后验证，非公司平台操作。真实 doctor exit 2，三平台 AUTH_FAILED/configuration_missing，0 平台请求；当前 Host 未挂 DCE、目标业务 workspace 未提供。T6 外部 P0 not_verified，整体未验收完成；不以旧报告或合成 SDK 替代。新增安全只读 SDK smoke 入口供连接就绪后复验，绝不声称真实 Host 已通过。

@@ -13,7 +13,7 @@ from dce.connectors.gitlab import GitLab, key
 from dce.connectors.portainer import Portainer
 from dce.connectors.zentao import ZenTao
 from dce.graph.model import fingerprint
-from dce.parsers.metadata import compose
+from dce.parsers.metadata import ci, compose, yaml_metadata
 from dce.security.redact import redact
 
 
@@ -47,7 +47,11 @@ def select(data: dict[str, Any], names: str) -> dict[str, Any]:
 
 def service_facts(data: dict[str, Any]) -> dict[str, Any]:
     spec = data.get("Spec") or {}
+    if not isinstance(spec, dict) or not isinstance(spec.get("TaskTemplate", {}), dict):
+        raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected service specification.")
     container = spec.get("TaskTemplate", {}).get("ContainerSpec", {})
+    if not isinstance(container, dict) or not isinstance(spec.get("EndpointSpec", {}), dict):
+        raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected service container specification.")
     return {
         **select(data, "ID Version CreatedAt UpdatedAt ServiceStatus UpdateStatus"),
         "name": spec.get("Name"),
@@ -223,8 +227,15 @@ class FactQueries:
                     raise DceError(ErrorCode.INVALID_PAYLOAD, "Invalid pagination cursor.")
         elif op == "file":
             text = a.raw_file(project, p["path"], p["ref"])
-            if re.search(r"(?i)(compose|stack).*\.ya?ml$", p["path"]):
+            metadata = yaml_metadata(text)[0] if p["path"].endswith((".yml", ".yaml")) else {}
+            if (
+                "services" in metadata
+                and isinstance(metadata["services"], dict)
+                or re.search(r"(?i)(compose|stack).*\.ya?ml$", p["path"])
+            ):
                 records = [compose(text)]
+            elif PurePosixPath(p["path"]).name == ".gitlab-ci.yml":
+                records = [ci(text)]
             else:
                 lines = text.splitlines()
                 start = p["start_line"] - 1

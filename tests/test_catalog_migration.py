@@ -63,3 +63,20 @@ def test_backup_failure_blocks_migration_and_preserves_source(tmp_path):
     (tmp_path / "backups").symlink_to(tmp_path / "old-backups")
     with pytest.raises(DceError):
         backup(path)
+
+
+def test_corrupt_backup_and_deadline_cleanup(tmp_path):
+    path = tmp_path / "corrupt.sqlite3"
+    path.write_bytes(b"not a database")
+    with pytest.raises(DceError):
+        backup(path)
+    assert list((tmp_path / "backups").iterdir()) == []
+    with pytest.raises(DceError):
+        version(path)
+    path.unlink()
+    with Catalog(path):
+        pass
+    with patch("dce.catalog.backup.time.monotonic", side_effect=[0, 100]):
+        with pytest.raises(DceError):
+            backup(path)
+    assert list((tmp_path / "backups").iterdir()) == []

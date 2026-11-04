@@ -2,6 +2,7 @@ import asyncio
 import base64
 import hashlib
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -200,6 +201,12 @@ class McpApplication:
                     type="image", mimeType=image_mime, data=base64.b64encode(image_bytes).decode()
                 )
             )
+        logging.getLogger("dce.audit").info(
+            "mcp_call tool=%s status=%s code=%s",
+            name if name in {**INPUTS, **FACT_INPUTS} else "unknown",
+            payload["status"],
+            payload.get("error", {}).get("code", "none"),
+        )
         return CallToolResult(
             structuredContent=payload,
             content=list(contents),

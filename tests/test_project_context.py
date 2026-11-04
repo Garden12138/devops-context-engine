@@ -177,3 +177,24 @@ def test_cli_template_schema_validate_never_writes(tmp_path):
     assert result.exit_code == 0 and "$defs" in json.loads(result.stdout)
     result = runner.invoke(app, ["project", "validate", str(tmp_path), "--workspace-id", "other"])
     assert result.exit_code == 2
+
+
+def test_unknown_local_instance_and_escaping_git_root_are_rejected(tmp_path, document):
+    for node in (
+        {"type": "code_module", "instance": "unknown", "id": "api"},
+        {"type": "swarm_service", "instance": "unscoped", "id": "service"},
+    ):
+        document["relationships"][0]["to"] = node
+        with pytest.raises(DceError):
+            validate(document)
+    document["relationships"][0]["to"] = {"type": "code_module", "instance": "demo", "id": "api"}
+    assert validate(document)
+    root = tmp_path / "workspace"
+    (root / ".dce").mkdir(parents=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (root / "linked").symlink_to(outside, target_is_directory=True)
+    document["workspace"]["roots"][0]["path"] = "linked"
+    (root / ".dce" / "project.yaml").write_text(yaml.safe_dump(document))
+    with pytest.raises(DceError):
+        load_project(root)
