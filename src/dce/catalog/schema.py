@@ -147,3 +147,10 @@ edge_history = Table(
     Column("payload", JSON, nullable=False),
     Column("recorded_at", String, nullable=False),
 )
+
+catalog_metadata = Table(
+    "catalog_metadata",
+    metadata,
+    Column("key", String, primary_key=True),
+    Column("value", String, nullable=False),
+)

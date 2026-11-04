@@ -10,3 +10,5 @@
 - 2026-11-04 T3: 已实现 schema_version=1、模板/JSON Schema、指定 workspace 只读校验和纯 refresh：六状态、evidence/人工审批、instance/scope、多对多、拒绝保留、变化 stale/conflicted、秘密/重复 YAML/路径隔离。project/model 与 boundary 14 passed（0.65s），ruff/strict mypy exit 0。DCE 无业务文件写接口，真实工作区初始化待目标输入。
 
 - 2026-11-04 T4: 已提供 initialize/refresh/review/bug-context/service-trace/pipeline-diagnose 六提示词、MCP 实际参数清单、Host 协议，更新 SDK 检查兼容九工具。事实工具条件必填参数同步发布 JSON Schema；工作流/facts/MCP 契约 10 passed（1.99s），ruff passed，strict mypy 修正动态 JSON Schema 类型后 passed（45 files）。真实 Host 调用尚无证据，not_verified。
+
+- 2026-11-04 T5: SQLite 0003 增加 cache/history 角色，所有旧表/边/审批/历史保留；旧库升级前 online backup+quick_check，失败阻止迁移；新增 catalog backup/status，迁移与回滚指南。首次 19 failed 根因是旧 0001 动态建表提前创建角色表，固定历史表集合后 Catalog/CLI 19 passed（1.60s），ruff/mypy exit 0。合成旧库证实备份版本、0600、行数、审批/历史及二次打开幂等；未改动真实旧库。

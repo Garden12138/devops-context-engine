@@ -408,3 +408,14 @@ def project_validate(workspace: Path, workspace_id: str | None = None) -> None:
         )
         typer.echo(encode(envelope(error=error)))
         raise typer.Exit(2) from None
+
+
+@catalog_app.command("backup")
+def catalog_backup(ctx: typer.Context) -> None:
+    """Create a private SQLite backup; does not export to any business workspace."""
+    perform(ctx, lambda service: service.catalog.backup())
+
+
+@catalog_app.command("status")
+def catalog_role(ctx: typer.Context) -> None:
+    perform(ctx, lambda service: service.catalog.role())

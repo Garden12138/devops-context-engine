@@ -7,9 +7,11 @@ from alembic.config import Config
 from sqlalchemy import Connection, Table, case, create_engine, event, func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 
+from dce.catalog.backup import backup, version
 from dce.catalog.schema import (
     approvals,
     audit_log,
+    catalog_metadata,
     edge_history,
     edge_members,
     edges,
@@ -27,6 +29,8 @@ from dce.security.redact import redact
 
 class Catalog:
     def __init__(self, path: Path, *, revision: str = "head") -> None:
+        self.path = path
+        self.last_backup: Path | None = None
         path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         if path.is_symlink():
             raise DceError(ErrorCode.PERMISSION_DENIED, "Catalog path must not be a symlink.")
@@ -48,6 +52,9 @@ class Catalog:
         self.engine.dispose()
 
     def migrate(self, revision: str = "head") -> None:
+        previous = version(self.path)
+        if revision == "head" and previous not in {None, "0003"}:
+            self.last_backup = backup(self.path)
         config = Config()
         config.set_main_option("script_location", str(Path(__file__).parent / "migrations"))
         with self.engine.begin() as connection:
@@ -726,3 +733,15 @@ class Catalog:
                     .order_by(audit_log.c.timestamp)
                 ).mappings()
             ]
+
+    def backup(self) -> dict[str, Any]:
+        target = backup(self.path)
+        return {
+            "backup_created": True,
+            "backup_name": target.name,
+            "role": "resource_cache_and_history",
+        }
+
+    def role(self) -> dict[str, str]:
+        with self.engine.connect() as connection:
+            return {row.key: row.value for row in connection.execute(select(catalog_metadata))}

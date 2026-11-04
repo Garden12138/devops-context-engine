@@ -125,3 +125,7 @@ Cursor 的真实能力检查暴露描述模板化、无业务 data Schema、互�
 
 schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 stdout、指定工作区只读校验和纯 refresh 函数。节点强制 type/instance/id；示例 implemented_by 与关系枚举均兼容。confirmed 需非空证据、带时区人工审批，已知 Agent 身份不能审批；文件元数据无法认证真实人类身份，Host 必须以真实用户对话为准。
 拒绝重复 YAML key、alias/anchor、超限、不安全路径、secret key/value、带凭证 URL、跨 instance/scope。刷新保留审批/备注/拒绝，新关系 proposed；来源变化 stale/冲突 conflicted，DCE 不写业务目录。JSON Schema 与运行时校验同时发布，安全和来源范围的交叉字段约束以运行时校验为准。
+
+## ADR-020：备份后降级全局关系权威
+
+旧库升级 head 前先 SQLite backup/quick_check，失败不迁移；0003 只新增角色元数据，保留所有旧实体、边、证据、审批及历史，不导入业务 workspace。备份 0700/0600，拒绝 symlink，限定执行时长。0001 固定历史表清单，防止引用最新 metadata 使未来表提前创建。旧工具/CLI 兼容，本轮不删除；真实库需显式指定且停止同库旧进程后迁移。Host 使用旧图只做历史取证，必须当前项目重新审核。
