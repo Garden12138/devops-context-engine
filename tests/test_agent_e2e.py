@@ -128,6 +128,8 @@ def test_stdio_fact_queries_image_and_host_owned_isolated_contexts(tmp_path: Pat
                     ):
                         result = await session.call_tool(name, args)
                         assert not result.isError
+                        text = next(c.text for c in result.content if c.type == "text")
+                        assert json.loads(text) == result.structuredContent
                         Draft202012Validator(tools[name].outputSchema).validate(
                             result.structuredContent
                         )

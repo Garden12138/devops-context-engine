@@ -2,7 +2,7 @@
 
 DCE 为 Cursor/Codex 等 Agent 提供 ZenTao、GitLab、Portainer 的安全只读连接、结构化查询与证据。Host Agent 使用自己的模型和当前业务工作区源码，发现关系、解释冲突、取得人工审核并维护 `.dce/project.yaml`。DCE 默认不运行业务关系推理，也不写业务工作区。
 
-本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**201 tests passed，覆盖率 98.09%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。本轮标准 MCP SDK 已完成 27 次三平台真实只读调用；Cursor 连接已更新，业务项目草案 22 条 proposed、1 条 unresolved、0 条 confirmed。真实 Cursor Agent 对话与文件审核/写入仍待验收；指定 Bug 无图片，完整模块树返回 403，旧独立 GitLab 样本补验未获自动审批。整体未完成，详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。SDK 与旧 V1 证据不等于本次真实 Host 通过。
+本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**208 tests passed，覆盖率 97.93%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。三平台已有真实只读证据，用户已回传 Cursor 九工具、三次实际调用与初始化对话；项目草案 22 proposed、1 unresolved、0 confirmed，文件保存待批准。针对 Cursor 只能看到固定文本的问题，九工具现同时返回相同的 JSON 文本与 structuredContent；另一个授权 Bug 的真实 PNG 已通过 SDK 原生 ImageContent 验证。Cursor 文本/图片复验、项目文件落地、模块入口 403 和旧独立 GitLab 样本仍有缺口。详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。
 
 ## 职责
 

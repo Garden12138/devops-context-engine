@@ -57,6 +57,7 @@ def test_real_stdio_client_six_readonly_tools(tmp_path: Path) -> None:
                         result = await session.call_tool(name, arguments)
                         assert not result.isError, str(result)
                         payload = result.structuredContent
+                        assert json.loads(result.content[0].text) == payload
                         assert payload["schema_version"] == "1.0" and payload["status"] == "ok"
                         assert len(json.dumps(payload).encode()) < 16000
                         if name == "bug_context":

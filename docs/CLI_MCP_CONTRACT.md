@@ -85,7 +85,9 @@ MCP 绝不暴露 `mapping_approve`, `deploy_execute`, `trigger_pipeline`, `bug_r
 
 模块映射审核、规则发现、三平台 Adapter 等既有 CLI 能力不等于都已作为 MCP 工具提供。Portainer Adapter/扫描已存在；MCP 的 deployment_inspect 只读保存快照，不能实时刷新或验证健康/部署版本。Pipeline 诊断保留规则局限，不保证所有失败都能自动定位根因。写平台、触发构建、部署、回滚和禅道回写不在 V1 MCP 能力内。
 
-结果在 `structuredContent`，文本部分只给极简状态，避免重复 JSON 消耗预算。
+结果同时在 `structuredContent` 和序列化 JSON 的 `content[type=text]`，两者语义相同；只消费文本的 Host 也能读取事实、错误码和截断标志。固定的 `DCE result.` 不能满足 Host 事实消费要求。依据 [MCP Structured Content](https://modelcontextprotocol.io/specification/2025-11-25/server/tools#structured-content)。
+
+`output_budget` 限制两份 JSON 与转义开销合计的紧凑 UTF-8 ToolResult body，不含外层 JSON-RPC framing。同一预算下大 Catalog 响应可能更早明确截断；需要完整大结果时显式提高预算（上限 64000）或缩小查询，而非忽略遗漏。可选 `image_output_budget`（1024–3000000 字节，默认 null）只在显式配置后为原生图片设置独立的总结果上限；图片元数据的两份 JSON 仍受 output_budget 限制。原图 Reader 上限仍为 2MB，不缩图、不落盘；超限返回 not_delivered/truncated。
 默认 fixture；启动时显式 `--live --read-only`，Bug/流水线上游读取还需 `--zentao-bug`/`--gitlab-project` allowlist。
 资源仅当前会话授权，读取重新校验 SHA256、路径与大小。
 

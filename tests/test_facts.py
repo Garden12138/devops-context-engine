@@ -203,6 +203,95 @@ def test_failures_are_safe_and_no_fixture_fallback(facts):
     assert result.structuredContent["error"]["code"] == "PERMISSION_DENIED"
 
 
+def text_payload(result):
+    return json.loads(next(c.text for c in result.content if c.type == "text"))
+
+
+def test_text_only_host_observes_facts_errors_and_native_image(facts):
+    app, _ = facts
+    for platform, args in (
+        ("gitlab", {"operation": "project", "project_id": "g"}),
+        ("zentao", {"operation": "bug", "bug_id": "b"}),
+        ("gitlab", {"operation": "project", "project_id": "outside"}),
+        ("zentao", {"operation": "image", "bug_id": "b"}),
+    ):
+        result = call(app, platform, **args)
+        payload = text_payload(result)
+        assert payload == result.structuredContent
+        assert payload["status"] == ("error" if result.isError else "ok")
+        if payload["data"] is not None:
+            assert payload["data"]["source"] and payload["data"]["revision"]
+        if args["operation"] == "image":
+            assert any(c.type == "image" for c in result.content)
+            assert "base64" not in next(c.text for c in result.content if c.type == "text")
+
+
+@pytest.mark.parametrize("budget", [1024, 2048, 4096, 16000])
+def test_text_compatibility_counts_both_copies_and_json_escaping(facts, budget):
+    app, _ = facts
+    app.services.settings.output_budget = budget
+    app.services.transports["gitlab"] = httpx.MockTransport(
+        lambda _: httpx.Response(200, json={"id": "g", "description": '\\"\n汉' * 200})
+    )
+    result = call(app, "gitlab", operation="project", project_id="g")
+    assert text_payload(result) == result.structuredContent
+    assert len(result.model_dump_json(by_alias=True, exclude_none=True).encode()) <= budget
+    if result.structuredContent["data"] is None:
+        assert result.structuredContent["truncated"]
+        assert "OUTPUT_BUDGET_EXCEEDED" in result.structuredContent["warnings"]
+
+
+def test_text_compatibility_preserves_failure_at_minimum_budget(facts, monkeypatch):
+    from dce.common.errors import DceError, ErrorCode
+
+    app, _ = facts
+    app.services.settings.output_budget = 1024
+
+    def fail(*_):
+        raise DceError(ErrorCode.PERMISSION_DENIED, "Synthetic diagnostic. " * 100)
+
+    monkeypatch.setattr(app.facts, "execute", fail)
+    result = call(app, "gitlab", operation="project", project_id="g")
+    assert result.isError
+    payload = text_payload(result)
+    assert payload == result.structuredContent
+    assert payload["error"]["code"] == "PERMISSION_DENIED"
+    assert len(result.model_dump_json(by_alias=True, exclude_none=True).encode()) <= 1024
+
+
+def test_native_image_budget_is_explicit_bounded_and_keeps_text_budget(facts):
+    from pydantic import ValidationError
+
+    app, _ = facts
+    original = app.services.transports["zentao"]
+    image = SYNTHETIC_PNG + b"\x00" * 8192
+
+    def respond(request):
+        if request.url.path == "/image.png":
+            return httpx.Response(200, content=image, headers={"Content-Type": "image/png"})
+        return original.handle_request(request)
+
+    app.services.transports["zentao"] = httpx.MockTransport(respond)
+    app.services.settings.output_budget = 4096
+    blocked = call(app, "zentao", operation="image", bug_id="b")
+    assert blocked.structuredContent["data"]["image_delivery"] == "not_delivered"
+    assert not any(c.type == "image" for c in blocked.content)
+    app.services.settings.image_output_budget = 20000
+    delivered = call(app, "zentao", operation="image", bug_id="b")
+    assert text_payload(delivered) == delivered.structuredContent
+    content = next(c for c in delivered.content if c.type == "image")
+    assert base64.b64decode(content.data) == image
+    assert len(delivered.model_dump_json(by_alias=True, exclude_none=True).encode()) <= 20000
+    metadata = delivered.model_copy(update={"content": [delivered.content[0]]})
+    assert len(metadata.model_dump_json(by_alias=True, exclude_none=True).encode()) <= 4096
+    app.services.settings.output_budget = 1024
+    small = call(app, "zentao", operation="image", bug_id="b")
+    assert small.structuredContent["truncated"] and all(c.type == "text" for c in small.content)
+    for invalid in (0, 3_000_001):
+        with pytest.raises(ValidationError):
+            Settings(image_output_budget=invalid)
+
+
 def test_pagination_and_malformed_cursor(facts):
     app, calls = facts
 

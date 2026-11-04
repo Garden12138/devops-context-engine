@@ -8,7 +8,9 @@
 
 最新离线 201 tests passed/98.09%，ruff/mypy（48 files）/最终 wheel 隔离检查通过。真实旧 Catalog 副本已先备份后迁移并保留 191 实体/219 边/219 证据/11 快照。私有项目草案位于 .local/agent-led/intake/project.proposed.yaml，23 条关系（22 proposed/1 unresolved/0 confirmed），具体 diff 已生成，业务目录未写；校验与纯 refresh 通过。继续从这里，不重做 T0–T5。
 
-当前缺口：Cursor 桌面实际 Agent 会话回传及初始化审核/项目文件落地；指定 Bug 无附件或内联图片，需要明确授权的含图 Bug；module_tree 真实返回 403，需要只读权限；旧独立 GitLab 样本补验被自动审批拒绝，原因固定旧编号的当前范围未明确授权，未经用户明确授权不得重试或绕过。不能把已提供的地址/Host 选择/工作区重新列为缺失。
+最新接续：用户已回传 Cursor 九工具（另有 Host mcp_auth）、三次真实成功调用与初始化对话；原可见文本只有 DCE result.、structuredContent 未进入模型，原三次 truncated 只能记 not_observable。九工具已修正为相同 JSON 文本/结构化信封，新增可选 image_output_budget（默认 null、最大 3MB），文本/双副本元数据仍受 output_budget 约束，Reader 原图仍限 2MB。当前 208 tests passed/97.93%，ruff/mypy/最终 wheel 检查通过；已授权的新 Bug 原生 PNG（382396 字节）经 stdio SDK 交付，模型接收未验证，无图落盘。
+
+当前缺口：按私有 CURSOR_RECHECK.md 重载 Cursor，只补验 JSON 文本可见性与原生图片进模型；完整 683 行/23 关系草案的保存批准已询问，尚无批准，不把聊天里省略 relationships 的 diff 写入业务目录。module_tree 仍 403 Access not allowed，同 Token Bug 200；官方源码显示 tree/browse 独立方法权限，推断需管理员核对该读入口/产品范围，实际实例版本未确认，不重新索取 Token。旧独立 GitLab 范围在本次答复中未获明确授权，不重试或绕过。不得重新索取已有 Host 三次调用、图片样本、地址或工作区。
 
 连接条件就绪后：
 1. 核对明确授权的业务 workspace 和三平台 scope；不假设任何数字 ID/名称相关。

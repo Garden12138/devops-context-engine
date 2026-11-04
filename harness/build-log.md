@@ -4,7 +4,7 @@
 当前阶段：T6/T7 真实 Cursor/人工审核/图片与权限补验未完成
 最后更新时间：2026-11-04
 
-最新：201 tests passed；本轮真实 SDK 27 次成功读取。当前状态以 PLANS.md 和 agent-led-acceptance.md 为准；下列 V1 里程碑为历史。
+最新：208 tests passed；用户回传真实 Cursor 三次调用/初始化，JSON 文本兼容已修复、SDK 原生图片通过，模型接收与项目文件审批待补。当前状态以 PLANS.md 和 agent-led-acceptance.md 为准；下列 V1 里程碑为历史。
 
 ## 里程碑
 
@@ -306,3 +306,11 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 
 
 提交前检查：工作流/项目校验/本地凭证回归 25 passed（1.10s），10 份文档相对链接检查通过，git diff --cached --check 与 15 个暂存文件的私有路径/站点扫描通过；.env/.local/private 未入索引。真实 Catalog 原有 11 张业务表计数全部与副本一致，两库 quick_check=ok。
+
+
+## 2026-11-04 cursor-text-compatibility
+
+用户回传 Cursor 九个 DCE 工具（另有宿主 mcp_auth）、三次实际成功调用与初始化对话；旧文本仅 DCE result.、结构化信封不可见，原三次 truncated 保持 not_observable。先行 5 failed 复现文本缺陷，九工具改为相同 JSON 文本/structuredContent；预算计量双副本/转义。全形状契约改显式 64KB并保留最小预算检查后 39 passed；新增默认关闭的独立图片总预算（最大 3MB，文本预算/Reader 2MB/来源 scope 不变）后针对性 40 passed。最终全库 208 passed/0 failed/errors/skipped（18.14s），覆盖率 97.93%（行 98.45%、分支 96.31%），ruff/strict mypy（48 files）/最终 wheel 隔离检查通过。真实授权新图片经 stdio 返回原生 PNG，原图 382396 字节、ToolResult 512314 字节、truncated=false、文本与结构化相同，无图片落盘；Cursor 模型接收仍待复验。已备份更新 Cursor 的授权图片样本与显式预算，其他四服务不变。模块接口同 Token Bug 200、模块 403 Access not allowed；官方 v1 modules→tree/browse→checkPriv 源码与该错误相符，推断需核对单独读入口/产品范围，实际实例版本未确认，不索取新 Token或绕过权限。完整683行/23关系草案的保存批准已提出，聊天省略片段不写业务目录，confirmed仍0。旧独立GitLab范围未获本轮明确授权，不重试。详见 context/agent-led/cursor-text-compatibility.md。
+
+
+收尾验证：工作流文档 2 passed（0.51s）、11 份文档相对链接零缺失、21 个暂存文件私有路径/站点扫描通过，git diff --cached --check 通过；凭证源/真实图片/私有运行数据未入索引。

@@ -8,18 +8,18 @@
 |---|---|---|
 | T0 审计 | passed | harness/refactor-audit.md；六工具/Schema/Adapter/关系引擎先审计后修改 |
 | T1 解耦 | passed | 默认路径无语义 Mapping/AI；保留技术事实与旧消费者 |
-| T2 只读能力 | offline_passed_live_partial | 九工具；SDK 27 次真实读取；模块树 403、样本无图，旧独立 GitLab 补验未获自动审批 |
+| T2 只读能力 | offline_passed_live_partial | 九工具 JSON 文本/结构化兼容；SDK 真实 PNG ImageContent 通过；模块入口 403，Cursor 图像接收待复验 |
 | T3 项目文件 | passed_offline_real_draft_ready | 20 Git roots；23 条草案关系（22 proposed/1 unresolved/0 confirmed），校验与纯刷新通过；具体 diff 私有，业务目录未写 |
-| T4 Agent 工作流 | passed_offline_cursor_pending | Cursor 全局 dce 已备份更新，保留其他四服务；桌面实际 Agent 对话待用户回传 |
+| T4 Agent 工作流 | passed_offline_cursor_user_reported | 用户回传九工具/三次实际调用及初始化对话；已修复文本不可见问题，Cursor 复验待回传 |
 | T5 Catalog | passed_offline_real_copy_migrated | 真实旧库副本先备份再迁移；191 实体/219 边/219 证据/11 快照保留，原库不变 |
-| T6 验证 | offline_passed_live_partial | 201 passed，覆盖率 98.09%；真实 SDK 与真实 Host 分开，图片/权限/审核/独立样本尚有缺口 |
+| T6 验证 | offline_passed_live_partial | 208 passed，覆盖率 97.93%；真实 SDK PNG 与用户回传 Host 证据分开，文本/图片复验、权限/审核/独立样本尚有缺口 |
 | T7 文档验收 | documentation_ready_acceptance_incomplete | README/迁移/清单/harness 更新；不标整体完成 |
 
-最新证据：显式本机 URL 别名与进程优先级已回归。禅道安装包欢迎页与应用根不同，按实际同源链接核实后进程覆盖；v1 登录 201、Bug 200。三个平台均成功真实读取。三份 Stack File 与运行 namespace 独立取证，历史两个 Stack SwarmId 仍不匹配、一个匹配；不确认业务归属/环境/健康。指定 Bug 无附件、无内联图片、module 未分配。
+最新证据：显式本机 URL 别名与进程优先级已回归。禅道安装包欢迎页与应用根不同，按实际同源链接核实后进程覆盖；v1 登录 201、Bug 200。三个平台均成功真实读取。三份 Stack File 与运行 namespace 独立取证，历史两个 Stack SwarmId 仍不匹配、一个匹配；不确认业务归属/环境/健康。原 Bug 无附件/内联图片且 module 未分配；新授权图片样本独立读取，不据此建立业务关系。
 
-下一步：用户在 Cursor 新对话执行私有验收提示词，回传九工具/至少三次调用及初始化对话结果；Host 展示候选/diff，用户批准后在业务目录保存并复读/校验。另需含图的授权 Bug、完整模块树只读权限；旧独立 GitLab 项目/流水线/Job 补验被自动审批拒绝，需明确读取范围再继续。不请求私有日志或部署权限。
+下一步：用户按私有 CURSOR_RECHECK.md 只补验 JSON 文本可见性与真实图片接收，不再重复九工具/原三次调用。完整 683 行/23 关系草案的保存审批已提出；聊天中的省略片段不能代替完整文件。批准后由 Host 保存并复读/校验。当前 Token 登录正常、Bug 200，模块入口 403 Access not allowed；官方 v1 模块 GET 进入 tree/browse 并执行方法权限检查，推断为独立入口访问限制，需管理员核对该读入口/产品范围，当前实例版本未确认。旧独立 GitLab 范围未获本轮明确批准，继续 not_verified。
 
-续跑：prompts/agent-led/resume.md；本轮详细证据见 harness/context/agent-led/resumed-http-cursor.md、harness/build-log.md、harness/test-results.md 与 harness/agent-led-acceptance.md。本轮无 push/merge/真实业务写/构建/部署。
+续跑：prompts/agent-led/resume.md；本轮详细证据见 harness/context/agent-led/cursor-text-compatibility.md、harness/build-log.md、harness/test-results.md 与 harness/agent-led-acceptance.md。本轮无 push/merge/真实业务写/构建/部署。
 
 ## 以下为旧 V1 计划和历史执行记录
 
@@ -157,3 +157,8 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 ### Agent-led resumed-http-cursor（2026-11-04）
 
 用户补齐 HTTP 地址并选择 Cursor；新增 URL 别名/显式进程覆盖回归后 pytest 201 passed/0 failed/errors/skipped（18.38s），覆盖率 98.09%（行 98.64%、分支 96.39%），ruff/strict mypy（48 files）与最终 wheel 隔离导入/Schema/0003 角色通过。安装验证首次把 /tmp 与 /private/tmp 路径当作不同，规范化比较后通过。真实 v1 认证 201、Bug 200；标准 SDK 九工具、27 次三平台成功只读 calls（ZenTao 4/GitLab 4/Portainer 19）及一次模块树 403，输出 Schema 均校验。指定 Bug 无附件/内联图片，module 未分配；三 Stack File 63/71/78，实际 Service label 的运行 namespace 八页 78 个唯一 ID，不合并来源或自动确认。真实 Catalog 副本先备份迁移并保留 191/219/219/11，原库不改；全局 Cursor dce 已备份更新且其他四服务保留。23 条私有关系草案（22 proposed/1 unresolved/0 confirmed）和具体 diff ready，Schema/纯 refresh passed，未写业务目录。旧独立 GitLab 固定编号补验被自动审批在执行前拒绝（本轮读取范围未明确授权），移除后只按已配置范围执行；旧样本/其 GitLab Compose 保持 not_verified。真实 Cursor Agent 对话/初始化审核、业务文件落地、含图样本、模块只读权限和旧样本范围仍待补。详见 harness/context/agent-led/resumed-http-cursor.md；无业务写/构建/部署/push/merge。
+
+
+## 2026-11-04 cursor-text-compatibility
+
+用户回传 Cursor 九个 DCE 工具（另有宿主 mcp_auth）、三次实际成功调用与初始化对话；旧文本仅 DCE result.、结构化信封不可见，原三次 truncated 保持 not_observable。先行 5 failed 复现文本缺陷，九工具改为相同 JSON 文本/structuredContent；预算计量双副本/转义。全形状契约改显式 64KB并保留最小预算检查后 39 passed；新增默认关闭的独立图片总预算（最大 3MB，文本预算/Reader 2MB/来源 scope 不变）后针对性 40 passed。最终全库 208 passed/0 failed/errors/skipped（18.14s），覆盖率 97.93%（行 98.45%、分支 96.31%），ruff/strict mypy（48 files）/最终 wheel 隔离检查通过。真实授权新图片经 stdio 返回原生 PNG，原图 382396 字节、ToolResult 512314 字节、truncated=false、文本与结构化相同，无图片落盘；Cursor 模型接收仍待复验。已备份更新 Cursor 的授权图片样本与显式预算，其他四服务不变。模块接口同 Token Bug 200、模块 403 Access not allowed；官方 v1 modules→tree/browse→checkPriv 源码与该错误相符，推断需核对单独读入口/产品范围，实际实例版本未确认，不索取新 Token或绕过权限。完整683行/23关系草案的保存批准已提出，聊天省略片段不写业务目录，confirmed仍0。旧独立GitLab范围未获本轮明确授权，不重试。详见 harness/context/agent-led/cursor-text-compatibility.md。

@@ -9,7 +9,7 @@
 5. 离线单元/契约/E2E、安全、隔离与多对多检查通过；至少一个真实 Host 完成 connect/list/三次真实只读调用和当前项目初始化对话，并确认一条关系或明确 unresolved。
 6. 未验证的版本接口、图片到模型与外部事实保留 not_verified，不能以历史证据/合成数据替代。
 
-当前离线 201 tests passed、总体覆盖率 98.09%，ruff/strict mypy 通过。本轮 SDK 27 次真实三平台只读调用通过，真实旧库副本迁移并保留历史，Cursor 连接已更新；项目草案 22 proposed/1 unresolved/0 confirmed，校验与纯刷新通过，未写业务目录。完整模块树真实账号 403，指定 Bug 无图；Cursor Agent 实际调用/初始化审核与项目文件落地、真实图片和旧独立样本补验仍待完成。详见 harness/agent-led-acceptance.md。
+当前离线 208 tests passed、总体覆盖率 97.93%，ruff/strict mypy 通过。三平台真实读取和旧库副本迁移有证据；用户已回传 Cursor connect/list/三次实际调用及初始化对话，但旧文本仅 DCE result.、截断不可见。现已修复九工具 JSON 文本兼容；授权新样本原生 PNG 通过 SDK 验证。项目草案 22 proposed/1 unresolved/0 confirmed，完整 diff/校验/纯刷新通过，保存待用户批准；模块入口 403、Cursor 修复后文本/图片复验及旧独立样本补验仍待完成。详见 harness/agent-led-acceptance.md。
 
 ## 旧 V1 目标（历史兼容依据）
 

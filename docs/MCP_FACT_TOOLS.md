@@ -39,6 +39,8 @@ file 禁止 .env、私钥和逃逸路径；Compose 默认结构化摘要，不�
 
 image 仅从授权 Bug 内解析附件来源，保持同源/禁止重定向/认证/MIME/magic/大小检查。实际原生 MCP `content[type=image]` 才算图片交付，image_delivery=delivered；超过总输出预算 not_delivered/truncated，不能只凭附件 URL 声称已看图。使用内存，不保存真实图。旧 bug_context 的会话 Resource 方式保留兼容。
 
+九工具均同时提供相同的结构化 JSON 和文本 JSON 信封，Host 不转发 structuredContent 时仍可看到 source/evidence/pagination/truncated/error。两份 JSON（含转义）共同受 output_budget 约束。较大图片可在受保护的启动配置中显式设置 `image_output_budget` 或 `DCE_IMAGE_OUTPUT_BUDGET`（最大 3000000 字节）；默认未设置时沿用 output_budget。文本元数据预算和 Reader 的 2MB 原图限制不变，Base64 只在原生 ImageContent 中。协议发送成功与真实 Host 模型收到图片分别验收。
+
 旧工具：bug_context、project_context、service_trace、pipeline_diagnose、deployment_inspect、discovery_status。详见 [旧契约](CLI_MCP_CONTRACT.md)。旧 Catalog 人工确认不自动成为项目 confirmed；新工作流用事实工具和项目文件。当前不删除旧工具，任何未来移除需独立版本提案。
 
 配置齐全只是 configured_not_verified；模块完整目录、真实附件/新版上游/Host 测试按 [验收报告](../harness/agent-led-acceptance.md) 的证据分别判断。

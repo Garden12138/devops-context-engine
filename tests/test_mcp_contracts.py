@@ -113,7 +113,10 @@ def test_deployment_schema_matches_runtime_exclusive_resource_rule(tmp_path: Pat
 
 
 def test_published_output_schemas_validate_success_errors_and_budget(tmp_path: Path) -> None:
-    with AppServices(Settings(catalog_path=tmp_path / "catalog.sqlite3")) as services:
+    # Full-shape checks need room for both the text and structured copies of graph responses.
+    with AppServices(
+        Settings(catalog_path=tmp_path / "catalog.sqlite3", output_budget=64000)
+    ) as services:
         services.initialize()
         orphan = Entity(source_instance="demo", kind="service", external_id="orphan")
         services.catalog.import_scan(DiscoveryResult(entities=[orphan]), scope="synthetic-orphan")

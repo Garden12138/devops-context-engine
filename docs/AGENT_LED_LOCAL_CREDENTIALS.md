@@ -28,3 +28,7 @@
 禅道 URL 必须指向实际应用根，安装包欢迎页不等于应用入口。若认证路由 404，先区分站点入口与 API 版本；仅按实际观察到的同源链接核对，不枚举猜测路径。核实的应用 URL 可用显式进程 `DCE_ZENTAO_URL` 覆盖，避免修改原凭证文件。不会自动跟随带认证的跨源入口。
 
 此入口已通过合成 v1 认证、MCP stdio 测试和本轮真实 v1 登录/限定读取；接口权限、真实图片及实际 Agent Host 按 [本轮验收](../harness/agent-led-acceptance.md) 分开记录。首次连接仍需明确业务工作区和授权资源范围。
+
+图片可通过非秘密 TOML `image_output_budget` 或进程 `DCE_IMAGE_OUTPUT_BUDGET` 显式扩大原生图片结果预算（最大 3000000 字节）；不扩大文本 JSON/元数据预算，不改变 2MB 原图读取上限，也不扩大授权 Bug 范围。未配置时保持原预算。账号密码换 Token 能读取某些 v1 资源，不等于所有 v1 入口均可访问；同 Token 的 Bug 200、模块入口 403 应分别记录，不重新索取密码或直接要求管理员权限。
+
+本轮模块入口的脱敏错误为 `Access not allowed`。官方 v1 [模块 GET](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php) 调用 tree/browse；[loadController 与 checkPriv](https://github.com/easysoft/zentaopms/blob/main/framework/api/entry.class.php) 对该方法单独检查权限并返回同样的 403。由此推断需核对账号权限组的 tree/browse 入口及产品范围；这是独立方法权限，不说明 Token 登录错误，也未证明当前实例版本与官方 main 相同。可让实例管理员核对读入口，无需把管理员 Token 提供给 DCE。

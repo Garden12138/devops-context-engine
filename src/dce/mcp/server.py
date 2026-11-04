@@ -171,7 +171,11 @@ class McpApplication:
                 data = self.dispatch(name, params)
                 OUTPUTS[name].model_validate(data, strict=True)
             if image_bytes is not None and (
-                len(image_bytes) * 4 // 3 + 2048 > self.services.settings.output_budget
+                len(image_bytes) * 4 // 3 + 2048
+                > (
+                    self.services.settings.image_output_budget
+                    or self.services.settings.output_budget
+                )
             ):
                 image_bytes = None
                 data["image_delivery"] = "not_delivered"
@@ -185,33 +189,67 @@ class McpApplication:
                 else DceError(ErrorCode.INVALID_PAYLOAD, "Tool input or local data is invalid.")
             )
             result = envelope(error=error)
-        # One structured payload avoids doubling the token budget with repeated JSON text.
-        image_size = ((len(image_bytes) + 2) // 3 * 4 + 128) if image_bytes else 0
-        payload = json.loads(
-            encode(result, max(768, self.services.settings.output_budget - 384 - image_size))
-        )
-        contents: list[TextContent | ImageContent] = [
-            TextContent(
-                type="text", text="DCE error." if payload["status"] == "error" else "DCE result."
-            )
-        ]
-        if image_bytes is not None and payload["data"] is not None:
-            contents.append(
-                ImageContent(
-                    type="image", mimeType=image_mime, data=base64.b64encode(image_bytes).decode()
+        # Text-only Hosts must receive the same facts/errors as structured-content clients.
+        # Count both copies, JSON escaping and native images against the complete result body.
+        budget = self.services.settings.output_budget
+        image_budget = self.services.settings.image_output_budget or budget
+        payload = json.loads(encode(result, budget))
+
+        def render() -> CallToolResult:
+            contents: list[TextContent | ImageContent] = [
+                TextContent(
+                    type="text", text=json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
                 )
+            ]
+            if image_bytes is not None and payload["data"] is not None:
+                contents.append(
+                    ImageContent(
+                        type="image",
+                        mimeType=image_mime,
+                        data=base64.b64encode(image_bytes).decode(),
+                    )
+                )
+            return CallToolResult(
+                structuredContent=payload,
+                content=list(contents),
+                isError=payload["status"] == "error",
             )
+
+        def fits(response: CallToolResult) -> bool:
+            size = len(response.model_dump_json(by_alias=True, exclude_none=True).encode())
+            metadata = response.model_copy(
+                update={"content": [c for c in response.content if c.type != "image"]}
+            )
+            metadata_size = len(
+                metadata.model_dump_json(by_alias=True, exclude_none=True).encode()
+            )
+            has_image = any(c.type == "image" for c in response.content)
+            return metadata_size <= budget and size <= (image_budget if has_image else budget)
+
+        response = render()
+        if not fits(response) and image_bytes is not None and payload["data"] is not None:
+            image_bytes = None
+            payload["data"]["image_delivery"] = "not_delivered"
+            payload["data"]["truncated"] = payload["truncated"] = True
+            payload["data"]["warnings"].append("IMAGE_OUTPUT_BUDGET_EXCEEDED")
+            payload["warnings"].append("IMAGE_OUTPUT_BUDGET_EXCEEDED")
+            response = render()
+        if not fits(response):
+            payload = json.loads(encode(payload, 0))
+            response = render()
+        if not fits(response):
+            # Error diagnostics may be longer than the minimum budget after duplication.
+            payload["error"]["message"] = "Tool failed; details omitted."
+            payload["uncertainties"] = []
+            payload["next_action"] = "Reduce query size."
+            response = render()
         logging.getLogger("dce.audit").info(
             "mcp_call tool=%s status=%s code=%s",
             name if name in {**INPUTS, **FACT_INPUTS} else "unknown",
             payload["status"],
             payload.get("error", {}).get("code", "none"),
         )
-        return CallToolResult(
-            structuredContent=payload,
-            content=list(contents),
-            isError=payload["status"] == "error",
-        )
+        return response
 
     def dispatch(self, name: str, params: dict[str, Any]) -> dict[str, Any]:
         services = self.services

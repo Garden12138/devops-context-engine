@@ -2,6 +2,8 @@
 
 2026-11-04 接续：当前机器的全局 `dce` 已备份后替换为 [显式本地凭证启动器](AGENT_LED_LOCAL_CREDENTIALS.md)，采用用户给定的 HTTP/凭证源和限定范围；其他四个 MCP 条目保持不变，配置无密码/Token。标准 SDK 对同一入口已成功读取三平台；Cursor 桌面 Agent 仍需在新会话实际枚举九工具、执行至少三次读取并完成项目初始化对话。CLI 未登录且未枚举到该条目，不能代替桌面验收。私有提示词位置随本轮执行记录保留，平台值不放入本页。
 
+后续真实反馈：用户已确认 Cursor 中九个 DCE 工具和三次实际成功调用，额外 mcp_auth 属于宿主；初始化对话也已回传。由于该 Host 没有转发 structuredContent，旧文本 DCE result. 让模型无法看到事实/截断。服务器现同时提供相同 JSON 文本信封；关开 dce 并在新会话复验文本 JSON。授权含图 Bug 的范围与显式图片预算也已装入连接，SDK 原生图片交付通过；模型实际接收仍需在 Cursor 观察。无需重复全部三平台调用或重新提供 Token。
+
 # Cursor 桌面版接入 DCE MCP
 
 V1 使用本机 **stdio**：Cursor 启动和关闭 DCE 子进程，没有 HTTP 地址、端口或独立常驻服务。无需先在终端挂着一个 `dce mcp serve`。

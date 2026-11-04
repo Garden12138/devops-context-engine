@@ -9,27 +9,29 @@
   "relationships": {
     "authority": "host_workspace_project_yaml",
     "automatic_confirmed": false,
-    "real_business_workspace": "private_draft_validated_pending_cursor_review",
+    "real_business_workspace": "cursor_user_reported_initialization_full_draft_waiting_save_approval",
     "private_draft_statuses": {
       "proposed": 22,
       "unresolved": 1,
       "confirmed": 0
     },
     "business_workspace_written": false,
-    "pure_refresh": "passed"
+    "pure_refresh": "passed",
+    "complete_private_draft_lines": 683,
+    "elided_chat_diff_not_used_for_write": true
   },
   "evidence": {
     "pytest": {
-      "passed": 201,
+      "passed": 208,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 18.336
+      "seconds": 18.066
     },
     "coverage": {
-      "combined_percent": 98.09,
-      "line_percent": 98.64,
-      "branch_percent": 96.39
+      "combined_percent": 97.93,
+      "line_percent": 98.45,
+      "branch_percent": 96.31
     },
     "ruff": "passed",
     "strict_mypy": "passed (48 files)",
@@ -67,7 +69,14 @@
       "search_and_local_pagination": true,
       "no_bug_page_fallback": true,
       "http_status": 403,
-      "full_tree": "not_verified"
+      "full_tree": "not_verified",
+      "same_token_bug_read_http": 200,
+      "v1_login_http": 201,
+      "safe_error_message": "Access not allowed",
+      "probable_restriction": "tree/browse_method_privilege_or_instance_policy",
+      "inference_from_official_source": true,
+      "current_instance_version": "not_verified",
+      "no_permission_bypass": true
     },
     "blocked_audit": {
       "consecutive_goal_turns": 3,
@@ -176,9 +185,13 @@
       "other_servers_preserved": 4,
       "credentials_embedded": false,
       "same_launcher_sdk_reads": "passed",
-      "actual_desktop_agent_session": "not_verified",
+      "actual_desktop_agent_session": "user_reported_connect_list_three_calls_and_initialization",
       "cli_authentication": "unauthenticated",
-      "cli_tool_enumeration": "not_found_in_config"
+      "cli_tool_enumeration": "not_found_in_config",
+      "text_compatibility_fix_installed": true,
+      "authorized_image_bug_scope_added": true,
+      "image_output_budget_bytes": 3000000,
+      "actual_model_recheck": "pending"
     },
     "real_legacy_catalog": {
       "copied_before_migration": true,
@@ -195,23 +208,94 @@
       "source_and_copy_quick_check": "ok"
     },
     "final_documentation_workflow_validation": {
-      "passed_tests": 25,
-      "seconds": 1.1,
-      "local_link_files_checked": 10,
+      "passed_tests": 2,
+      "seconds": 0.51,
+      "local_link_files_checked": 11,
       "broken_links": 0,
       "staged_private_path_and_address_scan": "passed",
       "private_files_excluded": true,
       "staged_diff_check": "passed"
+    },
+    "cursor_user_session": {
+      "evidence_source": "user_reported_actual_cursor_agent",
+      "dce_tools": 9,
+      "host_extra_mcp_auth": 1,
+      "visible_names_total": 10,
+      "actual_successful_calls": [
+        {
+          "tool": "zentao_query",
+          "operation": "bug",
+          "status": "ok",
+          "error_code": null,
+          "truncated": "not_observable"
+        },
+        {
+          "tool": "gitlab_query",
+          "operation": "project",
+          "status": "ok",
+          "error_code": null,
+          "truncated": "not_observable"
+        },
+        {
+          "tool": "portainer_query",
+          "operation": "swarm_info",
+          "status": "ok",
+          "error_code": null,
+          "truncated": "not_observable"
+        }
+      ],
+      "initialization_dialogue": true,
+      "local_modules_checked": 18,
+      "proposed": 22,
+      "unresolved": 1,
+      "confirmed": 0,
+      "human_approval_metadata_empty": true,
+      "diff_review_presented": true,
+      "business_project_yaml_written": false,
+      "original_visible_text": "DCE result.",
+      "original_structured_envelope_visible": false,
+      "repair_recheck": "pending",
+      "host_version": "not_verified"
+    },
+    "text_only_host_compatibility": {
+      "implementation": "passed",
+      "same_json_in_text_and_structured": true,
+      "success_error_truncation_tests": "passed",
+      "both_copies_and_escaping_budgeted": true,
+      "image_budget_opt_in": true,
+      "image_budget_default": null,
+      "image_budget_max_bytes": 3000000,
+      "reader_image_max_bytes_unchanged": 2000000,
+      "installed_wheel_check": "passed",
+      "actual_cursor_recheck": "pending"
+    },
+    "authorized_image_sdk": {
+      "evidence_source": "real_stdio_sdk",
+      "status": "ok",
+      "attachments": 1,
+      "native_image_content": true,
+      "mime": "image/png",
+      "image_bytes": 382396,
+      "tool_result_bytes": 512314,
+      "truncated": false,
+      "image_delivery": "delivered",
+      "text_matches_structured": true,
+      "raw_image_persisted": false,
+      "host_model_received_image": "not_verified",
+      "initial_64000_budget_result": "not_delivered_truncated",
+      "final_explicit_image_budget_bytes": 3000000,
+      "text_metadata_budget_bytes": 64000
     }
   },
   "confidence_status": {
     "offline": "passed",
     "overall_acceptance": "incomplete_external_evidence_pending",
     "real_platform_reads": "passed_scoped_sdk_partial_coverage",
-    "real_agent_host": "not_verified",
+    "real_agent_host": "passed_user_reported_calls_and_initialization_content_recheck_pending",
     "real_image_received_by_model": "not_verified",
     "goal_status": "blocked_tool_historical_user_resumed",
-    "current_work": "resumed_http_cursor_reads_completed_waiting_host_review_image_permissions_and_sample_scope"
+    "current_work": "cursor_evidence_recorded_text_and_native_image_fixed_waiting_recheck_project_save_approval_and_module_acl",
+    "native_image_protocol": "passed_real_sdk"
   },
   "versions": {
     "package": "1.0.0",
@@ -221,17 +305,15 @@
     "catalog_migration": "0003"
   },
   "omissions": [
-    "full_zentao_module_inventory_permission_denied",
-    "real_cursor_agent_three_calls_and_initialization_dialogue_not_verified",
-    "business_project_yaml_awaits_diff_review_and_user_confirmation",
-    "real_image_delivery_to_model_requires_authorized_image_sample",
-    "old_independent_gitlab_samples_and_repository_compose_not_requested_after_auto_review_rejection"
+    "full_zentao_module_tree_access_not_allowed_403",
+    "cursor_json_text_and_image_model_receipt_recheck_pending",
+    "business_project_yaml_waiting_approval_of_complete_diff",
+    "old_independent_gitlab_scope_not_authorized_and_repository_compose_not_revalidated"
   ],
   "next_actions": [
-    "Run the private Cursor acceptance prompt in the supplied business workspace and return sanitized actual calls.",
-    "Host shows the prepared diff, obtains user approval, saves project.yaml and validates/rereads it.",
-    "Provide an authorized image-bearing Bug; the selected Bug has no attachments or inline images.",
-    "Resolve read-only module-tree permission or explicitly record that external gate as unavailable.",
-    "Obtain explicit scope authorization before rechecking old independent GitLab metadata; never assume Bug ownership or request private logs."
+    "In Cursor reload dce and run the private recheck prompt for JSON text and native image visibility; previous three real calls already recorded.",
+    "After explicit user approval of the complete 683-line diff, Host saves project.yaml and validates/rereads it without confirming any relation.",
+    "Ask the instance administrator to check tree/browse read access and product scope; do not request another Token or retry denied routes.",
+    "Keep old independent GitLab sample reads not_verified until their exact scope is explicitly authorized."
   ]
 }

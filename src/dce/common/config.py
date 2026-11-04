@@ -49,6 +49,7 @@ class Settings(BaseModel):
     request_interval: float = Field(default=0.01, ge=0, le=5)
     page_size: int = Field(default=100, ge=1, le=100)
     output_budget: int = Field(default=16000, ge=1024, le=64000)
+    image_output_budget: int | None = Field(default=None, ge=1024, le=3_000_000)
     zentao: PlatformConfig | None = None
     gitlab: PlatformConfig | None = None
     portainer: PlatformConfig | None = None

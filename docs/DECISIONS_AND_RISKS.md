@@ -142,3 +142,9 @@ schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 s
 ## ADR-022：用户明确凭证源时显式加载，保留默认无 dotenv
 
 用户恢复接续后明确凭证位于本机 .env，禅道需 v1 账号密码换 Token。独立本地 MCP 入口处理该输入，默认 CLI/Settings 不自动读取 dotenv；环境通过参数注入，不修改父进程。解析器不 source/执行/插值，严格文件模式/体积/重复/别名检查；账号密码、Token 和三平台 URL 别名映射至 DCE 字段。显式进程配置优先于本机文件与 TOML，允许用实际观察到的同源应用入口修正安装包欢迎页地址；不自动推测 API 路径。v1 认证仅启动时一次，不附旧 Token，不重试密码，不持久化临时 Token，失败固定诊断保持 stdout 协议纯净。公开记录不含真实路径、资源名称或凭证，业务根目录画像和候选项目文档只保留私有区。连接地址缺失不能从凭证猜测，需要非秘密配置。
+
+## ADR-023：文本 Host 兼容与显式原生图片预算
+
+真实 Cursor Agent 已能枚举九工具并发起三平台调用，但只看见 DCE result.，无法消费 structuredContent 中的事实。九工具统一在 TextContent 返回相同的序列化 JSON，兼容只消费文本的 Host；Schema、名称和只读边界保持不变。按实际 UTF-8 ToolResult body 同时计量两份 JSON 与转义，超限明确遗漏，大 Catalog 查询需适当提高预算或缩小范围。
+
+真实授权图片超过旧 64KB 总预算。新增可选 image_output_budget（默认 null，最大 3MB），只在显式配置后用于原生图片总响应；文本/结构化元数据仍受 output_budget 限制，Reader 的 2MB 原图上限不变。Base64 不进入 JSON 文本、不自动缩图、不落盘、不扩大 Bug scope。合成与真实 SDK 均验证；SDK 收到图片不等于真实 Host 模型看见，验收仍分别记录。
