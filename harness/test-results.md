@@ -1,3 +1,6 @@
+# 测试执行记录
+
+最新：201 passed、98.09%，本轮真实 SDK 27 次成功只读调用；整体 Host/图片/权限/审核验收未完成，见 agent-led-acceptance.md。以下按执行时间保留历史结果。
 
 - 2026-11-04 T0: 审计完成：harness/refactor-audit.md；先核对六工具、三 Adapter、Mapping/AI/Catalog，定义新契约/失败/测试。基线 .venv/bin/pytest -q：144 passed（7.52s），exit 0。下一步 T1 默认调用路径解耦；真实新版能力 not_verified。
 
@@ -26,3 +29,11 @@
 当前代码 075212a，初始工作树干净；本轮仅审计提案/验收/代码状态与连接条件。进程中六项平台 URL/凭证变量均缺失、当前工具集合无 DCE、用户未指定业务 workspace；相同阻塞已连续三轮。本轮未发平台请求、未重复 pytest 或 doctor、无新代码测试结果；保留 191 passed/98.18% 基线。逐项审计和恢复输入见 context/agent-led/blocked-audit.md，goal 将设 blocked，绝不设 complete。
 
 - 2026-11-04 resumed-local-intake: 用户明确业务工作区、凭证源与禅道 v1 登录方式，并更换真实缺陷样本。Host 只读核对 20 Git roots、18 根模块清单、17 CI/Dockerfile，私有首层模块关系提议 18 条、confirmed 0，Schema 校验通过；未写业务目录。显式 dotenv/v1 MCP 启动入口已实现，默认不加载 dotenv；文件模式、无插值/执行、别名/重复/冲突、单次登录/无重试/不附旧 Token/父环境隔离/stdio 安全检查通过。先行 5 failed 证实缺口；测试启动 Python resolve 丢失 venv 修复后基础/安全 20 passed，stdio 合成 E2E 2 passed。最终 pytest 199 passed/0 failures/errors/skips（17.71s），总体覆盖率 98.09%，ruff/strict mypy（48 files）与最终 wheel 隔离检查通过。真实凭证只检查变量名并将模式收紧到 0600，正文/值未进入对话或日志，未执行真实登录。三平台地址和实际 Host 仍待用户回复；原 blocked 审计仅历史，不立即沿用旧计数再次标记阻塞。
+
+
+## 2026-11-04 resumed-http-cursor
+
+用户补齐 HTTP 地址并选择 Cursor；新增 URL 别名/显式进程覆盖回归后 pytest 201 passed/0 failed/errors/skipped（18.38s），覆盖率 98.09%（行 98.64%、分支 96.39%），ruff/strict mypy（48 files）与最终 wheel 隔离导入/Schema/0003 角色通过。安装验证首次把 /tmp 与 /private/tmp 路径当作不同，规范化比较后通过。真实 v1 认证 201、Bug 200；标准 SDK 九工具、27 次三平台成功只读 calls（ZenTao 4/GitLab 4/Portainer 19）及一次模块树 403，输出 Schema 均校验。指定 Bug 无附件/内联图片，module 未分配；三 Stack File 63/71/78，实际 Service label 的运行 namespace 八页 78 个唯一 ID，不合并来源或自动确认。真实 Catalog 副本先备份迁移并保留 191/219/219/11，原库不改；全局 Cursor dce 已备份更新且其他四服务保留。23 条私有关系草案（22 proposed/1 unresolved/0 confirmed）和具体 diff ready，Schema/纯 refresh passed，未写业务目录。旧独立 GitLab 固定编号补验被自动审批在执行前拒绝（本轮读取范围未明确授权），移除后只按已配置范围执行；旧样本/其 GitLab Compose 保持 not_verified。真实 Cursor Agent 对话/初始化审核、业务文件落地、含图样本、模块只读权限和旧样本范围仍待补。详见 context/agent-led/resumed-http-cursor.md；无业务写/构建/部署/push/merge。
+
+
+提交前检查：工作流/项目校验/本地凭证回归 25 passed（1.10s），10 份文档相对链接检查通过，git diff --cached --check 与 15 个暂存文件的私有路径/站点扫描通过；.env/.local/private 未入索引。真实 Catalog 原有 11 张业务表计数全部与副本一致，两库 quick_check=ok。

@@ -15,7 +15,7 @@
 
 无配置时使用 [实际配置模板](../examples/connections.example.toml)，复制到安全的本地私有目录并填写站点根地址和实例别名；不加 Token 字段。只保留要接入的平台段。凭证仅进入受保护的 DCE 子进程环境：DCE_ZENTAO_TOKEN、DCE_GITLAB_TOKEN、DCE_PORTAINER_TOKEN。不要发送到聊天；用户明确提供 .env 时，由显式本机入口加载，Agent 不把正文读入对话。实际进程 URL 覆盖变量为 DCE_ZENTAO_URL、DCE_GITLAB_URL、DCE_PORTAINER_URL。
 
-账号密码换禅道 v1 Token 的入口见 [本地凭证说明](AGENT_LED_LOCAL_CREDENTIALS.md)。
+账号密码换禅道 v1 Token 的入口见 [本地凭证说明](AGENT_LED_LOCAL_CREDENTIALS.md)。指定文件也支持 ZEN_URL、GITLAB_URL、PORTAINER_URL；显式进程 DCE_* 配置优先于该文件和 TOML。
 
 配置与范围明确后，先核对 workspace/Git roots 和最少平台事实，再准备实际 Host MCP 启动配置。Host 展示候选与文件 diff，用户确认后维护 .dce/project.yaml。真实 Host 至少三次读取、真实图片 ImageContent 到模型，以及人工确认或明确 unresolved 的证据分别记录。SDK smoke 与旧 Cursor 启动记录不能代替这几项。
 

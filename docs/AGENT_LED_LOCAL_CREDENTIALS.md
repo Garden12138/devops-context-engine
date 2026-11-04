@@ -8,10 +8,13 @@
 
 这是固定只读 stdio MCP 入口，scope 参数可重复，空范围拒绝。Host 的 command 使用虚拟环境 Python 的入口路径，不能把 Python 符号链接解析成全局解释器路径。Host args 填脚本及上述参数，stdout 只传 MCP，启动失败仅在 stderr 返回固定错误。
 
-连接地址和实例别名来自 [connections.example.toml](../examples/connections.example.toml) 的私有副本。站点地址不能从 Token 推断；HTTP 默认拒绝，只有显式放行配置时可用。只保留当前需要接入的平台段。凭证别名映射：
+连接地址和实例别名可来自 [connections.example.toml](../examples/connections.example.toml) 的私有副本，也支持用户明确指定文件中的 URL 别名。优先级为显式进程 `DCE_*` 环境、指定本机文件、TOML；同一文件的别名与规范字段冲突时拒绝。站点地址不能从 Token 推断；HTTP 默认拒绝，只有显式放行配置时可用。只保留当前需要接入的平台段。字段映射：
 
 | 本机字段 | 用途 |
 |---|---|
+| ZEN_URL | DCE_ZENTAO_URL |
+| GITLAB_URL | DCE_GITLAB_URL |
+| PORTAINER_URL | DCE_PORTAINER_URL |
 | ZEN_USER / DCE_ZENTAO_ACCOUNT | 禅道 v1 account |
 | ZEN_PASSWORD / DCE_ZENTAO_PASSWORD | 禅道 v1 password |
 | GITLAB_TOKEN | DCE_GITLAB_TOKEN |
@@ -22,4 +25,6 @@
 
 凭证文件必须为受保护常规文件（0600），拒绝 symlink、超出 64 KiB、重复 key、别名冲突和无效格式。只处理已知变量；按字面值解析，保留密码内容，不运行 shell、不插值 `${...}`。未知变量不进入 DCE 配置。`--live --read-only` 缺失时不会打开凭证文件或登录。默认 Settings 的无 dotenv 行为有回归保护。
 
-此入口通过合成 v1 认证和 MCP stdio 测试，不代表当前公司认证已成功。真实地址/权限/Host 仍按 [本轮验收](../harness/agent-led-acceptance.md) 分开记录。首次连接前需提供明确业务工作区、非秘密地址配置和授权资源范围。
+禅道 URL 必须指向实际应用根，安装包欢迎页不等于应用入口。若认证路由 404，先区分站点入口与 API 版本；仅按实际观察到的同源链接核对，不枚举猜测路径。核实的应用 URL 可用显式进程 `DCE_ZENTAO_URL` 覆盖，避免修改原凭证文件。不会自动跟随带认证的跨源入口。
+
+此入口已通过合成 v1 认证、MCP stdio 测试和本轮真实 v1 登录/限定读取；接口权限、真实图片及实际 Agent Host 按 [本轮验收](../harness/agent-led-acceptance.md) 分开记录。首次连接仍需明确业务工作区和授权资源范围。

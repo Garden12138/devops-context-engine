@@ -2,7 +2,7 @@
 
 DCE 为 Cursor/Codex 等 Agent 提供 ZenTao、GitLab、Portainer 的安全只读连接、结构化查询与证据。Host Agent 使用自己的模型和当前业务工作区源码，发现关系、解释冲突、取得人工审核并维护 `.dce/project.yaml`。DCE 默认不运行业务关系推理，也不写业务工作区。
 
-本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**199 tests passed，覆盖率 98.09%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。真实平台新版路径、真实图片到模型、指定业务项目初始化和真实 Host 验收仍 **not_verified**；目标工作区与凭证源已提供，目前缺少三平台站点地址及实际 Host 接入，不能宣告整体验收完成。详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。旧 V1 真实证据只适用于旧报告的版本/范围。
+本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**201 tests passed，覆盖率 98.09%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。本轮标准 MCP SDK 已完成 27 次三平台真实只读调用；Cursor 连接已更新，业务项目草案 22 条 proposed、1 条 unresolved、0 条 confirmed。真实 Cursor Agent 对话与文件审核/写入仍待验收；指定 Bug 无图片，完整模块树返回 403，旧独立 GitLab 样本补验未获自动审批。整体未完成，详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。SDK 与旧 V1 证据不等于本次真实 Host 通过。
 
 ## 职责
 
@@ -42,7 +42,7 @@ uv run mypy src
 
 提供 **九个只读工具**：新增 `zentao_query`、`gitlab_query`、`portainer_query`，保留原六个 `bug_context`、`project_context`、`service_trace`、`pipeline_diagnose`、`deployment_inspect`、`discovery_status`。原 Catalog 工具和模块映射属于历史兼容数据，不能作为当前项目关系真相。
 
-三个事实工具直接查询 Adapter，使用显式来源 `instance` 与启动 allowlist；每次返回来源、revision、观察时间、证据、分页和遗漏。ZenTao `module_tree` 读取明确 Product 范围的完整模块树，并在本地搜索/分页；旧 `modules` 保留 Bug 页部分清单。路由与结构已按官方源码核对并通过合成测试，真实实例仍待验证。图片通过 `zentao_query(image)` 实际返回 MCP ImageContent；仅 URL/Resource 不算图片已送达模型。
+三个事实工具直接查询 Adapter，使用显式来源 `instance` 与启动 allowlist；每次返回来源、revision、观察时间、证据、分页和遗漏。ZenTao `module_tree` 读取明确 Product 范围的完整模块树，并在本地搜索/分页；旧 `modules` 保留 Bug 页部分清单。路由与结构已按官方源码核对并通过合成测试，本轮真实账号返回 403，未取得完整树。图片通过 `zentao_query(image)` 返回 MCP ImageContent；仅 URL/Resource 不算图片已送达模型，当前真实样本无图片。
 
 1. 按 [MCP 工具清单与启动参数](docs/MCP_FACT_TOOLS.md) 配置安全 stdio 子进程。Cursor 原有安装方式见 [接入文档](docs/CURSOR_MCP_SETUP.md)，需重新加载新进程/会话后枚举九工具。
 2. 在用户指定业务工作区使用 [初始化提示词](prompts/agent-led/initialize.md)，遵循 [Host 工作流](docs/AGENT_LED_WORKFLOW.md)。没有业务工作区时不要在 DCE 仓库制造项目关系。

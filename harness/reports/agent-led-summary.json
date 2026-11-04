@@ -9,15 +9,22 @@
   "relationships": {
     "authority": "host_workspace_project_yaml",
     "automatic_confirmed": false,
-    "real_business_workspace": "not_verified"
+    "real_business_workspace": "private_draft_validated_pending_cursor_review",
+    "private_draft_statuses": {
+      "proposed": 22,
+      "unresolved": 1,
+      "confirmed": 0
+    },
+    "business_workspace_written": false,
+    "pure_refresh": "passed"
   },
   "evidence": {
     "pytest": {
-      "passed": 199,
+      "passed": 201,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 17.704
+      "seconds": 18.336
     },
     "coverage": {
       "combined_percent": 98.09,
@@ -47,17 +54,20 @@
           "verification": "not_verified"
         }
       },
-      "platform_requests": 0
+      "platform_requests": 0,
+      "historical_only": true
     },
     "process_config_presence_checked_without_printing_values": true,
     "dce_mcp_mounted_in_current_host": false,
     "zentao_module_tree": {
       "implementation": "passed_offline",
       "official_v1_route_verified": true,
-      "live_instance": "not_verified",
+      "live_instance": "PERMISSION_DENIED",
       "scope": "explicit_product_id",
       "search_and_local_pagination": true,
-      "no_bug_page_fallback": true
+      "no_bug_page_fallback": true,
+      "http_status": 403,
+      "full_tree": "not_verified"
     },
     "blocked_audit": {
       "consecutive_goal_turns": 3,
@@ -67,7 +77,8 @@
       "explicit_business_workspace_received": false,
       "new_platform_requests": 0,
       "pytest_repeated_this_turn": false,
-      "record": "harness/context/agent-led/blocked-audit.md"
+      "record": "harness/context/agent-led/blocked-audit.md",
+      "historical_only": true
     },
     "resumed_intake": {
       "business_workspace_received": true,
@@ -84,19 +95,123 @@
       "credential_values_exported": false,
       "zentao_auth": "v1_account_password_login",
       "user_selected_bug_overrides_proposal_sample": true,
-      "platform_addresses_received": false,
-      "host_selected": false,
-      "new_platform_requests": 0
+      "platform_addresses_received": true,
+      "host_selected": "Cursor",
+      "new_platform_requests": "see_real_read_only_sdk",
+      "private_draft_relationships": 23,
+      "private_draft_statuses": {
+        "proposed": 22,
+        "unresolved": 1,
+        "confirmed": 0
+      }
+    },
+    "real_read_only_sdk": {
+      "transport": "stdio",
+      "tools_listed": 9,
+      "successful_tools_call": 27,
+      "failed_tools_call": 1,
+      "successful_by_platform": {
+        "zentao": 4,
+        "gitlab": 4,
+        "portainer": 19
+      },
+      "failed_operation": "module_tree",
+      "failed_code": "PERMISSION_DENIED",
+      "output_schema_validation": "passed",
+      "actual_agent_host_proof": false,
+      "business_writes": 0,
+      "private_logs_requested": false,
+      "raw_compose_or_images_persisted": false
+    },
+    "real_samples": {
+      "selected_bug": {
+        "read": "passed",
+        "project_product_reads": "passed",
+        "module_assigned": false,
+        "attachments": 0,
+        "inline_images": 0,
+        "image_to_model": "not_verified_no_image_sample"
+      },
+      "workspace_gitlab": {
+        "exact_origin_project": "passed",
+        "tree": "passed",
+        "commit": "passed",
+        "ci_file": "passed",
+        "bug_relationship": "unresolved"
+      },
+      "portainer": {
+        "endpoint_swarm_and_scoped_stacks": "passed",
+        "stack_files": "passed",
+        "separate_saved_compose_service_counts": [
+          63,
+          71,
+          78
+        ],
+        "swarm_id_matches": 1,
+        "swarm_id_mismatches": 2,
+        "runtime_namespace": {
+          "source": "observed_service_label",
+          "pages": 8,
+          "unique_service_ids": 78,
+          "complete": true,
+          "health": "unknown",
+          "environment": "unresolved"
+        },
+        "prior_stack_metadata_namespace_query": {
+          "count": 0,
+          "same_source_as_runtime_label": false
+        },
+        "count_equality_establishes_business_relationship": false
+      },
+      "old_independent_gitlab_samples": {
+        "status": "not_verified",
+        "request_executed": false,
+        "reason": "auto_review_rejected_current_scope_not_explicit",
+        "gitlab_compose_revalidated": false
+      }
+    },
+    "cursor_configuration": {
+      "global_dce_updated": true,
+      "private_backup_created": true,
+      "other_servers_preserved": 4,
+      "credentials_embedded": false,
+      "same_launcher_sdk_reads": "passed",
+      "actual_desktop_agent_session": "not_verified",
+      "cli_authentication": "unauthenticated",
+      "cli_tool_enumeration": "not_found_in_config"
+    },
+    "real_legacy_catalog": {
+      "copied_before_migration": true,
+      "original_preserved": true,
+      "pre_migration_backup_created": true,
+      "role": "resource_cache_and_history",
+      "counts_preserved": {
+        "entities": 191,
+        "edges": 219,
+        "evidence": 219,
+        "snapshots": 11
+      },
+      "original_business_tables_with_counts_preserved": 11,
+      "source_and_copy_quick_check": "ok"
+    },
+    "final_documentation_workflow_validation": {
+      "passed_tests": 25,
+      "seconds": 1.1,
+      "local_link_files_checked": 10,
+      "broken_links": 0,
+      "staged_private_path_and_address_scan": "passed",
+      "private_files_excluded": true,
+      "staged_diff_check": "passed"
     }
   },
   "confidence_status": {
     "offline": "passed",
-    "overall_acceptance": "blocked_external_conditions",
-    "real_platform_reads": "not_verified",
+    "overall_acceptance": "incomplete_external_evidence_pending",
+    "real_platform_reads": "passed_scoped_sdk_partial_coverage",
     "real_agent_host": "not_verified",
     "real_image_received_by_model": "not_verified",
-    "goal_status": "blocked",
-    "current_work": "resumed_local_intake_waiting_addresses_and_host"
+    "goal_status": "blocked_tool_historical_user_resumed",
+    "current_work": "resumed_http_cursor_reads_completed_waiting_host_review_image_permissions_and_sample_scope"
   },
   "versions": {
     "package": "1.0.0",
@@ -106,18 +221,17 @@
     "catalog_migration": "0003"
   },
   "omissions": [
-    "full_zentao_module_inventory_live_not_verified",
-    "business_workspace_host_initialization_not_verified",
-    "platform_addresses_and_host_setup_missing",
-    "real_host_connect_and_three_real_reads_and_initialization_dialogue_not_verified",
-    "real_image_delivery_and_named_real_samples_not_revalidated",
-    "real_legacy_catalog_not_selected_or_migrated"
+    "full_zentao_module_inventory_permission_denied",
+    "real_cursor_agent_three_calls_and_initialization_dialogue_not_verified",
+    "business_project_yaml_awaits_diff_review_and_user_confirmation",
+    "real_image_delivery_to_model_requires_authorized_image_sample",
+    "old_independent_gitlab_samples_and_repository_compose_not_requested_after_auto_review_rejection"
   ],
   "next_actions": [
-    "Provide non-secret platform addresses/config and select the actual Agent Host; business workspace is known.",
-    "Load credentials only in protected DCE process environment; never chat or project YAML.",
-    "Reload actual Host MCP, run prompts/agent-led/initialize.md and record real calls.",
-    "Verify version-specific full module inventory and scoped real image/model delivery.",
-    "Review unresolved relations with a human; Host writes diff-approved project.yaml."
+    "Run the private Cursor acceptance prompt in the supplied business workspace and return sanitized actual calls.",
+    "Host shows the prepared diff, obtains user approval, saves project.yaml and validates/rereads it.",
+    "Provide an authorized image-bearing Bug; the selected Bug has no attachments or inline images.",
+    "Resolve read-only module-tree permission or explicitly record that external gate as unavailable.",
+    "Obtain explicit scope authorization before rechecking old independent GitLab metadata; never assume Bug ownership or request private logs."
   ]
 }

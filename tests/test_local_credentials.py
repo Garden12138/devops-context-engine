@@ -213,3 +213,40 @@ def test_local_launcher_failure_stays_off_stdout(tmp_path):
     assert result.returncode == 2 and result.stdout == ""
     assert json.loads(result.stderr)["error"]["code"] == "PERMISSION_DENIED"
     assert "fake-pass" not in result.stderr
+
+
+def test_url_aliases_are_literal_and_conflicts_fail_closed(tmp_path):
+    from dce.security.local_credentials import credential_environment
+
+    _, credentials = files(
+        tmp_path,
+        CREDENTIALS
+        + "ZEN_URL=https://zentao.example.invalid\nGITLAB_URL=https://gitlab.example.invalid\n"
+        "PORTAINER_URL=https://portainer.example.invalid\n",
+    )
+    values, _, _ = credential_environment(credentials)
+    assert values["DCE_ZENTAO_URL"] == "https://zentao.example.invalid"
+    assert values["DCE_GITLAB_URL"] == "https://gitlab.example.invalid"
+    assert values["DCE_PORTAINER_URL"] == "https://portainer.example.invalid"
+    credentials.write_text(
+        credentials.read_text() + "DCE_ZENTAO_URL=https://conflict.example.invalid\n"
+    )
+    with pytest.raises(DceError):
+        credential_environment(credentials)
+
+
+def test_explicit_process_address_overrides_local_file_alias(tmp_path):
+    from dce.security.local_credentials import local_settings
+
+    config, credentials = files(
+        tmp_path, "DCE_ZENTAO_TOKEN=fixture\nZEN_URL=https://site.example.invalid\n"
+    )
+    config.write_text("allow_http=false\n")
+    settings = local_settings(
+        config,
+        credentials,
+        live=True,
+        read_only=True,
+        environment={"DCE_ZENTAO_URL": "https://site.example.invalid/application"},
+    )
+    assert settings.zentao.base_url == "https://site.example.invalid/application"

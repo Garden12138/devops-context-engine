@@ -1,29 +1,27 @@
 # Agent-led 重构验收 — 2026-11-04
 
-结论：**本地实现与离线验证通过；整体真实验收未完成。** T2 独立产品模块树现已补齐离线实现并核对官方 v1 路由，真实实例兼容性及 T6 的真实平台/图片/Agent Host 和指定业务项目初始化为 `not_verified`。不将旧 V1 成功、SDK 客户端或合成 HTTP 等同本次真实 Host 通过。
+结论：**代码与离线验证通过，三平台真实只读已部分通过；整体真实验收未完成。** 当前真实证据为标准 MCP SDK，不代替 Cursor Agent 会话。用户已给出业务工作区、凭证源、HTTP 连接和 Host 选择，不再作为缺失条件。
 
-依据：实际位于 docs/refactor/agent-led-initialization/dce-agent-led-refactor/ 的 CHANGE_PROPOSAL 与 specs/01–07；根 AGENTS/GOALS/PLANS、旧验收仅作历史证据。T0 基线 6fd0a90（144 tests）；本地阶段提交保留，未 push/merge。审计见 [refactor-audit.md](refactor-audit.md)，全部命令与修复过程见 [build-log.md](build-log.md)、[test-results.md](test-results.md)。
+依据：docs/refactor/agent-led-initialization/dce-agent-led-refactor/CHANGE_PROPOSAL.md 与 specs/01–07；根 AGENTS/GOALS/PLANS。旧 V1 仅为历史兼容证据。T0 基线 6fd0a90（144 tests），代码按 T0→T7 本地分阶段提交；无 push/merge。审计见 [refactor-audit.md](refactor-audit.md)，执行过程见 [build-log.md](build-log.md)、[test-results.md](test-results.md)。
 
-| 阶段 | 交付 | 判定 |
-|---|---|---|
-| T0 | 六工具真实 Schema/实现/测试、Adapter、Mapping/AI/Catalog 审计；先定义边界/失败/测试 | passed |
-| T1 | 默认初始化/发现/Bug fallback 不调用语义推理，确定性 Module→CI 保留；显式 legacy 入口兼容 | passed |
-| T2 | 三事实工具，保留旧六；三平台 scope/instance、分页/ref/path/日志窗口、证据/预算、原生图片 | offline passed；新增 module_tree 独立产品树，旧 modules 部分清单兼容；真实新版接口 not_verified |
-| T3 | 项目 Schema/模板/只读校验/纯 refresh，六状态、人工审批、隔离、多对多、拒绝保留 | offline passed |
-| T4 | 六 Agent 工作流、实际工具说明、SDK smoke；Host 负责对话/推理/diff/文件写入 | offline passed；真实 Host 流程 not_verified |
-| T5 | SQLite backup/quick_check 后迁移 0003 角色；所有旧关系、审批和历史保留；回滚说明 | offline passed；未选择/迁移用户真实旧库 |
-| T6 | 单元/契约/CLI/stdio/本机合成 HTTP E2E/图片/安全/隔离；真实预检记录 | offline passed；外部 P0 pending |
-| T7 | README/GOALS/PLANS、迁移/清单/工作流、安全/ADR、harness 与续跑 | documentation ready；不宣告整体完成 |
+| 阶段 | 交付与当前判定 |
+|---|---|
+| T0 | passed：核对旧六工具的实际名称/Schema/实现/测试、Adapter、Mapping/AI/Catalog，定义边界后改代码 |
+| T1 | passed：默认路径无语义 Mapping/模型调用；技术事实、Adapter、transport 与兼容入口保留 |
+| T2 | offline passed / live partial：三个事实工具加旧六工具，scope/分页/错误/证据/预算/ImageContent；真实完整模块树 403，指定 Bug 无图 |
+| T3 | offline passed / real draft ready：Schema/模板/六状态/人工审核/纯刷新/隔离；真实私有草案 22 proposed、1 unresolved、0 confirmed，未写业务目录 |
+| T4 | offline passed / Cursor pending：六工作流、工具清单、Cursor 启动配置已更新；桌面 Agent 三次调用与初始化审核待回传 |
+| T5 | passed including real copy：真实旧库副本备份后迁移，保留全部历史数量和原库；角色为 resource_cache_and_history |
+| T6 | offline passed / live partial：201 tests，真实 SDK 27 次成功读取；Host/图片/模块权限/独立旧样本仍待验 |
+| T7 | documentation ready / acceptance incomplete：README/迁移/清单/harness/续跑同步；不虚报整体完成 |
 
-## 实跑结果
+## 最新离线结果
 
-- `.venv/bin/pytest -q --cov=src/dce --cov-report=term-missing --cov-report=json:/tmp/dce-agent-led-coverage.json --junitxml=/tmp/dce-agent-led-tests.xml --tb=short`：**199 passed，0 failed，0 errors，0 skipped，17.71s**。
-- 总体覆盖率 **98.09%**；行 **98.64%**，分支 **96.39%**，高于 75% 门槛；新增 MCP 事实输入契约模块 100%。安全/状态关键场景见下表。
-- `.venv/bin/ruff check .`、`.venv/bin/mypy src`（48 files）、`git diff --check`、索引公共数据扫描 exit 0。最终暂存扫描在 T7 提交前另记。
-- `uv build --wheel --offline --out-dir /tmp/dce-agent-led-dist`：成功；wheel 安装到 `/tmp` 隔离路径，实际从安装包导入，项目模板/Schema 与 0003 迁移/角色检查通过。不触发公司构建或部署。
-- `check_agent_led_mcp.py --help`、项目 CLI/help/模板/schema/校验通过；真实新版 SDK smoke 尚未执行。已提供不输出 ID/正文/凭证的范围检查入口。
-
-本机 HTTP E2E 第一次因沙箱禁止 socket bind 失败，经执行器放行后只绑定 loopback 随机端口通过；wheel 首次因 uv 缓存读取限制停止，经执行器放行离线缓存后通过。没有绕过 TLS/SSRF/范围限制。迁移首轮暴露旧 0001 动态 metadata 表清单问题，修复后 19 项迁移/Catalog/CLI 检查通过。
+- `.venv/bin/pytest -q --cov=src/dce --cov-report=json:/tmp/dce-agent-led-coverage.json --junitxml=/tmp/dce-agent-led-tests.xml --tb=short`：**201 passed，0 failed/errors/skipped，18.38s**。
+- 总体覆盖率 **98.09%**，行 **98.64%**，分支 **96.39%**；ruff 与 strict mypy（48 files）通过。
+- 新增 URL 别名及显式进程配置优先级测试通过；默认 CLI 仍不自动加载 dotenv。凭证只由受保护本机程序处理，正文/值不进入对话或报告。
+- `uv build --wheel --offline --out-dir /tmp/dce-agent-led-dist` 和临时隔离安装通过；使用 `-S`、显式依赖路径、规范化 `/tmp` 与 `/private/tmp` 后，确认实际导入 wheel，URL 别名/项目模板/Schema/0003 Catalog 角色通过。首次断言把 macOS 同一临时目录的两种路径当作不同，修正验证脚本后通过，不改产品行为。
+- 合成 stdio→HTTPTransport 三平台 E2E、原生 ImageContent、双 workspace、多对多、审批/拒绝/刷新、备份迁移、安全边界均包含于全库回归；不是实际 Agent Host 验收。
 
 ## 离线 P0 证据
 
@@ -43,41 +41,35 @@
 | MCP stdio→HTTPTransport→三平台合成读取、原生图片、Host harness 写文件 | test_agent_e2e.py | passed；不是实际 Agent Host |
 | 调用审计只含已知工具名/状态/错误码 | test_facts.py；无参数/正文/密钥 | passed |
 
-## 外部 P0 缺口与真实证据
+## 本轮真实只读证据
 
-此前未配置进程环境时运行 `.venv/bin/dce doctor --live --read-only`：exit **2**，ZenTao/GitLab/Portainer 均 `AUTH_FAILED`，原因固定诊断 `Platform configuration is missing.`，`live_status=not_verified`；未发送平台请求。仅检查六个相应进程变量是否存在，均 false，未打印值；未读取 .env、Token 文件、私有日志或真实附件缓存。该次工具集合无 DCE MCP，workspace 当时未提供。用户恢复后 workspace 和凭证源已明确，现仅缺三平台站点地址与实际 Host，详情见本文末接续记录。
+详细诊断见 [resumed-http-cursor.md](context/agent-led/resumed-http-cursor.md)；本机私有报告只留 gitignored 目录，不公开地址、资源名/ID、原始 Compose、图片、日志或凭证。
 
-| 必须补验 | 当前判定 | 下一步 |
-|---|---|---|
-| 新版三平台真实只读查询 | not_verified | 受保护子进程环境加载配置；用户给明确授权 scope |
-| 完整 ZenTao 产品模块树 | implemented offline / live not_verified | 新 module_tree 按官方 v1 /modules GET 契约实现，搜索后本地分页；真实实例按产品 scope 补验，不能把项目 ID 当产品/执行 ID |
-| 指定真实 Bug 图片到模型 | not_verified | 在真实 Host 观察 tools/call 的 MCP ImageContent；URL/Resource/SDK 布尔摘要不能代替 |
-| 至少一个真实 Cursor/Codex connect/list/三次真实 calls | not_verified | 重载实际 Host 新进程与会话，按工具清单枚举九工具并记录调用 |
-| 当前业务项目初始化与维护 | not_verified | 指定 workspace；Host 执行提示词、展示候选/diff、人工确认或明确 unresolved、写后校验/复读 |
-| 指定 Stack Swarm mismatch、三来源 Compose/namespace 数量、Stack File、Pipeline/Job 可访问性 | not_verified | 在当前授权范围重读；历史数字不作当前事实，过期明确不可用 |
-| 指定 GitLab 项目与 Bug 关系 | unresolved | 无业务证据，不假设相关；仅用户审核后 confirmed |
-| 真实旧库迁移 | not_verified | 指定安全私有库，停旧进程，先备份再打开新版本 |
+| 项目 | 当前证据与边界 |
+|---|---|
+| ZenTao v1 登录 / Bug / Project / Product / 附件元数据 | 实际认证 201、Bug 200；SDK 各操作成功；Bug module 为未分配，附件/内联图片均 0 |
+| GitLab 工作区精确源项目 | 由本地 remote 确定 selector，Project/Tree/Commit/CI 文件读取成功；不推断 Bug 归属，不运行 CI |
+| Portainer | Endpoint/Swarm Info/三 Stack 元数据与 Stack File、Service 列表/详情成功；保存配置的服务数分别 63、71、78 |
+| 运行 namespace | 从实际 Service 的 namespace label 得到查询范围；8 页共 78 个不同 Service ID，完整分页；环境 unresolved、健康 unknown |
+| 历史 Swarm mismatch | 两个 Stack 的 SwarmId 仍不匹配当前集群，一个匹配；只作独立来源事实，关系未自动 confirmed |
+| SDK 协议 | 九工具枚举；27 次成功真实 tools/call，另一次完整模块树 PERMISSION_DENIED；输出 Schema 校验通过，分页遗漏显式标记 |
+| 真实 Catalog 副本 | SQLite backup 后迁移 0003，191 entities/219 edges/219 evidence/11 snapshots 保留，原库不改；迁移前备份已创建 |
+| Cursor 配置 | 全局 dce 备份更新为显式本地入口，保留其他四服务，配置无密码/Token；CLI 未登录且未枚举到该条目，桌面实际对话仍待回传 |
+| 项目关系草案 | 20 Git roots，18 本地模块提议，加精确源身份/独立 Swarm 候选和 Bug 未知；22 proposed、1 unresolved、0 confirmed；Schema 与纯 refresh 通过，具体 diff 已生成，业务目录未写 |
 
-没有项目/环境被自动确认，没有业务仓库文件被 DCE 写入，没有真实平台写入、构建、部署、push 或 merge。机器摘要见 [agent-led-summary.json](reports/agent-led-summary.json)。
+安装包欢迎页曾导致禅道认证路由 404；按实际同源链接核实应用根，再用显式进程 URL 覆盖，未猜测接口/执行页面指令/修改 .env。SDK 入口只用 GET 和 v1 认证 POST。一次基于保存 Stack 元数据的 namespace 查询得到 0；该结果保留，不冒充运行 namespace。随后按实际 Service label 独立查询得到完整 78，两个来源不合并。
 
-## 接续
+## 未完成项与下一步
 
-按 [续跑提示词](../prompts/agent-led/resume.md)，从缺失外部条件补验继续，无需重做离线阶段。业务工作区已提供，现需非秘密连接地址配置及可调用 DCE 的真实 Host；凭证只进入本机受保护进程环境，不发聊天或写入项目 YAML。未满足这些完成标准前保留 goal 未完成。
+| 缺口 | 判定 / 下一步 |
+|---|---|
+| 真实 Cursor Agent | not_verified；用户在目标项目新会话运行私有验收提示词，枚举九工具、至少三次真实只读 calls、完成初始化审核或明确 unresolved。SDK/进程启动不能替代 |
+| 业务项目文件落地 | 私有草案和 diff ready；依规格 05 阶段 F，先展示具体 diff、用户确认，再由 Host 保存并校验/复读；DCE 不写业务目录 |
+| 真实图片到模型 | not_verified；最新指定 Bug 无图片，需另一个明确授权含图 Bug。合成 ImageContent 不代替真实送达 |
+| 完整产品模块树 | PERMISSION_DENIED（403）；需要只读权限或明确记录不可用，版本/完整树未验证，不以 Bug 页部分清单冒充 |
+| 旧独立 GitLab Project/Pipeline/Job 和 GitLab Compose | not_verified；补验命令被自动审批拒绝，原因是固定旧编号的本轮读取范围未明确授权。移除所有该类调用后只查当前工作区；需用户明确范围后再验，只读元数据，不请求私有日志 |
+| 跨平台业务关系、环境/健康/版本 | unresolved/unknown/not_verified；不因数量相等、名称或 ID 相似确认，不把旧 Catalog 当项目真相 |
 
+此前“地址/工作区/Host 选择缺失”的三轮 blocked 记录仅为历史。本轮没有重新宣布完成或重复旧阻塞计数。当前真实阻碍已缩小为 Host 回传、人工审核、图片样本、模块权限和旧独立样本授权。用户提供的信息足以继续完成不依赖这些条件的工作。
 
-## 模块能力接续（2026-11-04）
-
-官方 [路由注册](https://github.com/easysoft/zentaopms/blob/main/config/apiv1.php)、[模块入口](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php) 和 [产品树结构实现](https://github.com/easysoft/zentaopms/blob/main/module/tree/model.php) 已核对，之前 config/routes.php 404 不代表没有 API。新 module_tree 保留完整产品树的实际节点字段/层级，支持本地搜索后分页，深度/节点/字节预算和范围检查；旧模块部分清单不被冒充为完整。新增回归先观察到缺少 operation 的失败，实施后针对性 69 passed（2.71s），真实 stdio/本机 HTTP E2E 1 passed（1.39s）。测试数据全部合成，真实版本与权限依旧 not_verified。
-
-
-## Goal 阻塞审计
-
-当前状态 blocked，整体未完成。相同的连接配置/真实 Host/业务工作区缺失已连续三轮复核，见 [逐项审计](context/agent-led/blocked-audit.md)。本轮无代码变更，未重复 pytest 或无配置认证；199 项通过的证据保持原采集时间与范围。取得明确业务工作区、授权非秘密配置/范围以及真实 Host 后从外部验收接续。
-
-## 用户恢复后的接续
-
-用户已明确业务工作区、新缺陷样本及本机凭证源，禅道为 v1 账号密码换临时 Token；本轮缺陷样本以最新用户选择为准。此前“未提供工作区/凭证源”的阻塞是历史状态。实际已只读识别 20 Git roots、18 个根含模块清单、17 个含 CI，私有草稿含 18 条首层模块关系提议，confirmed=0，并经 Schema 校验；业务目录未写入。具体路径/名称/remote/样本编号只留 gitignored 私有记录。
-
-凭证源只有四个别名变量，无三平台 URL，权限已收紧为 0600。新增显式本地入口与 v1 启动登录，默认 CLI 的无 dotenv 行为保留；凭证正文不返回模型、不打印、不提交。合成安全/基础检查 20 passed，stdio/HTTP E2E 2 passed；新全库 **199 passed，98.09%**，ruff、strict mypy（48 files）、wheel 隔离凭证解析检查通过。首次测试发现 Python symlink resolve 丢失 venv，已改用保留虚拟环境入口路径并复验。
-
-当前真正缺少的是三平台站点根地址/非秘密配置路径，以及实际 Host 选择与 DCE 可见性；尚未登录真实平台或读取真实 Bug/图片。真实 Host/关系审核/文件写入验收保持 not_verified；不再将已提供的业务工作区列为缺失。可按 [资料清单](../docs/AGENT_LED_LIVE_INTAKE.md) 分次补充。
+机器摘要见 [agent-led-summary.json](reports/agent-led-summary.json)，接续见 [resume.md](../prompts/agent-led/resume.md)。所有 fixtures 为合成或显式脱敏；无真实业务写、构建、部署、push 或 merge。

@@ -1,27 +1,25 @@
 # Agent-led 当前执行状态（2026-11-04）
 
-Goal 当前状态：**blocked（外部条件缺失；整体未完成）**。连续三轮审计见 harness/context/agent-led/blocked-audit.md。
+用户已补齐业务工作区、本机凭证源、三平台 HTTP 地址并指定 Cursor。此前三轮 blocked 审计仅为历史；本轮继续推进，整体尚未完成，goal 工具保留此前 blocked 状态（无程序化 resume 接口）。不再把地址/Host 选择/工作区列为缺失。
 
-用户已恢复接续并给出业务工作区与新的 Bug 样本。工作区已只读识别（20 Git roots），本地画像/候选 project.yaml 在 gitignored 私有区并已校验；未写业务目录。凭证源与禅道 v1 登录方式已明确，剩余信息为三平台站点根地址/非秘密配置，以及实际 Host。原阻塞审计是历史状态，不再把业务路径/凭证源列为未知。
-
-本地分支 refactor/agent-led-project-init；重构实际提案路径 docs/refactor/agent-led-initialization/dce-agent-led-refactor/。
+本地分支 refactor/agent-led-project-init；实际提案路径 docs/refactor/agent-led-initialization/dce-agent-led-refactor/。
 
 | 阶段 | 当前状态 | 证据/遗留 |
 |---|---|---|
-| T0 审计 | passed | harness/refactor-audit.md；144 基线通过 |
-| T1 解耦 | passed | 默认路径不调用语义 Mapping；技术事实保留；145 tests |
-| T2 只读能力 | passed_offline_external_pending | 九工具、分页/证据/ImageContent；新增官方 v1 Product module_tree，独立目录实现通过，真实调用 not_verified |
-| T3 项目文件 | passed_offline | Schema/模板/校验/纯 refresh；人工状态/隔离/多对多 |
-| T4 Agent 工作流 | passed_offline | 六工作流、真实名称/Schema/启动参数；不写业务目录 |
-| T5 Catalog | passed_offline | backup 后迁移角色，历史消费者保留；真实库未选定 |
-| T6 验证 | offline_passed_external_blocked | 199 passed，覆盖率 98.09%；站点地址缺失/Host 待选择；workspace 与凭证源已提供 |
-| T7 文档验收 | documentation_ready_acceptance_incomplete | README/迁移/清单/harness 已更新，不标整体完成 |
+| T0 审计 | passed | harness/refactor-audit.md；六工具/Schema/Adapter/关系引擎先审计后修改 |
+| T1 解耦 | passed | 默认路径无语义 Mapping/AI；保留技术事实与旧消费者 |
+| T2 只读能力 | offline_passed_live_partial | 九工具；SDK 27 次真实读取；模块树 403、样本无图，旧独立 GitLab 补验未获自动审批 |
+| T3 项目文件 | passed_offline_real_draft_ready | 20 Git roots；23 条草案关系（22 proposed/1 unresolved/0 confirmed），校验与纯刷新通过；具体 diff 私有，业务目录未写 |
+| T4 Agent 工作流 | passed_offline_cursor_pending | Cursor 全局 dce 已备份更新，保留其他四服务；桌面实际 Agent 对话待用户回传 |
+| T5 Catalog | passed_offline_real_copy_migrated | 真实旧库副本先备份再迁移；191 实体/219 边/219 证据/11 快照保留，原库不变 |
+| T6 验证 | offline_passed_live_partial | 201 passed，覆盖率 98.09%；真实 SDK 与真实 Host 分开，图片/权限/审核/独立样本尚有缺口 |
+| T7 文档验收 | documentation_ready_acceptance_incomplete | README/迁移/清单/harness 更新；不标整体完成 |
 
-历史无配置预检：doctor exit 2，三个 AUTH_FAILED/configuration_missing，0 平台请求。用户恢复后已提供业务工作区、明确凭证源及 v1 登录方式；仅本机处理该授权输入，正文不进对话。当前缺少站点根地址/非秘密配置及实际 Host，尚未调用真实平台。
+最新证据：显式本机 URL 别名与进程优先级已回归。禅道安装包欢迎页与应用根不同，按实际同源链接核实后进程覆盖；v1 登录 201、Bug 200。三个平台均成功真实读取。三份 Stack File 与运行 namespace 独立取证，历史两个 Stack SwarmId 仍不匹配、一个匹配；不确认业务归属/环境/健康。指定 Bug 无附件、无内联图片、module 未分配。
 
-下一步：补充三平台站点根地址/非秘密配置及实际 Host；重载真实 Host MCP；执行初始化提示词、至少三次真实读取及真实图片协议/模型接收验证；取得人工确认或明确 unresolved，Host 展示 diff 后维护文件并校验。模块完整树路由已核对，仍需按实际实例版本/权限补验。不能复用旧 V1 真实证据宣布新版通过。
+下一步：用户在 Cursor 新对话执行私有验收提示词，回传九工具/至少三次调用及初始化对话结果；Host 展示候选/diff，用户批准后在业务目录保存并复读/校验。另需含图的授权 Bug、完整模块树只读权限；旧独立 GitLab 项目/流水线/Job 补验被自动审批拒绝，需明确读取范围再继续。不请求私有日志或部署权限。
 
-续跑：prompts/agent-led/resume.md；阶段细节在 harness/context/agent-led/、harness/build-log.md、harness/test-results.md。本轮代码/测试已分阶段本地提交，无 push/merge/平台写操作。
+续跑：prompts/agent-led/resume.md；本轮详细证据见 harness/context/agent-led/resumed-http-cursor.md、harness/build-log.md、harness/test-results.md 与 harness/agent-led-acceptance.md。本轮无 push/merge/真实业务写/构建/部署。
 
 ## 以下为旧 V1 计划和历史执行记录
 
@@ -154,3 +152,8 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 ### Agent-led resumed-local-intake（2026-11-04）
 
 用户明确业务工作区、凭证源与禅道 v1 登录方式，并更换真实缺陷样本。Host 只读核对 20 Git roots、18 根模块清单、17 CI/Dockerfile，私有首层模块关系提议 18 条、confirmed 0，Schema 校验通过；未写业务目录。显式 dotenv/v1 MCP 启动入口已实现，默认不加载 dotenv；文件模式、无插值/执行、别名/重复/冲突、单次登录/无重试/不附旧 Token/父环境隔离/stdio 安全检查通过。先行 5 failed 证实缺口；测试启动 Python resolve 丢失 venv 修复后基础/安全 20 passed，stdio 合成 E2E 2 passed。最终 pytest 199 passed/0 failures/errors/skips（17.71s），总体覆盖率 98.09%，ruff/strict mypy（48 files）与最终 wheel 隔离检查通过。真实凭证只检查变量名并将模式收紧到 0600，正文/值未进入对话或日志，未执行真实登录。三平台地址和实际 Host 仍待用户回复；原 blocked 审计仅历史，不立即沿用旧计数再次标记阻塞。
+
+
+### Agent-led resumed-http-cursor（2026-11-04）
+
+用户补齐 HTTP 地址并选择 Cursor；新增 URL 别名/显式进程覆盖回归后 pytest 201 passed/0 failed/errors/skipped（18.38s），覆盖率 98.09%（行 98.64%、分支 96.39%），ruff/strict mypy（48 files）与最终 wheel 隔离导入/Schema/0003 角色通过。安装验证首次把 /tmp 与 /private/tmp 路径当作不同，规范化比较后通过。真实 v1 认证 201、Bug 200；标准 SDK 九工具、27 次三平台成功只读 calls（ZenTao 4/GitLab 4/Portainer 19）及一次模块树 403，输出 Schema 均校验。指定 Bug 无附件/内联图片，module 未分配；三 Stack File 63/71/78，实际 Service label 的运行 namespace 八页 78 个唯一 ID，不合并来源或自动确认。真实 Catalog 副本先备份迁移并保留 191/219/219/11，原库不改；全局 Cursor dce 已备份更新且其他四服务保留。23 条私有关系草案（22 proposed/1 unresolved/0 confirmed）和具体 diff ready，Schema/纯 refresh passed，未写业务目录。旧独立 GitLab 固定编号补验被自动审批在执行前拒绝（本轮读取范围未明确授权），移除后只按已配置范围执行；旧样本/其 GitLab Compose 保持 not_verified。真实 Cursor Agent 对话/初始化审核、业务文件落地、含图样本、模块只读权限和旧样本范围仍待补。详见 harness/context/agent-led/resumed-http-cursor.md；无业务写/构建/部署/push/merge。

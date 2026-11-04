@@ -23,6 +23,9 @@ KNOWN_ENV = {f"DCE_{name.upper()}" for name in Settings.model_fields} | {
     for field in ("URL", "TOKEN", "INSTANCE_ID")
 }
 ALIASES = {
+    "ZEN_URL": "DCE_ZENTAO_URL",
+    "GITLAB_URL": "DCE_GITLAB_URL",
+    "PORTAINER_URL": "DCE_PORTAINER_URL",
     "ZEN_USER": "_zentao_account",
     "DCE_ZENTAO_ACCOUNT": "_zentao_account",
     "ZEN_PASSWORD": "_zentao_password",
@@ -98,12 +101,14 @@ def local_settings(
     if not live or not read_only:
         raise DceError(ErrorCode.PERMISSION_DENIED, "Local credentials require live --read-only.")
     values, account, password = credential_environment(credentials)
-    env = {
-        k: v
-        for k, v in (os.environ if environment is None else environment).items()
-        if k in KNOWN_ENV
-    }
-    env.update(values)
+    env = dict(values)
+    env.update(
+        {
+            k: v
+            for k, v in (os.environ if environment is None else environment).items()
+            if k in KNOWN_ENV
+        }
+    )
     env["DCE_AI_ENABLED"] = "false"
     try:
         if config.suffix != ".toml":

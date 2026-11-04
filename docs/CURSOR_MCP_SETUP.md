@@ -1,5 +1,7 @@
 > 当前 Agent-led 版本保留原六工具，新增 zentao_query/gitlab_query/portainer_query，共九工具。新启动范围、instance/分页/图片说明见 [工具清单](MCP_FACT_TOOLS.md)，项目流程见 [Host 工作流](AGENT_LED_WORKFLOW.md)。本页既有配置属于 Catalog 历史接入，不会自动配置新平台范围；需停止旧连接并启动新进程/会话。旧进程/SDK 证据不代表本轮真实 Host 已通过。
 
+2026-11-04 接续：当前机器的全局 `dce` 已备份后替换为 [显式本地凭证启动器](AGENT_LED_LOCAL_CREDENTIALS.md)，采用用户给定的 HTTP/凭证源和限定范围；其他四个 MCP 条目保持不变，配置无密码/Token。标准 SDK 对同一入口已成功读取三平台；Cursor 桌面 Agent 仍需在新会话实际枚举九工具、执行至少三次读取并完成项目初始化对话。CLI 未登录且未枚举到该条目，不能代替桌面验收。私有提示词位置随本轮执行记录保留，平台值不放入本页。
+
 # Cursor 桌面版接入 DCE MCP
 
 V1 使用本机 **stdio**：Cursor 启动和关闭 DCE 子进程，没有 HTTP 地址、端口或独立常驻服务。无需先在终端挂着一个 `dce mcp serve`。
@@ -18,7 +20,8 @@ uv sync --locked --dev
 
 | 模式 | 数据与可用能力 | 前置条件 |
 |---|---|---|
-| 本次实际配置：真实 Catalog 查询 | 四类本地快照查询；Bug/流水线上游查询明确拒绝 | 已授权、已采集的本地 Catalog，无需再次输入 Token |
+| 当前 Agent-led：限定实时事实 | 三个事实工具 + 原六工具兼容；当前项目关系由 Host 维护 | [新范围/参数](MCP_FACT_TOOLS.md)、[显式本地入口](AGENT_LED_LOCAL_CREDENTIALS.md)、受保护凭证源 |
+| 旧 V1 配置：真实 Catalog 查询 | 四类本地快照查询；Bug/流水线上游查询明确拒绝 | 已授权、已采集的本地 Catalog，无需再次输入 Token |
 | 合成演示 | 六工具演示，结果为 synthetic | 单独的演示 Catalog 和 fixture |
 | 实时上游读取 | BugContext / Pipeline Diagnose 读取指定上游；其余四类仍读 Catalog | 受保护进程环境中的凭证、明确的 Bug/Project allowlist 与网络授权 |
 
@@ -157,7 +160,7 @@ direction=both，max_depth=2；说明源码、镜像和服务之间已知与缺�
 - 禅道 Token 若为短期会话，失效会返回 AUTH_FAILED；在本机安全认证后重新注入、重启 MCP。V1 不承诺自动续期。
 - `include_assets=false` 保持不读取真实图片。流水线失败时产品可能读取 trace；本轮未授权私有日志，不应直接扩大到任意失败流水线。
 
-本次配置没有开启这两类实时上游能力。更多平台范围、附件和失败日志的真实验证继续按 [V1 验收状态](../harness/v1-acceptance-status.md) 记录。
+旧 V1 配置没有开启这两类实时上游能力。当前 Agent-led 实时读取和外部缺口按 [本轮验收](../harness/agent-led-acceptance.md) 记录；旧历史范围见 [V1 验收状态](../harness/v1-acceptance-status.md)。
 
 `ready` 只表示 MCP 连接已就绪；实时读取条件以工具自身描述的 availability/blockers 为准。即使显示 `configured_not_verified`，也要经过授权的只读成功调用才能证明目标平台读取可用。
 
