@@ -2,7 +2,7 @@
 
 2026-11-04 接续：当前机器的全局 `dce` 已备份后替换为 [显式本地凭证启动器](AGENT_LED_LOCAL_CREDENTIALS.md)，采用用户给定的 HTTP/凭证源和限定范围；其他四个 MCP 条目保持不变，配置无密码/Token。标准 SDK 对同一入口已成功读取三平台；Cursor 桌面 Agent 仍需在新会话实际枚举九工具、执行至少三次读取并完成项目初始化对话。CLI 未登录且未枚举到该条目，不能代替桌面验收。私有提示词位置随本轮执行记录保留，平台值不放入本页。
 
-后续真实反馈：用户已确认 Cursor 中九个 DCE 工具和三次实际成功调用，额外 mcp_auth 属于宿主；初始化对话也已回传。由于该 Host 没有转发 structuredContent，旧文本 DCE result. 让模型无法看到事实/截断。服务器现同时提供相同 JSON 文本信封；关开 dce 并在新会话复验文本 JSON。授权含图 Bug 的范围与显式图片预算也已装入连接，SDK 原生图片交付通过；模型实际接收仍需在 Cursor 观察。无需重复全部三平台调用或重新提供 Token。
+后续真实反馈：用户已确认 Cursor 中九个 DCE 工具和三次实际成功调用，额外 mcp_auth 属于宿主；初始化对话也已回传。由于该 Host 没有转发 structuredContent，旧文本 DCE result. 让模型无法看到事实/截断。服务器现同时提供相同 JSON 文本信封；关闭再开启 dce 连接，并在新会话复验文本 JSON。授权含图 Bug 的范围与显式图片预算也已装入连接，SDK 原生图片交付通过；模型实际接收仍需在 Cursor 观察。无需重复全部三平台调用或重新提供 Token。
 
 # Cursor 桌面版接入 DCE MCP
 
@@ -77,12 +77,14 @@ uv sync --locked --dev
 ## 3. 启动、检查与使用
 
 1. 打开 Cursor 桌面版的工作区。
-2. 在设置中的 MCP 页面找到 `dce` 并启用；新版本可从 Customize 查找，其他版本可能显示 Tools & MCP。若出现新增服务器信任提示，由用户确认。
-3. 确认显示六个工具。若未更新，先关闭再开启 `dce`；必要时保存工作后执行 `Developer: Reload Window`。通常不需要重启电脑。
+2. 在 Cursor 侧边栏打开 **Customize → MCPs**，找到名为 `dce` 的服务；其他版本可能在设置的 MCP 或 Tools & MCP 页面。若出现新增服务器信任提示，由用户确认。
+3. 当前 Agent-led 版本应显示九个 DCE 工具。“重新启动 dce 连接”指把该服务旁边的开关关闭，再打开，等待工具列表重新出现。Cursor 随之启动新版本地 DCE 进程；不需要删除配置。此操作见 [Cursor 官方故障排查](https://cursor.com/help/customization/mcp#how-do-i-troubleshoot-mcp-servers)。必要时保存工作后执行 `Developer: Reload Window`。
 4. 在 Agent 会话发送下面第一条提示词，检查真实宿主调用。
 
 工具契约修正后需要重新加载 MCP，已运行的 Python 子进程不会自动导入磁盘上的新代码。若旧聊天仍显示模板化描述，重启 `dce` 后再开一个 Agent 会话执行能力检查。
 同机多个 Cursor 窗口可能保留不同的 MCP 连接；观察到一个新进程不能证明其他窗口已刷新。应在实际使用的窗口关闭再开启 `dce`，再在新会话检查 revision 1.1。
+
+
 
 ### 只检查能力，不查询业务数据
 
@@ -181,3 +183,11 @@ direction=both，max_depth=2；说明源码、镜像和服务之间已知与缺�
 临时停用：在 Cursor 的 MCP 页面关闭 `dce`。卸载接入：仅删除 `mcpServers.dce` 条目，保留其他 MCP。本机配置安装前应备份；备份可能含其他服务凭证，需保留在本机并限制权限，不提交 Git。
 
 安全规范见 [SECURITY.md](SECURITY.md)，通用安装与 CLI 运维见 [OPERATIONS.md](OPERATIONS.md)。
+
+## 7. 项目文件与保存确认
+
+复验提示词只是交给 Cursor Agent 的操作说明，不是审批对象。`project.proposed.yaml` 是完整项目关系草案，`project.proposed.diff` 是将它新增到业务目录的变更预览；两者保存在 DCE 的私有运行目录。最终文件为业务项目中的 `.dce/project.yaml`，供后续 Agent 初始化、刷新和定位问题时读取。
+
+本轮草案记录 20 个 Git roots、三平台资源 ID，以及 23 条带来源/时间/证据的关系：18 条本地模块结构、1 条精确 Git remote 身份、3 条 Stack/Swarm 候选、1 条 Bug 与当前代码的未知关联。状态为 22 proposed、1 unresolved、0 confirmed，不含 Token 或密码。保存草案后仍保留这些状态，不替用户确认业务关系。
+
+需要批准的是“允许在指定业务项目新增该文件”。用户要求严格遵循的 [规格 05 阶段 F](refactor/agent-led-initialization/dce-agent-led-refactor/specs/05-agent-workflow.md) 明确规定：“用户确认后创建/更新 `.dce/project.yaml`；写入前展示 diff”。未来逐条确认业务关系还需证据和真实审批元数据；本次文件保存审批不填写这些字段。聊天中省略关系的片段不能代替完整草案。

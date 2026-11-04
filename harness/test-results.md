@@ -45,3 +45,10 @@
 
 
 收尾验证：工作流文档 2 passed（0.51s）、11 份文档相对链接零缺失、21 个暂存文件私有路径/站点扫描通过，git diff --cached --check 通过；凭证源/真实图片/私有运行数据未入索引。
+
+
+## 2026-11-04 clarification-of-host-restart-and-project-save
+
+用户询问“关开 dce”和文件审批含义，尚未批准业务文件保存。已将私有复验提示词与接入文档改为明确步骤：Cursor Customize→MCPs，关闭再开启 dce 服务开关，等待工具列表后新建 Agent 会话；按官方页面核对。补充项目草案/diff/最终 YAML/规格各自作用和 23 条关系摘要，明确只申请新增业务项目记录，保存不把 proposed/unresolved 改为 confirmed；审批来源为规格 05 阶段 F。仅文案变更，不重跑平台或全库回归，208 tests 基线保留；diff check 通过，业务目录仍未写。
+
+文档工作流检查：2 passed（0.57s）；未运行真实平台读取或改写业务工作区。

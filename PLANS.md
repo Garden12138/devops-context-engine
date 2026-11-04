@@ -17,6 +17,8 @@
 
 最新证据：显式本机 URL 别名与进程优先级已回归。禅道安装包欢迎页与应用根不同，按实际同源链接核实后进程覆盖；v1 登录 201、Bug 200。三个平台均成功真实读取。三份 Stack File 与运行 namespace 独立取证，历史两个 Stack SwarmId 仍不匹配、一个匹配；不确认业务归属/环境/健康。原 Bug 无附件/内联图片且 module 未分配；新授权图片样本独立读取，不据此建立业务关系。
 
+用户澄清接续：已解释重启 dce 连接的具体开关操作及各文件用途；保存批准仍未收到。只申请把候选关系记录新增到业务项目，所有关系保持原状态。
+
 下一步：用户按私有 CURSOR_RECHECK.md 只补验 JSON 文本可见性与真实图片接收，不再重复九工具/原三次调用。完整 683 行/23 关系草案的保存审批已提出；聊天中的省略片段不能代替完整文件。批准后由 Host 保存并复读/校验。当前 Token 登录正常、Bug 200，模块入口 403 Access not allowed；官方 v1 模块 GET 进入 tree/browse 并执行方法权限检查，推断为独立入口访问限制，需管理员核对该读入口/产品范围，当前实例版本未确认。旧独立 GitLab 范围未获本轮明确批准，继续 not_verified。
 
 续跑：prompts/agent-led/resume.md；本轮详细证据见 harness/context/agent-led/cursor-text-compatibility.md、harness/build-log.md、harness/test-results.md 与 harness/agent-led-acceptance.md。本轮无 push/merge/真实业务写/构建/部署。
