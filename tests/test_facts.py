@@ -326,3 +326,35 @@ def test_malformed_service_and_collection_and_missing_asset_are_safe(facts):
     )
     assert call(app, "zentao", operation="bugs", product_id="p").isError
     assert call(app, "zentao", operation="image", bug_id="b").isError
+
+
+def test_upstream_page_width_is_enforced_even_if_api_ignores_limit(facts):
+    app, _ = facts
+    app.services.transports["gitlab"] = httpx.MockTransport(
+        lambda _: httpx.Response(
+            200, json=[{"id": str(i)} for i in range(3)], headers={"X-Next-Page": ""}
+        )
+    )
+    result = call(app, "gitlab", operation="tree", project_id="g", ref="sha", limit=1)
+    data = result.structuredContent["data"]
+    assert len(data["records"]) == 1 and data["pagination"]["more_available"]
+    assert data["truncated"] and "UPSTREAM_PAGE_LIMIT_EXCEEDED" in data["warnings"]
+
+
+def test_json_compose_and_malformed_swarm_are_safe(facts):
+    app, _ = facts
+    app.services.transports["gitlab"] = httpx.MockTransport(
+        lambda _: httpx.Response(
+            200, text='{"services":{"api":{"image":"app:v1","environment":{"FOO":"hidden"}}}}'
+        )
+    )
+    result = call(app, "gitlab", operation="file", project_id="g", ref="sha", path="deploy.json")
+    assert not result.isError and "hidden" not in json.dumps(result.structuredContent)
+    app.services.transports["portainer"] = httpx.MockTransport(
+        lambda _: httpx.Response(200, json={"Swarm": {"Cluster": ["invalid"]}})
+    )
+    assert call(app, "portainer", operation="swarm_info", endpoint_id="e").isError
+    app.services.transports["portainer"] = httpx.MockTransport(
+        lambda _: httpx.Response(200, json=[{"Spec": ["invalid"]}])
+    )
+    assert call(app, "portainer", operation="services", endpoint_id="e", namespace="demo").isError

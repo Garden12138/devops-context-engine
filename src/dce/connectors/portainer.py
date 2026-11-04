@@ -67,11 +67,16 @@ class Portainer:
         data: list[dict[str, Any]] = self.reader.json(
             f"/api/endpoints/{key(endpoint)}/docker/services", kind="portainer", expected=list
         )
+        for service in data:
+            spec = service.get("Spec", {})
+            if not isinstance(spec, dict) or not isinstance(spec.get("Labels", {}), dict):
+                raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected service labels.")
         return [
-            s
-            for s in data
+            service
+            for service in data
             if namespace is None
-            or s.get("Spec", {}).get("Labels", {}).get("com.docker.stack.namespace") == namespace
+            or service.get("Spec", {}).get("Labels", {}).get("com.docker.stack.namespace")
+            == namespace
         ]
 
     def endpoint(self, endpoint: str) -> dict[str, Any]:

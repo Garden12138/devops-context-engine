@@ -220,14 +220,21 @@ class FactQueries:
                 params.update(path=p["path"] or "", recursive="false")
             response = a.reader.get(base + routes[op], params=params)
             records = a.reader.decode(response, list)
+            oversized = len(records) > p["limit"]
             cursor = response.headers.get("X-Next-Page")
             more = len(records) >= p["limit"] if cursor is None else bool(cursor)
+            if oversized:
+                records = records[: p["limit"]]
+                more = True
+                warnings.append("UPSTREAM_PAGE_LIMIT_EXCEEDED")
             if cursor:
                 if not cursor.isdigit() or int(cursor) != p["page"] + 1:
                     raise DceError(ErrorCode.INVALID_PAYLOAD, "Invalid pagination cursor.")
         elif op == "file":
             text = a.raw_file(project, p["path"], p["ref"])
-            metadata = yaml_metadata(text)[0] if p["path"].endswith((".yml", ".yaml")) else {}
+            metadata = (
+                yaml_metadata(text)[0] if p["path"].endswith((".yml", ".yaml", ".json")) else {}
+            )
             if (
                 "services" in metadata
                 and isinstance(metadata["services"], dict)
@@ -315,6 +322,9 @@ class FactQueries:
             if not isinstance(records, list) or not all(isinstance(r, dict) for r in records):
                 raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected ZenTao Bug collection.")
             more = len(records) >= p["limit"]
+            if len(records) > p["limit"]:
+                records = records[: p["limit"]]
+                warnings.append("UPSTREAM_PAGE_LIMIT_EXCEEDED")
             if op == "modules":
                 records = [
                     {"module": r["module"], "bug_id": r.get("id")}
@@ -390,12 +400,15 @@ class FactQueries:
             records = [compose(a.stack_file(p["stack_id"], endpoint))]
         elif op == "swarm_info":
             swarm = a.docker_info(endpoint)["Swarm"]
+            cluster = swarm.get("Cluster") or {}
+            if not isinstance(cluster, dict):
+                raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected Swarm cluster structure.")
             records = [
                 {
                     "Swarm": {
                         "NodeID": swarm.get("NodeID"),
                         "LocalNodeState": swarm.get("LocalNodeState"),
-                        "Cluster": {"ID": (swarm.get("Cluster") or {}).get("ID")},
+                        "Cluster": {"ID": cluster.get("ID")},
                     }
                 }
             ]

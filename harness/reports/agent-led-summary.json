@@ -13,16 +13,16 @@
   },
   "evidence": {
     "pytest": {
-      "passed": 185,
+      "passed": 187,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 15.649
+      "seconds": 15.68
     },
     "coverage": {
-      "combined_percent": 98.21,
-      "line_percent": 98.77,
-      "branch_percent": 96.44
+      "combined_percent": 98.15,
+      "line_percent": 98.71,
+      "branch_percent": 96.38
     },
     "ruff": "passed",
     "strict_mypy": "passed (47 files)",
