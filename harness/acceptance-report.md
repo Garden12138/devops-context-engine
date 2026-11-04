@@ -1,3 +1,5 @@
+> 本报告是重构前 V1 的版本/范围证据，不能替代本轮 Agent-led 真实平台或 Host 验收。当前状态见 [agent-led-acceptance.md](agent-led-acceptance.md)。
+
 # DCE V1.0 离线验收报告
 
 本文件保留 2026-11-01 离线基线。后续限定真实只读核验见 [真实报告](live-readonly-report.md)，不覆盖本基线的原始结果和未验证声明。

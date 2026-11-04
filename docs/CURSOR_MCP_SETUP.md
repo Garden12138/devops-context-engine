@@ -1,3 +1,5 @@
+> 当前 Agent-led 版本保留原六工具，新增 zentao_query/gitlab_query/portainer_query，共九工具。新启动范围、instance/分页/图片说明见 [工具清单](MCP_FACT_TOOLS.md)，项目流程见 [Host 工作流](AGENT_LED_WORKFLOW.md)。本页既有配置属于 Catalog 历史接入，不会自动配置新平台范围；需停止旧连接并启动新进程/会话。旧进程/SDK 证据不代表本轮真实 Host 已通过。
+
 # Cursor 桌面版接入 DCE MCP
 
 V1 使用本机 **stdio**：Cursor 启动和关闭 DCE 子进程，没有 HTTP 地址、端口或独立常驻服务。无需先在终端挂着一个 `dce mcp serve`。

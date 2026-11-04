@@ -1,4 +1,18 @@
-# GOALS — DCE V1.0
+# 当前目标 — Agent-led Project Initialization
+
+本轮以 docs/refactor/agent-led-initialization/dce-agent-led-refactor/CHANGE_PROPOSAL.md 与 specs/01–07 为准。
+
+1. DCE 是模型无关只读能力层，提供三平台连接、范围查询、分页、错误、脱敏、预算与证据/原生图片内容。
+2. Host 在指定业务工作区读取本地上下文，推理多对多候选、解释冲突、取得用户审核并维护 .dce/project.yaml；DCE 不直接写业务仓库。
+3. confirmed 需证据和真实人工审批，环境归属不凭名称；刷新保留审批/备注/拒绝，新关系 proposed，证据变化 stale/conflicted。
+4. 全局 Catalog 先备份再降级为资源缓存/历史；保留旧消费者，不自动把旧 confirmed 导入项目。
+5. 离线单元/契约/E2E、安全、隔离与多对多检查通过；至少一个真实 Host 完成 connect/list/三次真实只读调用和当前项目初始化对话，并确认一条关系或明确 unresolved。
+6. 未验证的版本接口、图片到模型与外部事实保留 not_verified，不能以历史证据/合成数据替代。
+
+当前离线 187 tests passed、总体覆盖率 98.15%，ruff/strict mypy 通过。完整模块目录、真实新版平台/图片、目标业务工作区和真实 Host 验收待补；总体未完成。详见 harness/agent-led-acceptance.md。
+
+## 旧 V1 目标（历史兼容依据）
+
 
 ## 核心成果
 

@@ -16,3 +16,5 @@
 - 2026-11-04 T6: 完整离线回归 pytest 185 passed/0 failed/0 skipped（15.65s）；总体覆盖率 98.21%、行 98.77%、分支 96.44%；ruff/strict mypy（47 files）/diff/index secret scan passed。标准 stdio→真实 HTTPTransport→本机合成三平台 E2E、原生 ImageContent、双 workspace、审批/拒绝、多对多、迁移和安全边界通过；local wheel 离线打包与隔离导入/Schema/迁移通过。默认沙箱 socket bind/uv cache 受限，经执行器允许后验证，非公司平台操作。真实 doctor exit 2，三平台 AUTH_FAILED/configuration_missing，0 平台请求；当前 Host 未挂 DCE、目标业务 workspace 未提供。T6 外部 P0 not_verified，整体未验收完成；不以旧报告或合成 SDK 替代。新增安全只读 SDK smoke 入口供连接就绪后复验，绝不声称真实 Host 已通过。
 
 - 2026-11-04 T6-followup: 最终代码审查补强：上游忽略 page limit 时强制单页宽度与显式遗漏；JSON 格式 Compose 同样只返回事实；畸形 Swarm Cluster/Service labels 安全失败。针对性 58 passed（1.41s）；最终全库 187 passed/0 failures/errors/skipped（15.70s），总体覆盖率 98.15%、详见机器摘要；ruff/strict mypy passed。重建最终 wheel 并隔离安装，Schema/0003 角色/九工具枚举通过。外部缺口未变，不宣告整体完成。
+
+- 2026-11-04 T7: README/GOALS/PLANS、九工具清单、迁移回滚、安全/运维、Host 六工作流和续跑、ADR 与验收矩阵已同步，旧 V1 文档明确历史范围。当前测试 187 passed、覆盖率 98.15%；文档契约/项目校验 16 passed（0.50s），ruff/strict mypy/diff/新文档相对链接检查通过。真实新版三平台/图片/Host/指定业务 workspace 与完整模块目录仍 pending/not_verified；无真实平台写、构建、部署或业务文件写入。T7 文档交付就绪，整体未验收完成；接续条件和证据见 harness/agent-led-acceptance.md 与 prompts/agent-led/resume.md。

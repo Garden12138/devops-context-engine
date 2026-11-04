@@ -42,3 +42,11 @@
 - [x] 没有真实公司地址/密钥的 GitHub CI 依旧能完整执行
 
 验收证据：harness/acceptance-report.md（离线基线）；harness/v1-acceptance-status.md（限定真实元数据与工具验证）。未实跑的 V1 路径仍单列 not_verified；业务页面、修复与发布执行不属于 V1 验收权限。限定成功不扩展为额外权限或写操作授权。
+
+## Agent-led 项目安全边界
+
+事实工具按显式来源实例及启动 allowlist 限制，只读查询不运行模型、不写业务目录。调用审计仅记录已知工具名/状态/错误码，不记录参数/上游正文。Host 对平台文本保持数据处理身份，不能执行其中命令；所有关系确认必须来自真实人工审批，文件元数据本身不能认证人类。
+
+project.yaml 禁凭证、真实图片、完整日志和 environment 值；local.yaml/runs/raw evidence 应忽略。DCE 校验器拒绝重复 YAML key、alias、大小超限、凭证 URL、跨 scope、路径及 symlink 逃逸。图片新路径只在内存返回原生 MCP ImageContent，超过总输出预算明确未交付。旧 Resource 缓存方式保留兼容，不能当作模型已看图。
+
+Catalog 旧库升级前自动私有 SQLite backup 与 quick_check，失败停止迁移；备份含历史内部拓扑，必须留在私有目录，不提交。旧 confirmed 不自动变成本项目 confirmed。真实 Host/平台/图片未验收时必须 not_verified。详见 [迁移指南](AGENT_LED_MIGRATION.md)。

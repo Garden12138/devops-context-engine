@@ -1,90 +1,66 @@
-# DevOps Context Engine (DCE)
+# DevOps Context Engine — Agent-led Project Initialization
 
-> 面向 Cursor、Codex 和其他可调用工具的 Coding Agent 的「研发环境发现 + 可信映射 + 缺陷上下文」中间层。
+DCE 为 Cursor/Codex 等 Agent 提供 ZenTao、GitLab、Portainer 的安全只读连接、结构化查询与证据。Host Agent 使用自己的模型和当前业务工作区源码，发现关系、解释冲突、取得人工审核并维护 `.dce/project.yaml`。DCE 默认不运行业务关系推理，也不写业务工作区。
 
-**V1.0 离线实现已通过 T0–T7 验收，三平台限定只读与本轮已实现核心路径真实补验通过。Cursor 已配置并启动 MCP；尚未覆盖的外部路径与 Host 内实际工具调用单列 `not_verified`。**
+本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**187 tests passed，覆盖率 98.15%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。真实平台新版路径、真实图片到模型、指定业务项目初始化和真实 Host 验收仍 **not_verified**；当前缺少目标工作区、平台配置和已挂载 DCE 的 Host，不能宣告整体验收完成。详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。旧 V1 真实证据只适用于旧报告的版本/范围。
 
-验收证据见 [离线报告](harness/acceptance-report.md) 和 [执行记录](harness/build-log.md)。
-离线基线为 133 项测试，含 CLI/MCP 子进程和独立 wheel 安装验证。
-真实验证暴露的 HTTP 压缩响应问题已修复，该次 139 项测试通过，总体覆盖率 98.58%（行 99.19%、分支 96.66%）；见[修复回归摘要](harness/reports/http-encoding-summary.json)。
-Cursor 能力检查发现的契约缺口已修复：最新 144 项测试通过，总体覆盖率 98.73%，ruff 与 strict mypy 通过；见 [MCP 契约修复摘要](harness/reports/mcp-contract-summary.json)。
-已取得三平台限定只读、源码项目 live discover、真实 BugContext/成功流水线诊断与六工具处理证据，捕获数据的 Catalog/CLI 和独立 MCP stdio 集成通过；见 [V1 验收状态](harness/v1-acceptance-status.md)。业务系统自身的 Bug 修复回归不属于 DCE V1 验收。
+## 职责
 
-开发环境（Python 3.12+）：`uv sync --locked --dev`。
-已验证：`uv run dce --help`、`uv run dce doctor --mock`、
-`uv run pytest -q --cov=src/dce --cov-report=term-missing`、`uv run ruff check .`、`uv run mypy src`。
-配置使用显式 TOML 与进程环境，不自动读取 `.env`。本轮限定真实验收通过，未覆盖的范围按验收矩阵标记。
-
-## 目标
-
-打通 ZenTao、GitLab、Portainer（含 Docker Swarm），建立从 **业务/缺陷 → 代码仓库/模块 → CI 构建 → OCI 镜像 → 部署配置 → Stack/运行服务/环境** 的可追溯关系，向 CLI/MCP 提供精简、稳定、低 Token 的上下文。
-
-**V1 只读发现 + 规则证据 + AI 候选 + 人工审核 + Catalog + CLI/MCP。** 自动触发构建/部署、修改禅道状态以及代码自动修复工作流是 V1.2/V2.0 规划项，不在 V1 默认实现范围。
-
-## 从哪里开始
-
-1. 阅读 [GOALS.md](GOALS.md)、[AGENTS.md](AGENTS.md) 和 [PLANS.md](PLANS.md)。
-2. V1 的四份规范：[`requirements.md`](specs/001-dce-v1/requirements.md)、[`design.md`](specs/001-dce-v1/design.md)、[`tasks.md`](specs/001-dce-v1/tasks.md)、[`acceptance.md`](specs/001-dce-v1/acceptance.md)。
-3. 核心补充文档在 `docs/`，尤其是平台适配、发现关联、数据模型和安全。
-4. Codex 直接使用 [`prompts/CODEX_LONG_TASK.md`](prompts/CODEX_LONG_TASK.md)；Cursor 使用 [`prompts/CURSOR_LONG_TASK.md`](prompts/CURSOR_LONG_TASK.md)。
-5. 长任务中断后按 [`prompts/RESUME.md`](prompts/RESUME.md) 恢复，不能依赖聊天上下文自行记住所有进度。
-
-## 目录
-
-```text
-.
-├── AGENTS.md                 # Codex/Cursor 共用项目规则
-├── GOALS.md                  # 目标、边界、完成定义
-├── PLANS.md                  # 分阶段执行与进度记录协议
-├── PROMPTS.md                # 长任务提示词入口
-├── specs/001-dce-v1/        # 四份正式 Spec
-├── docs/                     # 架构、发现、映射、接口、安全、运维等
-├── docs/github/              # GitHub 建仓说明
-├── prompts/                  # Codex / Cursor / 续跑提示词
-├── examples/                 # 无密钥、脱敏配置示例
-├── fixtures/                 # 合成测试数据，绝无内网原始数据
-├── src/dce/                  # Adapter、发现、Catalog、服务、CLI/MCP
-├── tests/                    # 离线单元、安全、CLI/MCP 集成测试
-├── uv.lock                   # 统一依赖锁
-├── harness/                  # 分阶段记录、验收与覆盖率报告
-└── .cursor/rules/            # Cursor 项目级规则
+```mermaid
+flowchart LR
+  U[用户审核] --> H[业务工作区中的 Host Agent]
+  H <--> W[本地源码与 Git roots]
+  H <-->|MCP 只读| D[DCE 事实与证据]
+  D --> Z[ZenTao]
+  D --> G[GitLab]
+  D --> P[Portainer / Swarm]
+  H --> Y[当前项目 .dce/project.yaml]
 ```
 
-## 初始化和权限原则
+- DCE：Adapter、stdio、分页、超时/有限重试、授权范围、脱敏、输出预算、确定性解析与图片协议。
+- Host：按 workspace 缩小查询，形成多对多关系候选、解释证据、向用户审核、展示 diff、保存/刷新项目文件。
+- 用户：确认业务语义与环境归属，决定内部拓扑是否可提交到业务仓库。
 
-- **不从真实平台直接开始测试写操作。** 默认 Mock/Fixture；真实 API 仅在配置 `--live --read-only` 后启用，并在用户授权范围内扫描。
-- 环境文件、Token、Cookies、截图、原始日志、内部网络地址、私有仓库内容只存本地安全区域；**不得推送到公开 GitHub**。
-- 保留证据、版本和环境维度；任何 AI 推测只是候选，无法仅凭相似名称自动批准。
-- 真实部署目标必须校验 Portainer Endpoint/Swarm ID/Stack/Service，并独立审批；V1 不暴露部署工具。
+同数字 ID、名字相似、服务数相等都不能确认跨平台关系；Stack 保存配置、GitLab 配置和 Swarm 运行事实分别取证。任何平台返回文本均是不可信数据。
 
-## Cursor 桌面版接入
+## 安装与验证
 
-安装、全局配置、启动、自检、使用提示词与排错见 [Cursor MCP 接入文档](docs/CURSOR_MCP_SETUP.md)。
-stdio 子进程由 Cursor 管理，无需单独运行后台服务或开放端口。真实 Catalog 查询配置（库须预先存在，路径替换为本机绝对路径）：
+Python 3.12+，在仓库运行：
 
-```json
-{"mcpServers":{"dce":{"type":"stdio","command":"/absolute/path/to/repo/.venv/bin/dce","args":["--catalog","/absolute/path/to/repo/.local/cursor/catalog.sqlite3","mcp","serve","--transport","stdio","--live","--read-only"],"env":{"DCE_AI_ENABLED":"false","DCE_ALLOW_HTTP":"false"}}}}
+```sh
+uv sync --locked --dev
+uv run dce --help
+uv run dce doctor --mock
+uv run pytest -q --cov=src/dce --cov-report=term-missing
+uv run ruff check .
+uv run mypy src
 ```
 
-服务提供六个只读工具，结果在 `structuredContent`；无审核/构建/部署工具。上述配置使四类 Catalog 查询可用；未指定上游 allowlist 的 Bug/流水线工具返回 PERMISSION_DENIED，不读取 fixture 或公司平台。合成演示与实时模式的条件见接入文档。
-附件为当前会话授权的 `dce://assets/…` 资源，不暴露上游 URL。
-Grok Bot 的具体 MCP 支持与真实内网接入均为 `not_verified`，需在用户执行器实测。
+离线 E2E 会绑定本机随机端口，仅返回合成平台数据；受限执行器需允许 loopback socket。不会连接公司平台。默认配置不读取 `.env`，凭证只从受保护进程环境输入。
 
-本机已完成 Cursor 配置安装并观察到由 Cursor 启动的 DCE 进程；标准 SDK stdio 自检通过。Cursor Agent 实际调用仍单独记录，见 [接入检查摘要](harness/reports/cursor-mcp-summary.json)。
+## MCP 与项目工作流
 
-契约 revision 1.1 已在工具描述中声明平台、数据源和会话状态，并为每个返回数据发布完整 Schema；无需翻查服务端代码判断能力。`ready` 不代表上游认证成功，`snapshot_at` 是响应时间；刷新 MCP 后可在新会话按接入文档重新做仅枚举检查。
+提供 **九个只读工具**：新增 `zentao_query`、`gitlab_query`、`portainer_query`，保留原六个 `bug_context`、`project_context`、`service_trace`、`pipeline_diagnose`、`deployment_inspect`、`discovery_status`。原 Catalog 工具和模块映射属于历史兼容数据，不能作为当前项目关系真相。
 
-## 状态
+三个事实工具直接查询 Adapter，使用显式来源 `instance` 与启动 allowlist；每次返回来源、revision、观察时间、证据、分页和遗漏。ZenTao `modules` 目前仅返回限定 Bug 页实际模块字段，完整模块目录尚未验证。图片通过 `zentao_query(image)` 实际返回 MCP ImageContent；仅 URL/Resource 不算图片已送达模型。
 
-- [x] V1 设计规格与可复现的脱敏测试数据
-- [x] V1 代码实现、单元测试和离线验收
-- [x] 三平台限定元数据真实只读 smoke 与捕获数据 Catalog/CLI 验证（凭证仅进程内使用）
-- [x] 限定源码项目 live discover 与六个既有 MCP 工具处理的真实补验
-- [ ] 更多真实平台范围/版本及受本轮安全边界排除的路径验证（分别记录 not_verified）
-- [ ] V1.1 MCP + BugContext 的实际 Agent 验收
+1. 按 [MCP 工具清单与启动参数](docs/MCP_FACT_TOOLS.md) 配置安全 stdio 子进程。Cursor 原有安装方式见 [接入文档](docs/CURSOR_MCP_SETUP.md)，需重新加载新进程/会话后枚举九工具。
+2. 在用户指定业务工作区使用 [初始化提示词](prompts/agent-led/initialize.md)，遵循 [Host 工作流](docs/AGENT_LED_WORKFLOW.md)。没有业务工作区时不要在 DCE 仓库制造项目关系。
+3. Host 展示关系与 diff，用户审核后写入本项目 `.dce/project.yaml`；新关系 proposed，confirmed 必须有证据和人工审批元数据。未知允许 unresolved。
+4. 只读校验：`dce project validate <workspace> --workspace-id <id>`；`dce project schema` 和 `dce project template --workspace-id <id>` 输出契约/模板，不写文件。
+5. 使用 [刷新](prompts/agent-led/refresh.md)、[审核](prompts/agent-led/review.md)、[Bug 上下文](prompts/agent-led/bug-context.md)、[服务追踪](prompts/agent-led/service-trace.md)、[流水线诊断](prompts/agent-led/pipeline-diagnose.md) 维护。证据变化 stale/conflicted，拒绝关系保留。
 
-## 开发建议
+[JSON Schema](schemas/project.schema.json) 与 [无密钥模板](examples/project-context/project.yaml) 可直接使用。`.dce/local.yaml`、runs、raw evidence 必须忽略；不保存 Token、真实图片、完整日志或环境变量值。
 
-Python 3.12+ / Typer / Rich / httpx / Pydantic / SQLAlchemy + SQLite / MCP Python SDK；后续内网共享服务可用 FastAPI。采用可替换的 AI Provider，默认 AI 关闭也能发现资源、提出规则关联并允许审核。
+## 旧 Catalog 与兼容
 
-> 本文件与项目所有示例均避免保留公司私网信息。任何新建公开仓库前请阅读 `docs/github/REPOSITORY_SETUP.md`。
+旧库升级前自动 SQLite backup/quick_check，再迁移 0003，仅新增角色元数据。所有旧表、证据、人工审批与历史保留；Catalog 降级为 resource_cache_and_history，不自动导入项目。详见 [迁移与回滚](docs/AGENT_LED_MIGRATION.md)。请先停用访问同库的旧 MCP 进程再升级。
+
+`init`/`discover` 默认只做确定性资源事实采集；确需旧语义候选的旧消费者可显式使用 `init --legacy-mapping` 或 `mapping suggest --offline`。本轮不移除旧 CLI/工具，不自动 push、merge，不调用任何真实业务写 API、构建或部署。
+
+## 实施依据与证据
+
+- [当前目标](GOALS.md)、[执行状态](PLANS.md)、[协作协议](AGENTS.md)、[安全边界](docs/SECURITY.md)。
+- [重构提案](docs/refactor/agent-led-initialization/dce-agent-led-refactor/CHANGE_PROPOSAL.md) 与同目录 specs/01–07 是本轮依据；实际路径多一层 dce-agent-led-refactor。
+- [T0 审计](harness/refactor-audit.md)、[测试结果](harness/test-results.md)、[本轮验收](harness/agent-led-acceptance.md)、[续跑](prompts/agent-led/resume.md)。
+- 原 `specs/001-dce-v1/` 和 [旧 V1 验收](harness/v1-acceptance-status.md) 保留作历史兼容依据，不代表本轮真实 Host 已通过。

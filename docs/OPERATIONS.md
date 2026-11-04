@@ -114,3 +114,9 @@ Schema 只支持 Alembic 前向迁移；不做破坏性 downgrade；审核撤销
 当前只保留本地工作分支，不 push、merge、建公开仓库或发布 Release。
 未添加开源许可证：依原仓库发布指南，知识产权/公司授权未确认前不擅自授予许可。
 这不影响本地离线验收；公开发布需所有者另行确认许可与历史数据审查。
+
+## 当前 Agent-led 运维
+
+当前新增三个事实查询工具（共九个），原六保留历史兼容。请按 [工具清单](MCP_FACT_TOOLS.md) 配置启动范围；能力就绪不等于认证通过。项目初始化/刷新由 [Host 工作流](AGENT_LED_WORKFLOW.md) 完成；`dce project` 仅输出模板/Schema/只读校验。升级旧库先停止同库 MCP，再按 [备份迁移指南](AGENT_LED_MIGRATION.md) 升级；不要以本页历史 init/mapping 演示作为当前项目关系真相。
+
+真实范围 SDK smoke：`.venv/bin/python scripts/check_agent_led_mcp.py --workspace <workspace> --config <non-secret.toml> --catalog <private-cache>`。默认不读图片/日志/Compose，只输出状态计数；只证明 SDK 读取，不代表真实 Host 初始化。完整验收缺口见 [本轮报告](../harness/agent-led-acceptance.md)。
