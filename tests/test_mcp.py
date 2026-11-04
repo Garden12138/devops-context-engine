@@ -29,6 +29,9 @@ def test_real_stdio_client_six_readonly_tools(tmp_path: Path) -> None:
                     listed = await session.list_tools()
                     names = {tool.name for tool in listed.tools}
                     assert names == {
+                        "zentao_query",
+                        "gitlab_query",
+                        "portainer_query",
                         "bug_context",
                         "project_context",
                         "service_trace",

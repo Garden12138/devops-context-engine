@@ -303,8 +303,8 @@ DESCRIPTIONS = {
 }
 
 
-def output_schema(name: str) -> dict[str, Any]:
-    data = OUTPUTS[name].model_json_schema()
+def output_schema(name: str, model: type[BaseModel] | None = None) -> dict[str, Any]:
+    data = (model or OUTPUTS[name]).model_json_schema()
     error = ErrorData.model_json_schema()
     definitions = {**data.pop("$defs", {}), **error.pop("$defs", {})}
     definitions.update(ToolData=data, ToolError=error)

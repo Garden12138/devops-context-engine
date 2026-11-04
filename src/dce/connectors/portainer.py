@@ -73,3 +73,19 @@ class Portainer:
             if namespace is None
             or s.get("Spec", {}).get("Labels", {}).get("com.docker.stack.namespace") == namespace
         ]
+
+    def endpoint(self, endpoint: str) -> dict[str, Any]:
+        return {
+            k: v
+            for k, v in self.reader.json(
+                f"/api/endpoints/{key(endpoint)}", kind="portainer"
+            ).items()
+            if k in {"Id", "Name", "Type", "Status"}
+        }
+
+    def service(self, endpoint: str, service: str) -> dict[str, Any]:
+        return dict(
+            self.reader.json(
+                f"/api/endpoints/{key(endpoint)}/docker/services/{key(service)}", kind="portainer"
+            )
+        )

@@ -84,7 +84,7 @@ class ZenTao:
                 sources.append(entry["url"])
         return soup.get_text(" ", strip=True), list(dict.fromkeys(sources))
 
-    def download_image(self, source: str, cache: Path) -> dict[str, str]:
+    def image_content(self, source: str) -> tuple[bytes, str]:
         try:
             url = urljoin(self.reader.config.base_url + "/", source)
         except ValueError:
@@ -101,13 +101,18 @@ class ZenTao:
             raise DceError(
                 ErrorCode.INVALID_PAYLOAD, "Attachment is not a supported verified image."
             )
+        return content, mime
+
+    def download_image(self, source: str, cache: Path) -> dict[str, str]:
+        content, mime = self.image_content(source)
+        extensions = {"image/png": ".png", "image/jpeg": ".jpg", "image/gif": ".gif"}
         digest = hashlib.sha256(content).hexdigest()
         asset_id = hashlib.sha256(f"{self.reader.config.instance_id}:{source}".encode()).hexdigest()
         cache.mkdir(mode=0o700, parents=True, exist_ok=True)
         if cache.is_symlink():
             raise DceError(ErrorCode.PERMISSION_DENIED, "Asset cache must be a private directory.")
         cache.chmod(0o700)
-        path = cache / f"{asset_id}-{digest}{signatures[mime][1]}"
+        path = cache / f"{asset_id}-{digest}{extensions[mime]}"
         descriptor, temporary = tempfile.mkstemp(dir=cache)
         try:
             with os.fdopen(descriptor, "wb") as stream:

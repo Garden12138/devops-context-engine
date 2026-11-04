@@ -17,7 +17,7 @@ def test_mcp_resource_integrity_and_direct_contracts(tmp_path: Path) -> None:
         server = McpApplication(services)
 
         async def exercise() -> None:
-            assert len(await server.list_tools()) == 6
+            assert len(await server.list_tools()) == 9
             service_id = services.catalog.list_entities(kind="service")["items"][0]["id"]
             for name, arguments in (
                 ("project_context", {"source": "gitlab-demo", "project_key": "1001"}),

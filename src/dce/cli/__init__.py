@@ -60,9 +60,7 @@ def initialize(
                     ErrorCode.INVALID_PAYLOAD, "Scope must be a JSON ScanScope."
                 ) from None
             return service.discover(selected, live=True, read_only=read_only)
-        return service.initialize(
-            fixture=fixture, no_ai=no_ai, legacy_mapping=legacy_mapping
-        )
+        return service.initialize(fixture=fixture, no_ai=no_ai, legacy_mapping=legacy_mapping)
 
     perform(ctx, operation, fixture=fixture)
 
@@ -320,7 +318,12 @@ def mcp_serve(
     read_only: bool = False,
     zentao_bug: list[str] | None = None,
     gitlab_project: list[str] | None = None,
+    zentao_project: list[str] | None = None,
+    zentao_product: list[str] | None = None,
+    portainer_endpoint: list[str] | None = None,
+    portainer_stack: list[str] | None = None,
 ) -> None:
+    from dce.app.facts import FactScope
     from dce.mcp.server import serve
 
     try:
@@ -333,6 +336,14 @@ def mcp_serve(
                 read_only=read_only,
                 allowed_bug_ids=set(zentao_bug or []),
                 allowed_gitlab_projects=set(gitlab_project or []),
+                fact_scope=FactScope(
+                    gitlab_projects=set(gitlab_project or []),
+                    zentao_projects=set(zentao_project or []),
+                    zentao_products=set(zentao_product or []),
+                    zentao_bugs=set(zentao_bug or []),
+                    portainer_endpoints=set(portainer_endpoint or []),
+                    portainer_stacks=set(portainer_stack or []),
+                ),
             )
     except (DceError, OSError, SQLAlchemyError) as exc:
         error = (

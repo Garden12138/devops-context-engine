@@ -113,3 +113,10 @@ Cursor 的真实能力检查暴露描述模板化、无业务 data Schema、互�
 ## ADR-017：Agent-led 能力路径与旧语义 Mapping 解耦
 
 默认 initialize/discover 只抽取来源文件可验证的事实，Module→CI 显式路径匹配独立为 technical_facts；不调用 MappingService 或任何模型。bug_context 不再按 fixture 临时生成语义映射。旧六工具仍可读取历史图，旧 mapping suggest/review 与 init --legacy-mapping 显式兼容；不把旧库当项目关系真相。Host Agent 负责当前 workspace 推理与人类审核。
+
+## ADR-018：有范围的事实查询与原生图片交付
+
+保留旧六工具，新增 zentao_query/gitlab_query/portainer_query，参数由各自 Schema 枚举，instance 与启动 allowlist 双重限制；查询不触达 Mapping/Catalog。项目/产品搜索只访问允许 ID，不全公司枚举；Tree/Jobs/Pipeline 单页，日志尾部、文件行窗口、输出遗漏明确。Stack File 只返回 Compose 事实，Swarm Service 不返回 Container Env/Registry Auth，Stack/Swarm 来源分开。
+图片从已授权 Bug 取得同源附件，经 MIME/magic 与大小限制后直接在内存返回 MCP ImageContent；预算不足标 not_delivered，不缓存真实图片。旧 Resource 交付保留兼容。
+禅道 v1 官方资料未核实完整模块列表路由；modules 返回指定项目/产品 Bug 页实际 module 字段，强制 PARTIAL_MODULE_INVENTORY_FROM_BUG_PAGE，不宣称完整模块目录或已在真实实例验证。
+路由依据：[GitLab Repositories API](https://docs.gitlab.com/api/repositories/)、[禅道 v1 配置](https://www.zentao.net/book/api/1397.html)、[Portainer API](https://docs.portainer.io/api/access)。文档支持路由设计，不证明实际实例兼容或权限。

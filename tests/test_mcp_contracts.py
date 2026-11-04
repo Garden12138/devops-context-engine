@@ -54,7 +54,7 @@ def test_list_tools_explains_platform_source_and_session_without_requests(tmp_pa
                 allowed_gitlab_projects={"private-authorized-project"} if scope else set(),
             )
             tools = {t.name: t for t in asyncio.run(server.list_tools())}
-            assert len(tools) == 6 and "mcp_auth" not in tools
+            assert len(tools) == 9 and "mcp_auth" not in tools
             for name, platform in (("bug_context", "ZenTao"), ("pipeline_diagnose", "GitLab")):
                 tool = tools[name]
                 assert platform in tool.description and status in tool.description
