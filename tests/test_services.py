@@ -17,7 +17,7 @@ FIXTURE = Path("fixtures/synthetic-discovery.json").resolve()
 def test_offline_services_and_readonly_queries(tmp_path: Path) -> None:
     settings = Settings(catalog_path=tmp_path / "catalog.sqlite3")
     with AppServices(settings, fixture=FIXTURE) as service:
-        service.initialize()
+        service.initialize(legacy_mapping=True)
         counts = service.catalog.counts()
         assert service.project_context("gitlab-demo", "1001")["trace"]["edges"]
         assert (

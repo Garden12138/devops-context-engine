@@ -20,7 +20,7 @@ from dce.discovery.checkpoint import Checkpoint
 from dce.discovery.crawler import Crawler, ScanScope
 from dce.discovery.fixture import discover_fixture, load_fixture
 from dce.graph.model import fingerprint
-from dce.graph.rules import suggestions
+from dce.graph.rules import technical_facts
 from dce.security.redact import redact
 
 DEFAULT_FIXTURE = Path("fixtures/synthetic-discovery.json")
@@ -70,13 +70,20 @@ class AppServices:
         if live and not read_only:
             raise DceError(ErrorCode.PERMISSION_DENIED, "Live mode requires --read-only.")
 
-    def initialize(self, *, fixture: Path | None = None, no_ai: bool = True) -> dict[str, Any]:
+    def initialize(
+        self, *, fixture: Path | None = None, no_ai: bool = True, legacy_mapping: bool = False
+    ) -> dict[str, Any]:
         path = fixture or self.fixture
         result = discover_fixture(path)
+        result.edges.extend(technical_facts(result).edges)
         scan_id = self.catalog.import_scan(
             result, scope="fixture:" + fingerprint(str(path.resolve()))
         )
-        mapping = asyncio.run(MappingService(self.catalog).suggest(no_ai=no_ai))
+        mapping = (
+            asyncio.run(MappingService(self.catalog).suggest(no_ai=no_ai))
+            if legacy_mapping
+            else {"status": "host_agent_required", "suggested": 0, "ai_status": "disabled"}
+        )
         return {
             "scan_id": scan_id,
             "counts": self.catalog.counts(),
@@ -108,8 +115,9 @@ class AppServices:
                 self.settings.catalog_path.parent / "checkpoints" / f"{scope_id}.json", scope_id
             )
             result = Crawler(scope, checkpoint, **adapters).run()
+            result.edges.extend(technical_facts(result).edges)
             scan_id = self.catalog.import_scan(result, scope=scope_id)
-            mapping = asyncio.run(MappingService(self.catalog).suggest(no_ai=True))
+            mapping = {"status": "host_agent_required", "suggested": 0, "ai_status": "disabled"}
             return {
                 "scan_id": scan_id,
                 "counts": self.catalog.counts(),
@@ -217,11 +225,9 @@ class AppServices:
             and entity.external_id == str(project)
         }
         rows: list[dict[str, Any]] = []
-        has_persisted_mapping = False
         offset = 0
         while True:
             page = self.catalog.list_edges(limit=100, offset=offset)
-            has_persisted_mapping |= any(e["source_id"] in business for e in page["items"])
             rows.extend(
                 e
                 for e in page["items"]
@@ -230,12 +236,6 @@ class AppServices:
             if not page["more_available"]:
                 break
             offset += 100
-        if not rows and not has_persisted_mapping and ephemeral is not None:
-            rows = [
-                {"id": edge.id, **edge.model_dump()}
-                for edge in suggestions(ephemeral).edges
-                if edge.source_id in business
-            ]
         return [
             {
                 "module_id": row["target_id"],

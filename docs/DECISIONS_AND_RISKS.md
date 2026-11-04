@@ -109,3 +109,7 @@ Cursor 的真实能力检查暴露描述模板化、无业务 data Schema、互�
 | R9 | Portainer/ZenTao 版本差异 | 接口异常 | Probe/Capability matrix、fixture contract、错误码 |
 | R10 | 长任务 Agent 中断 | 半成品和误报完成 | 阶段小提交、build-log、复跑提示词、离线测试 |
 | R11 | 显式 HTTP 内网 API | Token 泄露风险 | 网络隔离、TLS 优先、allow_http 显式风险接受 |
+
+## ADR-017：Agent-led 能力路径与旧语义 Mapping 解耦
+
+默认 initialize/discover 只抽取来源文件可验证的事实，Module→CI 显式路径匹配独立为 technical_facts；不调用 MappingService 或任何模型。bug_context 不再按 fixture 临时生成语义映射。旧六工具仍可读取历史图，旧 mapping suggest/review 与 init --legacy-mapping 显式兼容；不把旧库当项目关系真相。Host Agent 负责当前 workspace 推理与人类审核。

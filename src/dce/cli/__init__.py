@@ -43,6 +43,7 @@ def initialize(
     ctx: typer.Context,
     fixture: Path | None = None,
     no_ai: bool = False,
+    legacy_mapping: bool = False,
     live: bool = False,
     read_only: bool = False,
     scope: str | None = None,
@@ -59,7 +60,9 @@ def initialize(
                     ErrorCode.INVALID_PAYLOAD, "Scope must be a JSON ScanScope."
                 ) from None
             return service.discover(selected, live=True, read_only=read_only)
-        return service.initialize(fixture=fixture, no_ai=no_ai)
+        return service.initialize(
+            fixture=fixture, no_ai=no_ai, legacy_mapping=legacy_mapping
+        )
 
     perform(ctx, operation, fixture=fixture)
 

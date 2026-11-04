@@ -9,17 +9,14 @@ def _words(value: Any) -> set[str]:
     return set(re.findall(r"[a-z0-9]{3,}", str(value).lower())) - {"demo", "template", "common"}
 
 
-def suggestions(graph: DiscoveryResult) -> DiscoveryResult:
-    """Return additional relationships; observed graph is never promoted semantically."""
-    b = Builder()
+def technical_facts(graph: DiscoveryResult) -> DiscoveryResult:
+    """Extract only explicit module paths declared by CI jobs."""
     entities = {entity.id: entity for entity in graph.entities}
-    evidence = {item.id: item for item in graph.evidence}
     modules: dict[str, list[tuple[Entity, Edge]]] = {}
     for edge in graph.edges:
         if edge.relation == "contains_module" and edge.target_id in entities:
             modules.setdefault(edge.source_id, []).append((entities[edge.target_id], edge))
     extra_edges = []
-    extra_evidence = []
     for edge in graph.edges:
         if edge.relation != "declares_build_job" or edge.target_id not in entities:
             continue
@@ -36,6 +33,20 @@ def suggestions(graph: DiscoveryResult) -> DiscoveryResult:
                         evidence_ids=sorted(set(edge.evidence_ids + containment.evidence_ids)),
                     )
                 )
+    return DiscoveryResult(edges=extra_edges)
+
+
+def suggestions(graph: DiscoveryResult) -> DiscoveryResult:
+    """Legacy opt-in semantic candidates; never used by the default capability path."""
+    b = Builder()
+    evidence = {item.id: item for item in graph.evidence}
+    entities = {entity.id: entity for entity in graph.entities}
+    modules: dict[str, list[tuple[Entity, Edge]]] = {}
+    for edge in graph.edges:
+        if edge.relation == "contains_module" and edge.target_id in entities:
+            modules.setdefault(edge.source_id, []).append((entities[edge.target_id], edge))
+    extra_edges = technical_facts(graph).edges
+    extra_evidence = []
     candidate_count = 0
     for business in graph.entities:
         if business.kind not in {"business_project", "product"}:
