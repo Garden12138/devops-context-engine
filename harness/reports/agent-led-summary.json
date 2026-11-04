@@ -58,14 +58,25 @@
       "scope": "explicit_product_id",
       "search_and_local_pagination": true,
       "no_bug_page_fallback": true
+    },
+    "blocked_audit": {
+      "consecutive_goal_turns": 3,
+      "code_commit": "075212a",
+      "platform_process_configuration_present": false,
+      "dce_tools_mounted_in_current_host": false,
+      "explicit_business_workspace_received": false,
+      "new_platform_requests": 0,
+      "pytest_repeated_this_turn": false,
+      "record": "harness/context/agent-led/blocked-audit.md"
     }
   },
   "confidence_status": {
     "offline": "passed",
-    "overall_acceptance": "incomplete",
+    "overall_acceptance": "blocked_external_conditions",
     "real_platform_reads": "not_verified",
     "real_agent_host": "not_verified",
-    "real_image_received_by_model": "not_verified"
+    "real_image_received_by_model": "not_verified",
+    "goal_status": "blocked"
   },
   "versions": {
     "package": "1.0.0",

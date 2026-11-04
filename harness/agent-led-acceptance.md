@@ -68,3 +68,8 @@
 ## 模块能力接续（2026-11-04）
 
 官方 [路由注册](https://github.com/easysoft/zentaopms/blob/main/config/apiv1.php)、[模块入口](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php) 和 [产品树结构实现](https://github.com/easysoft/zentaopms/blob/main/module/tree/model.php) 已核对，之前 config/routes.php 404 不代表没有 API。新 module_tree 保留完整产品树的实际节点字段/层级，支持本地搜索后分页，深度/节点/字节预算和范围检查；旧模块部分清单不被冒充为完整。新增回归先观察到缺少 operation 的失败，实施后针对性 69 passed（2.71s），真实 stdio/本机 HTTP E2E 1 passed（1.39s）。测试数据全部合成，真实版本与权限依旧 not_verified。
+
+
+## Goal 阻塞审计
+
+当前状态 blocked，整体未完成。相同的连接配置/真实 Host/业务工作区缺失已连续三轮复核，见 [逐项审计](context/agent-led/blocked-audit.md)。本轮无代码变更，未重复 pytest 或无配置认证；191 项通过的证据保持原采集时间与范围。取得明确业务工作区、授权非秘密配置/范围以及真实 Host 后从外部验收接续。

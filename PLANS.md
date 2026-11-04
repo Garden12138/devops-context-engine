@@ -1,5 +1,7 @@
 # Agent-led 当前执行状态（2026-11-04）
 
+Goal 当前状态：**blocked（外部条件缺失；整体未完成）**。连续三轮审计见 harness/context/agent-led/blocked-audit.md。
+
 本地分支 refactor/agent-led-project-init；重构实际提案路径 docs/refactor/agent-led-initialization/dce-agent-led-refactor/。
 
 | 阶段 | 当前状态 | 证据/遗留 |
@@ -10,7 +12,7 @@
 | T3 项目文件 | passed_offline | Schema/模板/校验/纯 refresh；人工状态/隔离/多对多 |
 | T4 Agent 工作流 | passed_offline | 六工作流、真实名称/Schema/启动参数；不写业务目录 |
 | T5 Catalog | passed_offline | backup 后迁移角色，历史消费者保留；真实库未选定 |
-| T6 验证 | offline_passed_external_pending | 191 passed，覆盖率 98.18%；真实平台配置缺失/Host 未挂载/目标 workspace 未提供 |
+| T6 验证 | offline_passed_external_blocked | 191 passed，覆盖率 98.18%；真实平台配置缺失/Host 未挂载/目标 workspace 未提供 |
 | T7 文档验收 | documentation_ready_acceptance_incomplete | README/迁移/清单/harness 已更新，不标整体完成 |
 
 当前阻塞证据：dce doctor --live --read-only exit 2，三个 AUTH_FAILED/configuration_missing，0 平台请求；仅检查进程配置是否存在，未读取 .env/Token 文件/私有日志。已向用户异步询问目标工作区和非秘密连接范围，尚未收到。
