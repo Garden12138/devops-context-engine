@@ -70,6 +70,68 @@ class ZenTao:
             self.reader.sleep(0.01)
         raise DceError(ErrorCode.INVALID_PAYLOAD, "ZenTao pagination limit exceeded.")
 
+    def modules(self, product: str, module_type: str = "bug") -> list[dict[str, Any]]:
+        """v1 /modules: product-rooted tree, verified from official routes/entry source.
+
+        No task root is accepted: an Execution ID must never be inferred from a Project ID.
+        """
+        if module_type not in {"bug", "story", "case", "product"}:
+            raise DceError(ErrorCode.INVALID_PAYLOAD, "Unsupported product module type.")
+        data = self.reader.json(
+            f"{self.prefix}/modules", kind="zentao", params={"id": product, "type": module_type}
+        )
+        tree = data.get("modules")
+        if not isinstance(tree, list):
+            raise DceError(ErrorCode.API_INCOMPATIBLE, "Expected a ZenTao module tree.")
+        if len(tree) > 10000:
+            raise DceError(ErrorCode.INVALID_PAYLOAD, "Module tree traversal limit exceeded.")
+        pending: list[tuple[Any, str | None, int]] = [(node, None, 0) for node in reversed(tree)]
+        records: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        fields = {
+            "id",
+            "name",
+            "short",
+            "root",
+            "type",
+            "parent",
+            "branch",
+            "grade",
+            "path",
+            "order",
+        }
+        while pending:
+            node, parent, depth = pending.pop()
+            if depth > 30 or len(records) + len(pending) >= 10000:
+                raise DceError(ErrorCode.INVALID_PAYLOAD, "Module tree traversal limit exceeded.")
+            if not isinstance(node, dict):
+                raise DceError(ErrorCode.API_INCOMPATIBLE, "Expected module objects.")
+            identifier = node.get("id")
+            if (
+                not isinstance(identifier, (str, int))
+                or isinstance(identifier, bool)
+                or not str(identifier)
+                or not isinstance(node.get("name"), str)
+            ):
+                raise DceError(ErrorCode.API_INCOMPATIBLE, "Module identity is missing.")
+            identity = str(identifier)
+            if identity in seen:
+                raise DceError(ErrorCode.SNAPSHOT_CONFLICT, "Module identity is duplicated.")
+            if "root" in node and str(node["root"]) != product:
+                raise DceError(ErrorCode.SNAPSHOT_CONFLICT, "Module belongs to a different root.")
+            seen.add(identity)
+            children = node.get("children", [])
+            if not isinstance(children, list):
+                raise DceError(ErrorCode.API_INCOMPATIBLE, "Expected module children objects.")
+            record = {k: v for k, v in node.items() if k in fields}
+            if any(not isinstance(v, (str, int, float, type(None))) for v in record.values()):
+                raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected module metadata.")
+            records.append({**record, "tree_parent_id": parent})
+            if len(records) + len(pending) + len(children) > 10000:
+                raise DceError(ErrorCode.INVALID_PAYLOAD, "Module tree traversal limit exceeded.")
+            pending.extend((child, identity, depth + 1) for child in reversed(children))
+        return records
+
     @staticmethod
     def parse_steps(bug: dict[str, Any]) -> tuple[str, list[str]]:
         soup = BeautifulSoup(str(bug.get("steps", bug.get("steps_html", ""))), "html.parser")

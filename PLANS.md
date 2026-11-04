@@ -6,16 +6,16 @@
 |---|---|---|
 | T0 审计 | passed | harness/refactor-audit.md；144 基线通过 |
 | T1 解耦 | passed | 默认路径不调用语义 Mapping；技术事实保留；145 tests |
-| T2 只读能力 | implemented_with_gap | 九工具、分页/证据/ImageContent；模块仅 Bug 页部分目录，完整路由和真实调用 not_verified |
+| T2 只读能力 | passed_offline_external_pending | 九工具、分页/证据/ImageContent；新增官方 v1 Product module_tree，独立目录实现通过，真实调用 not_verified |
 | T3 项目文件 | passed_offline | Schema/模板/校验/纯 refresh；人工状态/隔离/多对多 |
 | T4 Agent 工作流 | passed_offline | 六工作流、真实名称/Schema/启动参数；不写业务目录 |
 | T5 Catalog | passed_offline | backup 后迁移角色，历史消费者保留；真实库未选定 |
-| T6 验证 | offline_passed_external_pending | 187 passed，覆盖率 98.15%；真实平台配置缺失/Host 未挂载/目标 workspace 未提供 |
+| T6 验证 | offline_passed_external_pending | 191 passed，覆盖率 98.18%；真实平台配置缺失/Host 未挂载/目标 workspace 未提供 |
 | T7 文档验收 | documentation_ready_acceptance_incomplete | README/迁移/清单/harness 已更新，不标整体完成 |
 
 当前阻塞证据：dce doctor --live --read-only exit 2，三个 AUTH_FAILED/configuration_missing，0 平台请求；仅检查进程配置是否存在，未读取 .env/Token 文件/私有日志。已向用户异步询问目标工作区和非秘密连接范围，尚未收到。
 
-下一步：提供目标业务工作区/安全配置和授权范围；重载真实 Host MCP；执行初始化提示词、至少三次真实读取及真实图片协议/模型接收验证；取得人工确认或明确 unresolved，Host 展示 diff 后维护文件并校验。模块完整目录需按实际版本确认接口。不能复用旧 V1 真实证据宣布新版通过。
+下一步：提供目标业务工作区/安全配置和授权范围；重载真实 Host MCP；执行初始化提示词、至少三次真实读取及真实图片协议/模型接收验证；取得人工确认或明确 unresolved，Host 展示 diff 后维护文件并校验。模块完整树路由已核对，仍需按实际实例版本/权限补验。不能复用旧 V1 真实证据宣布新版通过。
 
 续跑：prompts/agent-led/resume.md；阶段细节在 harness/context/agent-led/、harness/build-log.md、harness/test-results.md。本轮代码/测试已分阶段本地提交，无 push/merge/平台写操作。
 
@@ -142,3 +142,7 @@ SQLite 0003 增加 cache/history 角色，所有旧表/边/审批/历史保留�
 ### Agent-led T7（2026-11-04）
 
 README/GOALS/PLANS、九工具清单、迁移回滚、安全/运维、Host 六工作流和续跑、ADR 与验收矩阵已同步，旧 V1 文档明确历史范围。当前测试 187 passed、覆盖率 98.15%；文档契约/项目校验 16 passed（0.50s），ruff/strict mypy/diff/新文档相对链接检查通过。真实新版三平台/图片/Host/指定业务 workspace 与完整模块目录仍 pending/not_verified；无真实平台写、构建、部署或业务文件写入。T7 文档交付就绪，整体未验收完成；接续条件和证据见 harness/agent-led-acceptance.md 与 prompts/agent-led/resume.md。
+
+### Agent-led T2-modules-verified（2026-11-04）
+
+Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry GET 和 getProductStructure/getDataStructure，新增 Product scope 的 module_tree，完整树搜索后本地分页、字段白名单、节点/深度/2MB 限额；禁止以 Project/Execution ID 替代 Product ID，旧 modules 部分清单兼容。先行测试 2 failed/1 passed 证实缺口；实现后 QueryParams 与 dict 的测试断言类型差异导致 1 failed，修正断言后针对性 69 passed（2.71s），stdio/本机合成 HTTP 1 passed（1.39s）。最终全库 191 passed/0 failed/errors/skipped（15.94s），总体覆盖率 98.18%；ZenTao Adapter 与事实输入契约 100%。ruff/strict mypy/最终 wheel 隔离安装/九工具与迁移检查通过。官方主分支源码不代表当前公司版本；真实平台/图片/Host/指定业务 workspace 仍 not_verified，缺配置与工作区的阻塞重复第 2 个 goal turn，未达 blocked 审计门槛且本轮有实际进展，goal 保持 active。

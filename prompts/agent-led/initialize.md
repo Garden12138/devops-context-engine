@@ -3,7 +3,7 @@
 请为用户指定业务工作区初始化项目级 DevOps 关系。
 1. 读取本地 Git roots、脱敏 remote、branch、README、模块清单、CI/Dockerfile 的必要事实；不运行脚本。remote 对应 GitLab 项目需证据匹配。
 2. 按已授权范围先 gitlab_query(projects/project)，再 ref/commit/tree/path 和必要文件；固定 ref 优先 commit SHA。没有授权项目不能扩大到公司全量。
-3. 按用户业务描述调用 zentao_query(projects/products/bug/bugs/modules)。modules 只是 Bug 页观察到的模块，PARTIAL_MODULE_INVENTORY_FROM_BUG_PAGE 不能视作完整目录。Project 与 Bug 未有证据时不关联。
+3. 按用户业务描述调用 zentao_query(projects/products/bug/bugs/module_tree)。module_tree 必须用授权 Product ID（不能替换为 Project/Execution ID），module_type 默认 bug，支持搜索和本地分页；接口不可用时如实记录。旧 modules 只是 Bug 页观察到的模块，PARTIAL_MODULE_INVENTORY_FROM_BUG_PAGE 不能视作完整目录。Project 与 Bug 未有证据时不关联。
 4. 根据已有部署线索调用 portainer_query(stacks/stack/endpoints/swarm_info/services/stack_file)。GitLab Compose、Stack File、实际 namespace Service 分别记来源与 revision，数量相等不能确认一致；Swarm mismatch 仅候选/冲突。
 5. 形成事实/推断/未知清单及多对多 proposed 关系，向用户提出最少必要澄清；不可用平台记录 not_verified 并继续其他平台。
 6. 按共同协议完成审核、diff、Host 保存和复读校验。最终报告区分“工具传输通过”“真实数据观察”“人工确认”，不能互相替代。

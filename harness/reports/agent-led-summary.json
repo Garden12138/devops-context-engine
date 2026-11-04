@@ -13,16 +13,16 @@
   },
   "evidence": {
     "pytest": {
-      "passed": 187,
+      "passed": 191,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 15.68
+      "seconds": 15.931
     },
     "coverage": {
-      "combined_percent": 98.15,
-      "line_percent": 98.71,
-      "branch_percent": 96.38
+      "combined_percent": 98.18,
+      "line_percent": 98.73,
+      "branch_percent": 96.48
     },
     "ruff": "passed",
     "strict_mypy": "passed (47 files)",
@@ -50,7 +50,15 @@
       "platform_requests": 0
     },
     "process_config_presence_checked_without_printing_values": true,
-    "dce_mcp_mounted_in_current_host": false
+    "dce_mcp_mounted_in_current_host": false,
+    "zentao_module_tree": {
+      "implementation": "passed_offline",
+      "official_v1_route_verified": true,
+      "live_instance": "not_verified",
+      "scope": "explicit_product_id",
+      "search_and_local_pagination": true,
+      "no_bug_page_fallback": true
+    }
   },
   "confidence_status": {
     "offline": "passed",
@@ -67,7 +75,7 @@
     "catalog_migration": "0003"
   },
   "omissions": [
-    "full_zentao_module_inventory_route_not_verified",
+    "full_zentao_module_inventory_live_not_verified",
     "target_business_workspace_not_provided",
     "protected_platform_configuration_missing",
     "real_host_connect_and_three_real_reads_and_initialization_dialogue_not_verified",

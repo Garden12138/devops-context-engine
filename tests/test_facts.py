@@ -358,3 +358,117 @@ def test_json_compose_and_malformed_swarm_are_safe(facts):
         lambda _: httpx.Response(200, json=[{"Spec": ["invalid"]}])
     )
     assert call(app, "portainer", operation="services", endpoint_id="e", namespace="demo").isError
+
+
+def test_full_module_tree_readonly_route_search_and_pagination(facts):
+    app, requests = facts
+    tree = [
+        {
+            "id": "root",
+            "name": "Backend",
+            "root": "p",
+            "type": "bug",
+            "parent": "0",
+            "owner": "must-not-export",
+            "url": "/tree/edit",
+            "children": [
+                {"id": "child", "name": "Payments", "root": "p", "parent": "root"},
+                {"id": "other", "name": "Billing", "root": "p", "parent": "root"},
+            ],
+        }
+    ]
+
+    def handle(request):
+        requests.append(request)
+        assert request.method == "GET" and request.url.path == "/api.php/v1/modules"
+        assert dict(request.url.params) == {"id": "p", "type": "bug"}
+        assert request.headers["Token"] == "synthetic-private"
+        return httpx.Response(200, json={"modules": tree})
+
+    app.services.transports["zentao"] = httpx.MockTransport(handle)
+    result = call(app, "zentao", operation="module_tree", product_id="p", search="pay", limit=1)
+    assert not result.isError
+    data = result.structuredContent["data"]
+    assert len(data["records"]) == 1 and data["records"][0]["id"] == "child"
+    assert data["records"][0]["tree_parent_id"] == "root"
+    assert not data["pagination"]["more_available"]
+    result = call(app, "zentao", operation="module_tree", product_id="p", page=2, limit=1)
+    data = result.structuredContent["data"]
+    assert data["records"][0]["id"] == "child" and data["pagination"]["next_page"] == 3
+    assert data["truncated"] and "PARTIAL_MODULE_INVENTORY_FROM_BUG_PAGE" not in data["warnings"]
+    assert "must-not-export" not in json.dumps(data)
+    assert "url" not in data["records"][0]
+
+
+def test_module_tree_scope_and_required_contract_fail_before_reader(facts):
+    app, requests = facts
+    tools = {t.name: t for t in asyncio.run(app.list_tools())}
+    validator = Draft202012Validator(tools["zentao_query"].inputSchema)
+    for arguments in (
+        {"operation": "module_tree"},
+        {"operation": "module_tree", "project_id": "z"},
+        {"operation": "module_tree", "product_id": "p", "module_type": "task"},
+    ):
+        assert not validator.is_valid({"instance": "demo", **arguments})
+        assert call(app, "zentao", **arguments).isError
+    assert call(app, "zentao", operation="module_tree", product_id="foreign").isError
+    assert requests == []
+
+
+def test_module_tree_rejects_unexpected_shapes_and_foreign_roots(facts):
+    app, _ = facts
+    for tree in (
+        "<ul>not JSON objects</ul>",
+        [{"name": "missing id"}],
+        [{"id": "x", "name": "n", "children": "bad"}],
+        [{"id": "x", "name": "n", "root": "foreign"}],
+        [{"id": "x", "name": "n"}, {"id": "x", "name": "duplicate"}],
+    ):
+        app.services.transports["zentao"] = httpx.MockTransport(
+            lambda _, data=tree: httpx.Response(200, json={"modules": data})
+        )
+        assert call(app, "zentao", operation="module_tree", product_id="p").isError
+    for status in (403, 404):
+        app.services.transports["zentao"] = httpx.MockTransport(
+            lambda _, code=status: httpx.Response(code)
+        )
+        result = call(app, "zentao", operation="module_tree", product_id="p")
+        assert result.isError and result.structuredContent["data"] is None
+    app.services.transports["zentao"] = httpx.MockTransport(
+        lambda _: httpx.Response(200, json={"modules": []})
+    )
+    result = call(app, "zentao", operation="module_tree", product_id="p")
+    assert not result.isError and result.structuredContent["data"]["records"] == []
+
+
+def test_module_tree_traversal_limits_and_module_type(facts):
+    from dce.common.errors import DceError
+    from dce.connectors.zentao import ZenTao
+
+    app, _ = facts
+    trees = [
+        ([{"id": str(i), "name": "module"} for i in range(10001)]),
+        [
+            {
+                "id": "root",
+                "name": "m",
+                "children": [{"id": str(i), "name": "m"} for i in range(10000)],
+            }
+        ],
+        [{"id": "bad", "name": "m", "path": {"unexpected": "object"}}],
+        [False],
+        [{"id": True, "name": "bad"}],
+    ]
+    deep = {"id": "deep", "name": "deep"}
+    for i in range(32):
+        deep = {"id": str(i), "name": "parent", "children": [deep]}
+    trees.append([deep])
+    for tree in trees:
+        app.services.transports["zentao"] = httpx.MockTransport(
+            lambda _, data=tree: httpx.Response(200, json={"modules": data})
+        )
+        result = call(app, "zentao", operation="module_tree", product_id="p")
+        assert result.isError
+    with app.services.reader("zentao") as reader:
+        with pytest.raises(DceError):
+            ZenTao(reader).modules("p", "task")

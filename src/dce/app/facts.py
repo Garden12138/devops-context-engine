@@ -310,6 +310,15 @@ class FactQueries:
         elif op in {"project", "product"}:
             kind = op + "s"
             records = [a.resource(kind, p[op + "_id"])]
+        elif op == "module_tree":
+            records = a.modules(p["product_id"], p["module_type"])
+            records = [
+                r
+                for r in records
+                if p["search"].casefold()
+                in (str(r.get("name", "")) + " " + str(r.get("short", ""))).casefold()
+            ]
+            records, more = self.page(records, p)
         elif op in {"bugs", "modules"}:
             parent = "projects" if p["project_id"] else "products"
             parent_id = p["project_id"] or p["product_id"]

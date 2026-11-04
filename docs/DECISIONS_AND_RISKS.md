@@ -129,3 +129,11 @@ schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 s
 ## ADR-020：备份后降级全局关系权威
 
 旧库升级 head 前先 SQLite backup/quick_check，失败不迁移；0003 只新增角色元数据，保留所有旧实体、边、证据、审批及历史，不导入业务 workspace。备份 0700/0600，拒绝 symlink，限定执行时长。0001 固定历史表清单，防止引用最新 metadata 使未来表提前创建。旧工具/CLI 兼容，本轮不删除；真实库需显式指定且停止同库旧进程后迁移。Host 使用旧图只做历史取证，必须当前项目重新审核。
+
+## ADR-021：按已核对的 v1 模块入口补齐产品模块树
+
+官方 apiv1.php 明确注册 /modules，entries/modules.php 的 GET 以 type/id 读取模块树；tree/model.php 的 getProductStructure/getDataStructure 返回对象及 children。原先 config/routes.php 404 不代表当前源码没有模块入口。此结论来自官方公开源码，不是公司实例成功证据。
+
+新增 zentao_query(module_tree)，仅允许明确授权 Product ID 和 bug/story/case/product 类型；Project/Execution ID 不可替代 Product ID，任务模块不开放。旧 modules 的 Bug 页部分清单保持兼容。树只保留实际节点字段和层级父 ID，先搜索再本地分页，限制节点数/深度/上游字节；畸形、重复、越 root 和不支持接口安全失败，绝不静默回退后声称完整。DCE 不做业务关系推断。
+
+依据：[官方 v1 路由](https://github.com/easysoft/zentaopms/blob/main/config/apiv1.php)、[GET 参数/返回](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php)、[树结构](https://github.com/easysoft/zentaopms/blob/main/module/tree/model.php)。实际版本/权限仍 not_verified，需取得授权配置后实测。

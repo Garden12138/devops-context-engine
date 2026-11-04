@@ -1,6 +1,6 @@
 # Agent-led 重构验收 — 2026-11-04
 
-结论：**本地实现与离线验证通过；整体真实验收未完成。** T2 的完整禅道模块目录仍有能力缺口，T6 的真实平台/图片/Agent Host 和指定业务项目初始化为 `not_verified`。不将旧 V1 成功、SDK 客户端或合成 HTTP 等同本次真实 Host 通过。
+结论：**本地实现与离线验证通过；整体真实验收未完成。** T2 独立产品模块树现已补齐离线实现并核对官方 v1 路由，真实实例兼容性及 T6 的真实平台/图片/Agent Host 和指定业务项目初始化为 `not_verified`。不将旧 V1 成功、SDK 客户端或合成 HTTP 等同本次真实 Host 通过。
 
 依据：实际位于 docs/refactor/agent-led-initialization/dce-agent-led-refactor/ 的 CHANGE_PROPOSAL 与 specs/01–07；根 AGENTS/GOALS/PLANS、旧验收仅作历史证据。T0 基线 6fd0a90（144 tests）；本地阶段提交保留，未 push/merge。审计见 [refactor-audit.md](refactor-audit.md)，全部命令与修复过程见 [build-log.md](build-log.md)、[test-results.md](test-results.md)。
 
@@ -8,7 +8,7 @@
 |---|---|---|
 | T0 | 六工具真实 Schema/实现/测试、Adapter、Mapping/AI/Catalog 审计；先定义边界/失败/测试 | passed |
 | T1 | 默认初始化/发现/Bug fallback 不调用语义推理，确定性 Module→CI 保留；显式 legacy 入口兼容 | passed |
-| T2 | 三事实工具，保留旧六；三平台 scope/instance、分页/ref/path/日志窗口、证据/预算、原生图片 | offline passed；modules 部分目录，完整能力待核实；真实新版接口 not_verified |
+| T2 | 三事实工具，保留旧六；三平台 scope/instance、分页/ref/path/日志窗口、证据/预算、原生图片 | offline passed；新增 module_tree 独立产品树，旧 modules 部分清单兼容；真实新版接口 not_verified |
 | T3 | 项目 Schema/模板/只读校验/纯 refresh，六状态、人工审批、隔离、多对多、拒绝保留 | offline passed |
 | T4 | 六 Agent 工作流、实际工具说明、SDK smoke；Host 负责对话/推理/diff/文件写入 | offline passed；真实 Host 流程 not_verified |
 | T5 | SQLite backup/quick_check 后迁移 0003 角色；所有旧关系、审批和历史保留；回滚说明 | offline passed；未选择/迁移用户真实旧库 |
@@ -17,8 +17,8 @@
 
 ## 实跑结果
 
-- `.venv/bin/pytest -q --cov=src/dce --cov-report=term-missing --cov-report=json:/tmp/dce-agent-led-coverage.json --junitxml=/tmp/dce-agent-led-tests.xml --tb=short`：**187 passed，0 failed，0 errors，0 skipped，15.70s**。
-- 总体覆盖率 **98.15%**；行 **98.71%**，分支 **96.38%**，高于 75% 门槛；新增 MCP 事实输入契约模块 100%。安全/状态关键场景见下表。
+- `.venv/bin/pytest -q --cov=src/dce --cov-report=term-missing --cov-report=json:/tmp/dce-agent-led-coverage.json --junitxml=/tmp/dce-agent-led-tests.xml --tb=short`：**191 passed，0 failed，0 errors，0 skipped，15.94s**。
+- 总体覆盖率 **98.18%**；行 **98.73%**，分支 **96.48%**，高于 75% 门槛；新增 MCP 事实输入契约模块 100%。安全/状态关键场景见下表。
 - `.venv/bin/ruff check .`、`.venv/bin/mypy src`（47 files）、`git diff --check`、索引公共数据扫描 exit 0。最终暂存扫描在 T7 提交前另记。
 - `uv build --wheel --offline --out-dir /tmp/dce-agent-led-dist`：成功；wheel 安装到 `/tmp` 隔离路径，实际从安装包导入，项目模板/Schema 与 0003 迁移/角色检查通过。不触发公司构建或部署。
 - `check_agent_led_mcp.py --help`、项目 CLI/help/模板/schema/校验通过；真实新版 SDK smoke 尚未执行。已提供不输出 ID/正文/凭证的范围检查入口。
@@ -50,7 +50,7 @@
 | 必须补验 | 当前判定 | 下一步 |
 |---|---|---|
 | 新版三平台真实只读查询 | not_verified | 受保护子进程环境加载配置；用户给明确授权 scope |
-| 完整 ZenTao 产品/项目模块目录 | implemented partially / not_verified | 当前仅 Bug 页 module 观测；核实实际版本的官方只读接口后补全目录契约与测试，不猜路由 |
+| 完整 ZenTao 产品模块树 | implemented offline / live not_verified | 新 module_tree 按官方 v1 /modules GET 契约实现，搜索后本地分页；真实实例按产品 scope 补验，不能把项目 ID 当产品/执行 ID |
 | 指定真实 Bug 图片到模型 | not_verified | 在真实 Host 观察 tools/call 的 MCP ImageContent；URL/Resource/SDK 布尔摘要不能代替 |
 | 至少一个真实 Cursor/Codex connect/list/三次真实 calls | not_verified | 重载实际 Host 新进程与会话，按工具清单枚举九工具并记录调用 |
 | 当前业务项目初始化与维护 | not_verified | 指定 workspace；Host 执行提示词、展示候选/diff、人工确认或明确 unresolved、写后校验/复读 |
@@ -63,3 +63,8 @@
 ## 接续
 
 按 [续跑提示词](../prompts/agent-led/resume.md)，从缺失外部条件补验继续，无需重做离线阶段。需要目标业务工作区绝对路径、非秘密连接配置/授权范围及可调用 DCE 的真实 Host；凭证只进入本机受保护进程环境，不发聊天或写入项目 YAML。未满足这些完成标准前保留 goal 未完成。
+
+
+## 模块能力接续（2026-11-04）
+
+官方 [路由注册](https://github.com/easysoft/zentaopms/blob/main/config/apiv1.php)、[模块入口](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php) 和 [产品树结构实现](https://github.com/easysoft/zentaopms/blob/main/module/tree/model.php) 已核对，之前 config/routes.php 404 不代表没有 API。新 module_tree 保留完整产品树的实际节点字段/层级，支持本地搜索后分页，深度/节点/字节预算和范围检查；旧模块部分清单不被冒充为完整。新增回归先观察到缺少 operation 的失败，实施后针对性 69 passed（2.71s），真实 stdio/本机 HTTP E2E 1 passed（1.39s）。测试数据全部合成，真实版本与权限依旧 not_verified。

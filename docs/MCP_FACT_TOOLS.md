@@ -22,6 +22,7 @@ DCE 暴露九工具。原六名称/参数/输出 Schema 保留兼容，关系部
 | gitlab_query | trace | project_id, job_id；tail_lines=100（最多 500） |
 | zentao_query | projects, products | 对应非空 allowlist；可 search |
 | zentao_query | project, product | project_id 或 product_id |
+| zentao_query | module_tree | product_id（不能用 Project/Execution ID）；module_type=bug/story/case/product，默认 bug；search 后本地 page/limit |
 | zentao_query | bugs, modules | project_id 或 product_id；modules 仅 Bug 页实际模块字段，部分目录 |
 | zentao_query | bug, attachments, image | bug_id；image 的 asset_index=0（0–9） |
 | portainer_query | endpoints, stacks | 对应非空 allowlist |
@@ -29,6 +30,8 @@ DCE 暴露九工具。原六名称/参数/输出 Schema 保留兼容，关系部
 | portainer_query | stack | stack_id |
 | portainer_query | stack_file | stack_id, endpoint_id；先校验 Stack.EndpointId，返回解析事实 |
 | portainer_query | service | endpoint_id, service_id |
+
+独立模块树使用官方 v1 `GET /modules?id=<Product ID>&type=<module_type>`；保留实际节点字段和 children 层级，屏蔽 URL/owner，最多 10000 节点、深度 30。接口不支持/权限失败时返回错误，不以部分 Bug 清单冒充完整目录。此路线由 [官方路由与 GET 实现](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php) 核对，真实实例仍 not_verified。
 
 通用 `page=1, limit=20`（1–100），Tree/Jobs/Pipeline/范围 Bug 单次只取一页。Portainer API 返回列表后在内存白名单筛选及本地分页；2MB 上游限额仍有效。超大响应报错，需缩小服务器侧范围，不声称已完整列出。每次结果有 source/observed_at/revision/records/evidence/pagination/truncated/warnings；revision 是脱敏事实内容指纹（图片为 SHA256），不是自动推定源码 commit。原生 ref/SHA 按来源 records 保留。
 

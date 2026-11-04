@@ -40,3 +40,5 @@
 5. refresh 保留人工备注/拒绝/审核，证据变化 stale/conflicted，新关系 proposed；不把高 confidence 当确认。校验器不证明实际人类身份，由 Host 保证真实对话审批。
 6. Catalog 迁移用 backup API，原库不覆盖、备份校验完整性/计数；保留旧表、工具与 CLI。旧审核不自动成为项目 confirmed。
 7. 阶段测试覆盖：解耦、三平台分页与范围、图片协议、Schema/refresh/隔离/多对多、stdio 离线 E2E、迁移回滚、安全/预算；真实路径和 Host 有独立矩阵，不能用 mock 计作通过。
+
+T2 接续更新：已从官方 apiv1.php 与 modulesEntry 核实独立 v1 /modules GET，新增 module_tree 产品树能力，原审计缺口中的“完整目录未实现”由该实现补齐；真实版本/权限仍 not_verified。详见 context/agent-led/T2-modules.md 和 agent-led-acceptance.md。

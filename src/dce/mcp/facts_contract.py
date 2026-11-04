@@ -48,6 +48,7 @@ class ZenTaoQuery(Query):
         "products",
         "product",
         "modules",
+        "module_tree",
         "bugs",
         "bug",
         "attachments",
@@ -56,6 +57,9 @@ class ZenTaoQuery(Query):
     project_id: ResourceKey | None = None
     product_id: ResourceKey | None = None
     bug_id: ResourceKey | None = None
+    module_type: Literal["bug", "story", "case", "product"] = Field(
+        default="bug", description="Product module tree view; never a Project/Execution task root."
+    )
     asset_index: int = Field(default=0, ge=0, le=9)
     search: str = Field(default="", max_length=100)
 
@@ -63,6 +67,10 @@ class ZenTaoQuery(Query):
     def required_arguments(self) -> "ZenTaoQuery":
         if self.operation == "project" and self.project_id is None:
             raise ValueError("project required")
+        if self.operation == "module_tree" and (
+            self.product_id is None or self.project_id is not None
+        ):
+            raise ValueError("module tree requires a Product ID, not a Project ID")
         if self.operation == "product" and self.product_id is None:
             raise ValueError("product required")
         if self.operation in {"bugs", "modules"} and not (self.project_id or self.product_id):
@@ -142,7 +150,8 @@ FACT_INPUTS: dict[str, type[Input]] = {
 }
 FACT_DESCRIPTIONS = {
     "zentao_query": "ZenTao scoped read-only facts: projects/products/bugs, module IDs observed in "
-    "a Bug page (partial inventory), attachment metadata, or one authenticated MCP ImageContent. "
+    "a Bug page (partial inventory), or module_tree (Product tree with local search/pagination), "
+    "attachment metadata, or one authenticated MCP ImageContent. "
     "Search only within startup scope. No mapping. Instance must match configuration.",
     "gitlab_query": "GitLab scoped project/tree/ref file/commit/pipeline/jobs/trace facts. "
     "Explicit page/limit; file uses start_line and tail_lines, trace uses tail_lines. "
@@ -174,6 +183,7 @@ _required = {
     "zentao_query": {
         "project": ["project_id"],
         "product": ["product_id"],
+        "module_tree": ["product_id"],
         "bug": ["bug_id"],
         "attachments": ["bug_id"],
         "image": ["bug_id"],
@@ -200,6 +210,15 @@ for _tool, _operations in _required.items():
             }
         )
     if _tool == "zentao_query":
+        _conditions.append(
+            {
+                "if": {
+                    "properties": {"operation": {"const": "module_tree"}},
+                    "required": ["operation"],
+                },
+                "then": {"properties": {"project_id": {"type": "null"}}},
+            }
+        )
         _conditions.append(
             {
                 "if": {
