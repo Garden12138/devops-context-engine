@@ -244,3 +244,7 @@
 ## 最终风险与边界
 
 离线 P0 无未解决阻塞，已实现核心路径的本轮限定真实补验通过；Cursor 配置与进程启动已观察到。更多平台/发现范围、真实图片、Compose、私有失败日志与实际 Host 内工具调用未覆盖，继续标记 not_verified。业务页面、修复/发布执行、GUI 自动化不属于 V1 验收门槛；业务映射候选须人工确认。
+
+## Agent-led T0 — 2026-11-04
+
+审计完成：harness/refactor-audit.md；先核对六工具、三 Adapter、Mapping/AI/Catalog，定义新契约/失败/测试。基线 .venv/bin/pytest -q：144 passed（7.52s），exit 0。下一步 T1 默认调用路径解耦；真实新版能力 not_verified。

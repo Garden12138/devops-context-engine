@@ -79,3 +79,7 @@ V1 补验结果（同日，当前）：用户已执行入口，本轮限定 V1 �
 - AI Provider 默认关闭；无 API Key 时规则发现和人工审核仍可用。
 - 真正的自动构建/部署在 V1.2/V2.0 单独规划，不因为长任务执行就提前实现。
 - 即使对话因环境/额度中断，后续只需将 `prompts/RESUME.md` 发给 Agent。
+
+### Agent-led T0（2026-11-04）
+
+审计完成：harness/refactor-audit.md；先核对六工具、三 Adapter、Mapping/AI/Catalog，定义新契约/失败/测试。基线 .venv/bin/pytest -q：144 passed（7.52s），exit 0。下一步 T1 默认调用路径解耦；真实新版能力 not_verified。

@@ -1,0 +1,19 @@
+schema_version: 1
+workspace:
+  id: "replace-with-project-slug"
+  name: "replace-with-business-project-name"
+  roots:
+    - path: "."
+      kind: "git_repository"
+      remote_url: ""
+      default_branch: ""
+scope:
+  zentao: {instance: "", projects: [], products: [], modules: []}
+  gitlab: {instance: "", projects: []}
+  portainer: {instance: "", endpoints: [], stacks: []}
+relationships: []
+metadata:
+  created_at: null
+  updated_at: null
+  initialized_by: null
+  last_refresh_at: null
