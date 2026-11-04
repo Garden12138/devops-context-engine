@@ -353,3 +353,58 @@ def mcp_serve(
         )
         typer.echo(encode(envelope(error=error)), err=True)
         raise typer.Exit(2) from None
+
+
+project_app = typer.Typer(
+    no_args_is_help=True, help="Project contracts; never writes workspace files."
+)
+app.add_typer(project_app, name="project")
+
+
+@project_app.command("schema")
+def project_schema() -> None:
+    from dce.project.model import ProjectContext
+
+    typer.echo(json.dumps(ProjectContext.model_json_schema(by_alias=True), ensure_ascii=False))
+
+
+@project_app.command("template")
+def project_template(workspace_id: str = "business-project") -> None:
+    from dce.project.context import template
+
+    try:
+        typer.echo(json.dumps(template(workspace_id), ensure_ascii=False, indent=2))
+    except ValidationError:
+        typer.echo(
+            encode(
+                envelope(error=DceError(ErrorCode.INVALID_PAYLOAD, "Invalid workspace identity."))
+            )
+        )
+        raise typer.Exit(2) from None
+
+
+@project_app.command("validate")
+def project_validate(workspace: Path, workspace_id: str | None = None) -> None:
+    from dce.project.context import load_project
+
+    try:
+        project = load_project(workspace, workspace_id=workspace_id)
+        typer.echo(
+            encode(
+                envelope(
+                    {
+                        "valid": True,
+                        "schema_version": project.schema_version,
+                        "relationship_count": len(project.relationships),
+                    }
+                )
+            )
+        )
+    except (DceError, OSError, ValueError) as exc:
+        error = (
+            exc
+            if isinstance(exc, DceError)
+            else DceError(ErrorCode.INVALID_PAYLOAD, "Project context cannot be read safely.")
+        )
+        typer.echo(encode(envelope(error=error)))
+        raise typer.Exit(2) from None

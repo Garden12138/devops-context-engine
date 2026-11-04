@@ -120,3 +120,8 @@ Cursor 的真实能力检查暴露描述模板化、无业务 data Schema、互�
 图片从已授权 Bug 取得同源附件，经 MIME/magic 与大小限制后直接在内存返回 MCP ImageContent；预算不足标 not_delivered，不缓存真实图片。旧 Resource 交付保留兼容。
 禅道 v1 官方资料未核实完整模块列表路由；modules 返回指定项目/产品 Bug 页实际 module 字段，强制 PARTIAL_MODULE_INVENTORY_FROM_BUG_PAGE，不宣称完整模块目录或已在真实实例验证。
 路由依据：[GitLab Repositories API](https://docs.gitlab.com/api/repositories/)、[禅道 v1 配置](https://www.zentao.net/book/api/1397.html)、[Portainer API](https://docs.portainer.io/api/access)。文档支持路由设计，不证明实际实例兼容或权限。
+
+## ADR-019：项目关系契约与纯刷新
+
+schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 stdout、指定工作区只读校验和纯 refresh 函数。节点强制 type/instance/id；示例 implemented_by 与关系枚举均兼容。confirmed 需非空证据、带时区人工审批，已知 Agent 身份不能审批；文件元数据无法认证真实人类身份，Host 必须以真实用户对话为准。
+拒绝重复 YAML key、alias/anchor、超限、不安全路径、secret key/value、带凭证 URL、跨 instance/scope。刷新保留审批/备注/拒绝，新关系 proposed；来源变化 stale/冲突 conflicted，DCE 不写业务目录。JSON Schema 与运行时校验同时发布，安全和来源范围的交叉字段约束以运行时校验为准。
