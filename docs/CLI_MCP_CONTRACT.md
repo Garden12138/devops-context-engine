@@ -92,3 +92,7 @@ MCP 绝不暴露 `mapping_approve`, `deploy_execute`, `trigger_pipeline`, `bug_r
 Cursor 使用虚拟环境入口和 Catalog 的绝对路径，避免宿主 PATH / 工作目录差异；完整配置及独立 stdio 自检见 [Cursor 桌面版接入](CURSOR_MCP_SETUP.md)。
 真实 Catalog 模式使用 `--live --read-only` 且上游 allowlist 为空：四类本地读取可用，Bug/流水线读取在发出请求前明确拒绝；默认 fixture 模式只适合独立的合成演示库。
 所有 Token 由本机受控进程注入，不写 MCP JSON。Grok Bot 连接方案依其执行器实际能力选本地 CLI 代理或内网认证 API，禁止假设外部 Bot 可以直接访问公司内网。
+
+## Agent-led revision 2.0
+
+原六工具 revision 1.1 保持兼容，Catalog 关系明确为历史线索；新增三个事实查询工具，详见 [九工具清单](MCP_FACT_TOOLS.md) 与 [Host 工作流](AGENT_LED_WORKFLOW.md)。事实查询按显式 instance 与启动范围授权，不读写全局关系或项目文件。图片通过 zentao_query(image) 原生 ImageContent 交付；旧 bug_context Resource 保留。初始化/审核/refresh 在 Host 当前业务工作区完成。

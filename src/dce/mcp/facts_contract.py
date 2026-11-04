@@ -1,6 +1,6 @@
 """Scoped fact tools: no graph lookup, inference, workspace write, or arbitrary URL."""
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
@@ -158,3 +158,61 @@ for _model in FACT_INPUTS.values():
         if not _field.description:
             _field.description = _name.replace("_", " ") + "; scoped read-only query parameter."
     _model.model_rebuild(force=True)
+
+# Conditional argument requirements are published as well as checked at runtime.
+_required = {
+    "gitlab_query": {
+        "project": ["project_id"],
+        "tree": ["project_id", "ref"],
+        "file": ["project_id", "ref", "path"],
+        "commit": ["project_id", "ref"],
+        "pipelines": ["project_id"],
+        "pipeline": ["project_id", "pipeline_id"],
+        "jobs": ["project_id", "pipeline_id"],
+        "trace": ["project_id", "job_id"],
+    },
+    "zentao_query": {
+        "project": ["project_id"],
+        "product": ["product_id"],
+        "bug": ["bug_id"],
+        "attachments": ["bug_id"],
+        "image": ["bug_id"],
+    },
+    "portainer_query": {
+        "endpoint": ["endpoint_id"],
+        "stack": ["stack_id"],
+        "stack_file": ["stack_id", "endpoint_id"],
+        "swarm_info": ["endpoint_id"],
+        "services": ["endpoint_id"],
+        "service": ["endpoint_id", "service_id"],
+    },
+}
+for _tool, _operations in _required.items():
+    _conditions: Any = []
+    for _op, _fields in _operations.items():
+        _conditions.append(
+            {
+                "if": {"properties": {"operation": {"const": _op}}, "required": ["operation"]},
+                "then": {
+                    "required": _fields,
+                    "properties": {f: {"type": "string"} for f in _fields},
+                },
+            }
+        )
+    if _tool == "zentao_query":
+        _conditions.append(
+            {
+                "if": {
+                    "properties": {"operation": {"enum": ["bugs", "modules"]}},
+                    "required": ["operation"],
+                },
+                "then": {
+                    "anyOf": [
+                        {"required": [f], "properties": {f: {"type": "string"}}}
+                        for f in ["project_id", "product_id"]
+                    ]
+                },
+            }
+        )
+    FACT_INPUTS[_tool].model_config["json_schema_extra"] = {"allOf": _conditions}
+    FACT_INPUTS[_tool].model_rebuild(force=True)

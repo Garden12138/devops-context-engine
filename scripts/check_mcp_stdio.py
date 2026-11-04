@@ -16,6 +16,9 @@ from mcp.client.stdio import stdio_client
 from dce.catalog.db import Catalog
 
 TOOLS = {
+    "zentao_query",
+    "gitlab_query",
+    "portainer_query",
     "bug_context",
     "project_context",
     "service_trace",
@@ -81,7 +84,8 @@ async def check(catalog_path: Path) -> dict[str, Any]:
                         and t.annotations.destructiveHint is False
                         and t.inputSchema.get("additionalProperties") is False
                         and t.meta
-                        and t.meta.get("dce", {}).get("contract_revision") == "1.1"
+                        and t.meta.get("dce", {}).get("contract_revision")
+                        == ("2.0" if t.name.endswith("_query") else "1.1")
                         for t in listed.tools
                     ):
                         raise CheckFailure("Read-only tool contract mismatch.")
@@ -125,7 +129,7 @@ async def check(catalog_path: Path) -> dict[str, Any]:
             "mode": "catalog_only",
             "transport": "stdio",
             "server_version": initialized.serverInfo.version,
-            "contract_revision": "1.1",
+            "contract_revision": "2.0 (legacy 1.1)",
             "tool_count": len(listed.tools),
             "successful_reads": len(requests),
             "scope_denials": 2,
