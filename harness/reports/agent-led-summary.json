@@ -13,19 +13,19 @@
   },
   "evidence": {
     "pytest": {
-      "passed": 191,
+      "passed": 199,
       "failed": 0,
       "errors": 0,
       "skipped": 0,
-      "seconds": 15.931
+      "seconds": 17.704
     },
     "coverage": {
-      "combined_percent": 98.18,
-      "line_percent": 98.73,
-      "branch_percent": 96.48
+      "combined_percent": 98.09,
+      "line_percent": 98.64,
+      "branch_percent": 96.39
     },
     "ruff": "passed",
-    "strict_mypy": "passed (47 files)",
+    "strict_mypy": "passed (48 files)",
     "wheel_build_and_isolated_import_schema_migration": "passed",
     "stdio_loopback_synthetic_fact_reads_and_image": "passed",
     "live_doctor": {
@@ -68,6 +68,25 @@
       "new_platform_requests": 0,
       "pytest_repeated_this_turn": false,
       "record": "harness/context/agent-led/blocked-audit.md"
+    },
+    "resumed_intake": {
+      "business_workspace_received": true,
+      "git_roots": 20,
+      "roots_with_remote": 19,
+      "roots_with_manifests": 18,
+      "roots_with_ci": 17,
+      "roots_with_dockerfile": 17,
+      "local_first_level_module_proposals": 18,
+      "confirmed_relationships": 0,
+      "private_draft_validated": true,
+      "business_workspace_written": false,
+      "credential_source_received": true,
+      "credential_values_exported": false,
+      "zentao_auth": "v1_account_password_login",
+      "user_selected_bug_overrides_proposal_sample": true,
+      "platform_addresses_received": false,
+      "host_selected": false,
+      "new_platform_requests": 0
     }
   },
   "confidence_status": {
@@ -76,7 +95,8 @@
     "real_platform_reads": "not_verified",
     "real_agent_host": "not_verified",
     "real_image_received_by_model": "not_verified",
-    "goal_status": "blocked"
+    "goal_status": "blocked",
+    "current_work": "resumed_local_intake_waiting_addresses_and_host"
   },
   "versions": {
     "package": "1.0.0",
@@ -87,14 +107,14 @@
   },
   "omissions": [
     "full_zentao_module_inventory_live_not_verified",
-    "target_business_workspace_not_provided",
-    "protected_platform_configuration_missing",
+    "business_workspace_host_initialization_not_verified",
+    "platform_addresses_and_host_setup_missing",
     "real_host_connect_and_three_real_reads_and_initialization_dialogue_not_verified",
     "real_image_delivery_and_named_real_samples_not_revalidated",
     "real_legacy_catalog_not_selected_or_migrated"
   ],
   "next_actions": [
-    "Provide target business workspace and authorized non-secret platform scope/config.",
+    "Provide non-secret platform addresses/config and select the actual Agent Host; business workspace is known.",
     "Load credentials only in protected DCE process environment; never chat or project YAML.",
     "Reload actual Host MCP, run prompts/agent-led/initialize.md and record real calls.",
     "Verify version-specific full module inventory and scoped real image/model delivery.",

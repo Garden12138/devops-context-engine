@@ -1,5 +1,6 @@
 import os
 import tomllib
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -61,8 +62,11 @@ class Settings(BaseModel):
         return config
 
 
-def load_settings(path: Path | None = None, **overrides: Any) -> Settings:
+def load_settings(
+    path: Path | None = None, *, environ: Mapping[str, str] | None = None, **overrides: Any
+) -> Settings:
     """CLI overrides > process environment > explicit non-secret TOML; no dotenv."""
+    environment = os.environ if environ is None else environ
     try:
         data: dict[str, Any] = {}
         if path is not None:
@@ -78,13 +82,13 @@ def load_settings(path: Path | None = None, **overrides: Any) -> Settings:
                     ("instance_id", "INSTANCE_ID"),
                 ):
                     key = f"DCE_{name.upper()}_{suffix}"
-                    if key in os.environ:
-                        platform[field] = os.environ[key]
+                    if key in environment:
+                        platform[field] = environment[key]
                 if platform:
                     platform.setdefault("instance_id", name)
                     data[name] = platform
-            elif f"DCE_{name.upper()}" in os.environ:
-                data[name] = os.environ[f"DCE_{name.upper()}"]
+            elif f"DCE_{name.upper()}" in environment:
+                data[name] = environment[f"DCE_{name.upper()}"]
         data.update({key: value for key, value in overrides.items() if value is not None})
         return Settings.model_validate(data)
     except (OSError, ValueError, ValidationError):

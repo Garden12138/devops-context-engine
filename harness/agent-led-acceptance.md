@@ -17,9 +17,9 @@
 
 ## 实跑结果
 
-- `.venv/bin/pytest -q --cov=src/dce --cov-report=term-missing --cov-report=json:/tmp/dce-agent-led-coverage.json --junitxml=/tmp/dce-agent-led-tests.xml --tb=short`：**191 passed，0 failed，0 errors，0 skipped，15.94s**。
-- 总体覆盖率 **98.18%**；行 **98.73%**，分支 **96.48%**，高于 75% 门槛；新增 MCP 事实输入契约模块 100%。安全/状态关键场景见下表。
-- `.venv/bin/ruff check .`、`.venv/bin/mypy src`（47 files）、`git diff --check`、索引公共数据扫描 exit 0。最终暂存扫描在 T7 提交前另记。
+- `.venv/bin/pytest -q --cov=src/dce --cov-report=term-missing --cov-report=json:/tmp/dce-agent-led-coverage.json --junitxml=/tmp/dce-agent-led-tests.xml --tb=short`：**199 passed，0 failed，0 errors，0 skipped，17.71s**。
+- 总体覆盖率 **98.09%**；行 **98.64%**，分支 **96.39%**，高于 75% 门槛；新增 MCP 事实输入契约模块 100%。安全/状态关键场景见下表。
+- `.venv/bin/ruff check .`、`.venv/bin/mypy src`（48 files）、`git diff --check`、索引公共数据扫描 exit 0。最终暂存扫描在 T7 提交前另记。
 - `uv build --wheel --offline --out-dir /tmp/dce-agent-led-dist`：成功；wheel 安装到 `/tmp` 隔离路径，实际从安装包导入，项目模板/Schema 与 0003 迁移/角色检查通过。不触发公司构建或部署。
 - `check_agent_led_mcp.py --help`、项目 CLI/help/模板/schema/校验通过；真实新版 SDK smoke 尚未执行。已提供不输出 ID/正文/凭证的范围检查入口。
 
@@ -45,7 +45,7 @@
 
 ## 外部 P0 缺口与真实证据
 
-实际运行 `.venv/bin/dce doctor --live --read-only`：exit **2**，ZenTao/GitLab/Portainer 均 `AUTH_FAILED`，原因固定诊断 `Platform configuration is missing.`，`live_status=not_verified`；未发送平台请求。仅检查六个相应进程变量是否存在，均 false，未打印值；未读取 .env、Token 文件、私有日志或真实附件缓存。当前工具集合无 DCE MCP；用户尚未提供指定业务 workspace，已异步询问。
+此前未配置进程环境时运行 `.venv/bin/dce doctor --live --read-only`：exit **2**，ZenTao/GitLab/Portainer 均 `AUTH_FAILED`，原因固定诊断 `Platform configuration is missing.`，`live_status=not_verified`；未发送平台请求。仅检查六个相应进程变量是否存在，均 false，未打印值；未读取 .env、Token 文件、私有日志或真实附件缓存。该次工具集合无 DCE MCP，workspace 当时未提供。用户恢复后 workspace 和凭证源已明确，现仅缺三平台站点地址与实际 Host，详情见本文末接续记录。
 
 | 必须补验 | 当前判定 | 下一步 |
 |---|---|---|
@@ -62,7 +62,7 @@
 
 ## 接续
 
-按 [续跑提示词](../prompts/agent-led/resume.md)，从缺失外部条件补验继续，无需重做离线阶段。需要目标业务工作区绝对路径、非秘密连接配置/授权范围及可调用 DCE 的真实 Host；凭证只进入本机受保护进程环境，不发聊天或写入项目 YAML。未满足这些完成标准前保留 goal 未完成。
+按 [续跑提示词](../prompts/agent-led/resume.md)，从缺失外部条件补验继续，无需重做离线阶段。业务工作区已提供，现需非秘密连接地址配置及可调用 DCE 的真实 Host；凭证只进入本机受保护进程环境，不发聊天或写入项目 YAML。未满足这些完成标准前保留 goal 未完成。
 
 
 ## 模块能力接续（2026-11-04）
@@ -72,4 +72,12 @@
 
 ## Goal 阻塞审计
 
-当前状态 blocked，整体未完成。相同的连接配置/真实 Host/业务工作区缺失已连续三轮复核，见 [逐项审计](context/agent-led/blocked-audit.md)。本轮无代码变更，未重复 pytest 或无配置认证；191 项通过的证据保持原采集时间与范围。取得明确业务工作区、授权非秘密配置/范围以及真实 Host 后从外部验收接续。
+当前状态 blocked，整体未完成。相同的连接配置/真实 Host/业务工作区缺失已连续三轮复核，见 [逐项审计](context/agent-led/blocked-audit.md)。本轮无代码变更，未重复 pytest 或无配置认证；199 项通过的证据保持原采集时间与范围。取得明确业务工作区、授权非秘密配置/范围以及真实 Host 后从外部验收接续。
+
+## 用户恢复后的接续
+
+用户已明确业务工作区、新缺陷样本及本机凭证源，禅道为 v1 账号密码换临时 Token；本轮缺陷样本以最新用户选择为准。此前“未提供工作区/凭证源”的阻塞是历史状态。实际已只读识别 20 Git roots、18 个根含模块清单、17 个含 CI，私有草稿含 18 条首层模块关系提议，confirmed=0，并经 Schema 校验；业务目录未写入。具体路径/名称/remote/样本编号只留 gitignored 私有记录。
+
+凭证源只有四个别名变量，无三平台 URL，权限已收紧为 0600。新增显式本地入口与 v1 启动登录，默认 CLI 的无 dotenv 行为保留；凭证正文不返回模型、不打印、不提交。合成安全/基础检查 20 passed，stdio/HTTP E2E 2 passed；新全库 **199 passed，98.09%**，ruff、strict mypy（48 files）、wheel 隔离凭证解析检查通过。首次测试发现 Python symlink resolve 丢失 venv，已改用保留虚拟环境入口路径并复验。
+
+当前真正缺少的是三平台站点根地址/非秘密配置路径，以及实际 Host 选择与 DCE 可见性；尚未登录真实平台或读取真实 Bug/图片。真实 Host/关系审核/文件写入验收保持 not_verified；不再将已提供的业务工作区列为缺失。可按 [资料清单](../docs/AGENT_LED_LIVE_INTAKE.md) 分次补充。

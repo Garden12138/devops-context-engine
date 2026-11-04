@@ -9,7 +9,7 @@
 5. 离线单元/契约/E2E、安全、隔离与多对多检查通过；至少一个真实 Host 完成 connect/list/三次真实只读调用和当前项目初始化对话，并确认一条关系或明确 unresolved。
 6. 未验证的版本接口、图片到模型与外部事实保留 not_verified，不能以历史证据/合成数据替代。
 
-当前离线 191 tests passed、总体覆盖率 98.18%，ruff/strict mypy 通过。完整模块树已补齐离线实现；其真实实例兼容性、真实新版平台/图片、目标业务工作区和真实 Host 验收待补；总体未完成。详见 harness/agent-led-acceptance.md。
+当前离线 199 tests passed、总体覆盖率 98.09%，ruff/strict mypy 通过。完整模块树已补齐离线实现；其真实实例兼容性、真实新版平台/图片、目标业务工作区和真实 Host 验收待补；总体未完成。详见 harness/agent-led-acceptance.md。
 
 ## 旧 V1 目标（历史兼容依据）
 

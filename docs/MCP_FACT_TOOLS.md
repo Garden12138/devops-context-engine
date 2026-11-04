@@ -42,3 +42,6 @@ image 仅从授权 Bug 内解析附件来源，保持同源/禁止重定向/认�
 旧工具：bug_context、project_context、service_trace、pipeline_diagnose、deployment_inspect、discovery_status。详见 [旧契约](CLI_MCP_CONTRACT.md)。旧 Catalog 人工确认不自动成为项目 confirmed；新工作流用事实工具和项目文件。当前不删除旧工具，任何未来移除需独立版本提案。
 
 配置齐全只是 configured_not_verified；模块完整目录、真实附件/新版上游/Host 测试按 [验收报告](../harness/agent-led-acceptance.md) 的证据分别判断。
+
+
+用户明确使用本机 .env 和禅道 v1 账号密码时，采用 [显式本地凭证入口](AGENT_LED_LOCAL_CREDENTIALS.md)；默认 dce 不自动加载 .env，不能直接把旧变量名当作已注入的 DCE 进程配置。

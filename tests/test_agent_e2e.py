@@ -193,3 +193,93 @@ def test_stdio_fact_queries_image_and_host_owned_isolated_contexts(tmp_path: Pat
     second = load_project(tmp_path / "project-b")
     first.relationships[0].status = "rejected"
     assert second.relationships[0].status == "unresolved"
+
+
+def test_explicit_local_credential_launcher_logs_in_once_then_serves_mcp(tmp_path):
+    requests = []
+
+    class Platform(BaseHTTPRequestHandler):
+        def log_message(self, *_):
+            pass
+
+        def do_POST(self):
+            requests.append(("POST", self.path))
+            assert self.path == "/api.php/v1/tokens" and self.headers.get("Token") is None
+            body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            assert body == {"account": "fixture-reader", "password": "fixture-pass"}
+            content = json.dumps({"token": "fixture-fresh-session"}).encode()
+            self.send_response(201)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(content)
+
+        def do_GET(self):
+            requests.append(("GET", self.path))
+            assert self.headers["Token"] == "fixture-fresh-session"
+            content = json.dumps(
+                {"id": "b", "title": "synthetic fixture", "steps": "untrusted data"}
+            ).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(content)
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Platform)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    config = tmp_path / "connections.toml"
+    config.write_text(
+        f'allow_http=true\n[zentao]\ninstance_id="z-demo"\nbase_url="http://127.0.0.1:{server.server_port}"\n'
+    )
+    credentials = tmp_path / ".env"
+    credentials.write_text(
+        "ZEN_USER=fixture-reader\nZEN_PASSWORD=fixture-pass\nGITLAB_TOKEN=unused-fake\nPORTAINER_API_KEY=unused-fake\n"
+    )
+    credentials.chmod(0o600)
+    env = {k: v for k, v in os.environ.items() if not k.startswith("DCE_")}
+    parameters = StdioServerParameters(
+        command=str(Path(".venv/bin/python").absolute()),
+        cwd="/",
+        env=env,
+        args=[
+            str(Path("scripts/serve_dce_local.py").resolve()),
+            "--config",
+            str(config),
+            "--credentials-file",
+            str(credentials),
+            "--catalog",
+            str(tmp_path / "cache.sqlite3"),
+            "--live",
+            "--read-only",
+            "--zentao-bug",
+            "b",
+        ],
+    )
+
+    async def exercise():
+        with (tmp_path / "synthetic-launcher-stderr.txt").open("w") as errlog:
+            async with stdio_client(parameters, errlog=errlog) as (read, write):
+                async with ClientSession(read, write) as session:
+                    await session.initialize()
+                    assert len((await session.list_tools()).tools) == 9
+                    good = await session.call_tool(
+                        "zentao_query", {"instance": "z-demo", "operation": "bug", "bug_id": "b"}
+                    )
+                    assert not good.isError
+                    denied = await session.call_tool(
+                        "zentao_query",
+                        {"instance": "z-demo", "operation": "bug", "bug_id": "outside"},
+                    )
+                    assert denied.isError
+
+    try:
+        asyncio.run(exercise())
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+    assert requests == [("POST", "/api.php/v1/tokens"), ("GET", "/api.php/v1/bugs/b")]
+    assert all(
+        s not in (tmp_path / "synthetic-launcher-stderr.txt").read_text()
+        for s in ("fixture-pass", "fixture-fresh-session", "unused-fake")
+    )

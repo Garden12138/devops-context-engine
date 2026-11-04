@@ -2,7 +2,7 @@
 
 DCE 为 Cursor/Codex 等 Agent 提供 ZenTao、GitLab、Portainer 的安全只读连接、结构化查询与证据。Host Agent 使用自己的模型和当前业务工作区源码，发现关系、解释冲突、取得人工审核并维护 `.dce/project.yaml`。DCE 默认不运行业务关系推理，也不写业务工作区。
 
-本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**191 tests passed，覆盖率 98.18%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。真实平台新版路径、真实图片到模型、指定业务项目初始化和真实 Host 验收仍 **not_verified**；当前缺少目标工作区、平台配置和已挂载 DCE 的 Host，不能宣告整体验收完成。详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。旧 V1 真实证据只适用于旧报告的版本/范围。
+本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**199 tests passed，覆盖率 98.09%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。真实平台新版路径、真实图片到模型、指定业务项目初始化和真实 Host 验收仍 **not_verified**；目标工作区与凭证源已提供，目前缺少三平台站点地址及实际 Host 接入，不能宣告整体验收完成。详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。旧 V1 真实证据只适用于旧报告的版本/范围。
 
 ## 职责
 
@@ -36,7 +36,7 @@ uv run ruff check .
 uv run mypy src
 ```
 
-离线 E2E 会绑定本机随机端口，仅返回合成平台数据；受限执行器需允许 loopback socket。不会连接公司平台。默认配置不读取 `.env`，凭证只从受保护进程环境输入。
+离线 E2E 会绑定本机随机端口，仅返回合成平台数据；受限执行器需允许 loopback socket。不会连接公司平台。默认配置不读取 `.env`，凭证只从受保护进程环境输入；用户明确提供本机凭证文件时，可用[显式本地入口与禅道 v1 登录](docs/AGENT_LED_LOCAL_CREDENTIALS.md)。
 
 ## MCP 与项目工作流
 

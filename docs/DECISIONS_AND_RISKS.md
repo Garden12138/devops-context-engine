@@ -137,3 +137,8 @@ schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 s
 新增 zentao_query(module_tree)，仅允许明确授权 Product ID 和 bug/story/case/product 类型；Project/Execution ID 不可替代 Product ID，任务模块不开放。旧 modules 的 Bug 页部分清单保持兼容。树只保留实际节点字段和层级父 ID，先搜索再本地分页，限制节点数/深度/上游字节；畸形、重复、越 root 和不支持接口安全失败，绝不静默回退后声称完整。DCE 不做业务关系推断。
 
 依据：[官方 v1 路由](https://github.com/easysoft/zentaopms/blob/main/config/apiv1.php)、[GET 参数/返回](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php)、[树结构](https://github.com/easysoft/zentaopms/blob/main/module/tree/model.php)。实际版本/权限仍 not_verified，需取得授权配置后实测。
+
+
+## ADR-022：用户明确凭证源时显式加载，保留默认无 dotenv
+
+用户恢复接续后明确凭证位于本机 .env，禅道需 v1 账号密码换 Token。独立本地 MCP 入口处理该输入，默认 CLI/Settings 不自动读取 dotenv；环境通过参数注入，不修改父进程。解析器不 source/执行/插值，严格文件模式/体积/重复/别名检查；既有四种别名映射至 DCE 字段。v1 认证仅启动时一次，不附旧 Token，不重试密码，不持久化临时 Token，失败固定诊断保持 stdout 协议纯净。公开记录不含真实路径、资源名称或凭证，业务根目录画像和候选项目文档只保留私有区。连接地址缺失不能从凭证猜测，需要非秘密配置。

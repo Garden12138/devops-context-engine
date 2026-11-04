@@ -2,6 +2,8 @@
 
 Goal 当前状态：**blocked（外部条件缺失；整体未完成）**。连续三轮审计见 harness/context/agent-led/blocked-audit.md。
 
+用户已恢复接续并给出业务工作区与新的 Bug 样本。工作区已只读识别（20 Git roots），本地画像/候选 project.yaml 在 gitignored 私有区并已校验；未写业务目录。凭证源与禅道 v1 登录方式已明确，剩余信息为三平台站点根地址/非秘密配置，以及实际 Host。原阻塞审计是历史状态，不再把业务路径/凭证源列为未知。
+
 本地分支 refactor/agent-led-project-init；重构实际提案路径 docs/refactor/agent-led-initialization/dce-agent-led-refactor/。
 
 | 阶段 | 当前状态 | 证据/遗留 |
@@ -12,12 +14,12 @@ Goal 当前状态：**blocked（外部条件缺失；整体未完成）**。连�
 | T3 项目文件 | passed_offline | Schema/模板/校验/纯 refresh；人工状态/隔离/多对多 |
 | T4 Agent 工作流 | passed_offline | 六工作流、真实名称/Schema/启动参数；不写业务目录 |
 | T5 Catalog | passed_offline | backup 后迁移角色，历史消费者保留；真实库未选定 |
-| T6 验证 | offline_passed_external_blocked | 191 passed，覆盖率 98.18%；真实平台配置缺失/Host 未挂载/目标 workspace 未提供 |
+| T6 验证 | offline_passed_external_blocked | 199 passed，覆盖率 98.09%；站点地址缺失/Host 待选择；workspace 与凭证源已提供 |
 | T7 文档验收 | documentation_ready_acceptance_incomplete | README/迁移/清单/harness 已更新，不标整体完成 |
 
-当前阻塞证据：dce doctor --live --read-only exit 2，三个 AUTH_FAILED/configuration_missing，0 平台请求；仅检查进程配置是否存在，未读取 .env/Token 文件/私有日志。已向用户异步询问目标工作区和非秘密连接范围，尚未收到。
+历史无配置预检：doctor exit 2，三个 AUTH_FAILED/configuration_missing，0 平台请求。用户恢复后已提供业务工作区、明确凭证源及 v1 登录方式；仅本机处理该授权输入，正文不进对话。当前缺少站点根地址/非秘密配置及实际 Host，尚未调用真实平台。
 
-下一步：提供目标业务工作区/安全配置和授权范围；重载真实 Host MCP；执行初始化提示词、至少三次真实读取及真实图片协议/模型接收验证；取得人工确认或明确 unresolved，Host 展示 diff 后维护文件并校验。模块完整树路由已核对，仍需按实际实例版本/权限补验。不能复用旧 V1 真实证据宣布新版通过。
+下一步：补充三平台站点根地址/非秘密配置及实际 Host；重载真实 Host MCP；执行初始化提示词、至少三次真实读取及真实图片协议/模型接收验证；取得人工确认或明确 unresolved，Host 展示 diff 后维护文件并校验。模块完整树路由已核对，仍需按实际实例版本/权限补验。不能复用旧 V1 真实证据宣布新版通过。
 
 续跑：prompts/agent-led/resume.md；阶段细节在 harness/context/agent-led/、harness/build-log.md、harness/test-results.md。本轮代码/测试已分阶段本地提交，无 push/merge/平台写操作。
 
@@ -148,3 +150,7 @@ README/GOALS/PLANS、九工具清单、迁移回滚、安全/运维、Host 六�
 ### Agent-led T2-modules-verified（2026-11-04）
 
 Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry GET 和 getProductStructure/getDataStructure，新增 Product scope 的 module_tree，完整树搜索后本地分页、字段白名单、节点/深度/2MB 限额；禁止以 Project/Execution ID 替代 Product ID，旧 modules 部分清单兼容。先行测试 2 failed/1 passed 证实缺口；实现后 QueryParams 与 dict 的测试断言类型差异导致 1 failed，修正断言后针对性 69 passed（2.71s），stdio/本机合成 HTTP 1 passed（1.39s）。最终全库 191 passed/0 failed/errors/skipped（15.94s），总体覆盖率 98.18%；ZenTao Adapter 与事实输入契约 100%。ruff/strict mypy/最终 wheel 隔离安装/九工具与迁移检查通过。官方主分支源码不代表当前公司版本；真实平台/图片/Host/指定业务 workspace 仍 not_verified，缺配置与工作区的阻塞重复第 2 个 goal turn，未达 blocked 审计门槛且本轮有实际进展，goal 保持 active。
+
+### Agent-led resumed-local-intake（2026-11-04）
+
+用户明确业务工作区、凭证源与禅道 v1 登录方式，并更换真实缺陷样本。Host 只读核对 20 Git roots、18 根模块清单、17 CI/Dockerfile，私有首层模块关系提议 18 条、confirmed 0，Schema 校验通过；未写业务目录。显式 dotenv/v1 MCP 启动入口已实现，默认不加载 dotenv；文件模式、无插值/执行、别名/重复/冲突、单次登录/无重试/不附旧 Token/父环境隔离/stdio 安全检查通过。先行 5 failed 证实缺口；测试启动 Python resolve 丢失 venv 修复后基础/安全 20 passed，stdio 合成 E2E 2 passed。最终 pytest 199 passed/0 failures/errors/skips（17.71s），总体覆盖率 98.09%，ruff/strict mypy（48 files）与最终 wheel 隔离检查通过。真实凭证只检查变量名并将模式收紧到 0600，正文/值未进入对话或日志，未执行真实登录。三平台地址和实际 Host 仍待用户回复；原 blocked 审计仅历史，不立即沿用旧计数再次标记阻塞。

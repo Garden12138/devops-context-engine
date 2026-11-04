@@ -292,3 +292,7 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 ## Goal 第三轮阻塞审计（2026-11-04）
 
 当前代码 075212a，初始工作树干净；本轮仅审计提案/验收/代码状态与连接条件。进程中六项平台 URL/凭证变量均缺失、当前工具集合无 DCE、用户未指定业务 workspace；相同阻塞已连续三轮。本轮未发平台请求、未重复 pytest 或 doctor、无新代码测试结果；保留 191 passed/98.18% 基线。逐项审计和恢复输入见 context/agent-led/blocked-audit.md，goal 将设 blocked，绝不设 complete。
+
+## Agent-led resumed-local-intake — 2026-11-04
+
+用户明确业务工作区、凭证源与禅道 v1 登录方式，并更换真实缺陷样本。Host 只读核对 20 Git roots、18 根模块清单、17 CI/Dockerfile，私有首层模块关系提议 18 条、confirmed 0，Schema 校验通过；未写业务目录。显式 dotenv/v1 MCP 启动入口已实现，默认不加载 dotenv；文件模式、无插值/执行、别名/重复/冲突、单次登录/无重试/不附旧 Token/父环境隔离/stdio 安全检查通过。先行 5 failed 证实缺口；测试启动 Python resolve 丢失 venv 修复后基础/安全 20 passed，stdio 合成 E2E 2 passed。最终 pytest 199 passed/0 failures/errors/skips（17.71s），总体覆盖率 98.09%，ruff/strict mypy（48 files）与最终 wheel 隔离检查通过。真实凭证只检查变量名并将模式收紧到 0600，正文/值未进入对话或日志，未执行真实登录。三平台地址和实际 Host 仍待用户回复；原 blocked 审计仅历史，不立即沿用旧计数再次标记阻塞。

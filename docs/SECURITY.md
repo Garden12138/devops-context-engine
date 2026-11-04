@@ -50,3 +50,5 @@
 project.yaml 禁凭证、真实图片、完整日志和 environment 值；local.yaml/runs/raw evidence 应忽略。DCE 校验器拒绝重复 YAML key、alias、大小超限、凭证 URL、跨 scope、路径及 symlink 逃逸。图片新路径只在内存返回原生 MCP ImageContent，超过总输出预算明确未交付。旧 Resource 缓存方式保留兼容，不能当作模型已看图。
 
 Catalog 旧库升级前自动私有 SQLite backup 与 quick_check，失败停止迁移；备份含历史内部拓扑，必须留在私有目录，不提交。旧 confirmed 不自动变成本项目 confirmed。真实 Host/平台/图片未验收时必须 not_verified。详见 [迁移指南](AGENT_LED_MIGRATION.md)。
+
+用户明确提供本机凭证源时，可使用独立显式入口加载；默认 dce 不自动读取 .env。入口仅字面解析、不插值或执行，要求 0600 常规文件，限定大小、别名和重复检查；禅道 v1 登录一次换临时 Token，认证失败不重试密码，不持久化会话。详情见 [本地凭证契约](AGENT_LED_LOCAL_CREDENTIALS.md)。
