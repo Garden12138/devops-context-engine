@@ -4,6 +4,7 @@ from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
+from dce.common.service_logs import LogControls
 from dce.mcp.contracts import Input, Output, ResourceKey
 
 
@@ -124,7 +125,7 @@ class ZenTaoQuery(Query):
         return self
 
 
-class PortainerQuery(Query):
+class PortainerQuery(Query, LogControls):
     operation: Literal[
         "endpoints",
         "endpoint",
@@ -135,6 +136,7 @@ class PortainerQuery(Query):
         "services",
         "service",
         "stack_service",
+        "service_logs",
     ]
     endpoint_id: ResourceKey | None = None
     stack_id: ResourceKey | None = None
@@ -145,7 +147,7 @@ class PortainerQuery(Query):
         min_length=1,
         max_length=200,
         pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$",
-        description="Exact Compose service key for stack_service; not a Swarm service name.",
+        description="Exact Compose service key for stack_service/service_logs (namespace added).",
     )
 
     @model_validator(mode="after")
@@ -157,15 +159,25 @@ class PortainerQuery(Query):
             "services",
             "service",
             "stack_service",
+            "service_logs",
         }:
             if self.endpoint_id is None:
                 raise ValueError("endpoint required")
-        if self.operation in {"stack", "stack_file", "stack_service"} and self.stack_id is None:
+        if (
+            self.operation in {"stack", "stack_file", "stack_service", "service_logs"}
+            and self.stack_id is None
+        ):
             raise ValueError("stack required")
         if self.operation == "service" and self.service_id is None:
             raise ValueError("service required")
         if self.operation == "stack_service" and self.service_name is None:
             raise ValueError("Compose service name required")
+        if self.operation == "service_logs":
+            self.bounds()
+            if bool(self.service_name) == bool(self.service_id):
+                raise ValueError("exactly one service selector required")
+            if self.page != 1 or self.namespace is not None:
+                raise ValueError("log pagination and namespace overrides are forbidden")
         return self
 
 
@@ -225,6 +237,12 @@ FACT_DESCRIPTIONS = {
     "Stack File returns parsed Compose facts only. Env/registry auth excluded. "
     "Status and replicas do not establish health, environment or deployment equivalence.",
 }
+FACT_DESCRIPTIONS["portainer_query"] += (
+    " service_logs requires a separate startup endpoint:stack log grant, explicit zoned start/end "
+    "within 15 minutes and exactly one service_id or Compose service_name. Finite tail, bytes, "
+    "deadline and complete output cap; no follow. End/keyword filters are bounded client-side. "
+    "Returns fixed-vocabulary events only, no raw messages; retention may be unknown."
+)
 
 # Publish descriptions for every input, including shared pagination controls.
 for _model in FACT_INPUTS.values():
@@ -264,6 +282,7 @@ _required = {
         "services": ["endpoint_id"],
         "service": ["endpoint_id", "service_id"],
         "stack_service": ["endpoint_id", "stack_id", "service_name"],
+        "service_logs": ["endpoint_id", "stack_id", "start_time", "end_time"],
     },
 }
 for _tool, _operations in _required.items():
@@ -324,6 +343,28 @@ for _tool, _operations in _required.items():
                         {"required": [f], "properties": {f: {"type": "string"}}}
                         for f in ["project_id", "product_id"]
                     ]
+                },
+            }
+        )
+    if _tool == "portainer_query":
+        _conditions.append(
+            {
+                "if": {
+                    "properties": {"operation": {"const": "service_logs"}},
+                    "required": ["operation"],
+                },
+                "then": {
+                    "oneOf": [
+                        {
+                            "required": [selector],
+                            "properties": {selector: {"type": "string"}, other: {"type": "null"}},
+                        }
+                        for selector, other in (
+                            ("service_id", "service_name"),
+                            ("service_name", "service_id"),
+                        )
+                    ],
+                    "properties": {"page": {"const": 1}, "namespace": {"type": "null"}},
                 },
             }
         )

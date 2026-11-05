@@ -322,11 +322,22 @@ def mcp_serve(
     zentao_product: list[str] | None = None,
     portainer_endpoint: list[str] | None = None,
     portainer_stack: list[str] | None = None,
+    portainer_log_scope: list[str] | None = None,
 ) -> None:
     from dce.app.facts import FactScope
     from dce.mcp.server import serve
 
     try:
+        log_scopes: set[tuple[str, str]] = set()
+        for log_scope in portainer_log_scope or []:
+            parts = log_scope.split(":")
+            if len(parts) != 2 or not all(p.isdecimal() for p in parts):
+                raise DceError(ErrorCode.INVALID_PAYLOAD, "Log scope must be ENDPOINT_ID:STACK_ID.")
+            if parts[0] not in (portainer_endpoint or []) or parts[1] not in (
+                portainer_stack or []
+            ):
+                raise DceError(ErrorCode.PERMISSION_DENIED, "Log scope requires metadata scope.")
+            log_scopes.add((parts[0], parts[1]))
         if transport != "stdio":
             raise DceError(ErrorCode.INVALID_PAYLOAD, "V1 MCP supports stdio only.")
         with AppServices(ctx.obj, fixture=fixture or DEFAULT_FIXTURE) as services:
@@ -343,6 +354,7 @@ def mcp_serve(
                     zentao_bugs=set(zentao_bug or []),
                     portainer_endpoints=set(portainer_endpoint or []),
                     portainer_stacks=set(portainer_stack or []),
+                    portainer_log_scopes=log_scopes,
                 ),
             )
     except (DceError, OSError, SQLAlchemyError) as exc:

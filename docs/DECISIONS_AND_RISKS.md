@@ -154,3 +154,14 @@ schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 s
 保留原 Pipeline jobs 与九工具名称，新增 Project/Branch Job 和触发 Job 单页读取；Branch 是本地精确过滤，分页保持上游坐标，空页明确不能证明没有构建。下游标识返回 Host，DCE 不递归扩 scope、不执行业务推理。单 Compose Service 在服务端选择后解析/预算；安全字段白名单和输入上限保留，畸形环境条目/Job 嵌套字段不允许夹带敏感配置。
 
 项目 v1 默认行为/读取与静态 Schema 保留，新概念显式使用 v2 typed details。CI 定义/执行、tag/digest、保存定义/运行观察与环境/版本比较独立，不能由分支名或 latest 推断确认。迁移是纯函数/CLI stdout 预览，不重新解释旧节点，不修改业务文件，审批/证据/状态/备注语义保持。实际项目当前 24 proposed/3 unresolved/1 confirmed 在本轮按内容指纹保护。详细边界和验证见 docs/AGENT_LED_INCREMENTAL_V1.md 与 harness/incremental-v1-acceptance.md。
+
+
+## ADR-025：限定服务日志采用独立授权、有界流和固定词汇投影
+
+元数据只读范围不自动授予日志权限；新增 endpoint:stack 日志 pair，仍同时要求原 allowlist。先比对 Stack/Endpoint/当前 Swarm、Service 实际 ID 和 namespace label，再通过 Portainer Docker proxy GET 日志，最后复核版本。没有 Docker Socket、SSH、写 API 或新服务。
+
+官方服务日志没有 until/关键词过滤，因此使用 since + finite tail，再在原始 payload 上限和 asyncio 总截止时间内有限过滤；拒绝 follow、压缩和不支持的必要参数，不重试日志 GET。解析 Docker stdcopy、Task context、纳秒时间、UTF-8、TTY 与 Systemerr。tail、读取中断、未知保留期和真正已读无匹配分别表达，不能由空结果推断过期或权限。
+
+任意文本的正则脱敏不能保证移除个人信息；默认完全省略自由文本，只输出固定事件词汇、常见异常、HTTP 状态和进程内随机密钥 HMAC 关联摘要。日志内容永远没有指令权。错误仅 service_logs 可携带查询上下文，其他操作保持原契约；双份 MCP 输出裁剪后重新计算 revision。Project Schema V2、九工具、Host 推理职责保持。
+
+版本 1.1.0 / Portainer 契约 2.2；323 合成测试通过，97.63%，真实日志 not_verified。详细约束、官方来源和权限缺口见 [Scoped Service Logs](SCOPED_SERVICE_LOGS.md) 与 [验收](../harness/service-logs-v1.1-acceptance.md)。

@@ -1,3 +1,14 @@
+# 2026-11-05 V1.1 Scoped Service Logs
+
+T0 审计 → T1 契约 → T2 Adapter/独立授权 → T3 安全投影 → T4 MCP → T5 合成测试 → T6 回归打包 → T7 文档完成。仅扩展 portainer_query；九工具、Project Schema V2、Host 职责不变。没有访问业务目录、真实平台、凭证文件或私有日志，没有根因推理、修复、构建/部署业务功能或远程写 API。
+
+- 契约：docs/SCOPED_SERVICE_LOGS.md；运行时导出 schemas/portainer-query.schema.json；ADR-025。
+- 离线：323 passed / 97.63%；其中新专项 96 + 新 stdio/HTTP 1；ruff、strict mypy 52 文件、doctor --mock、离线锁包/构建、wheel 隔离导入均通过。
+- 真实日志：not_verified，缺少明确读取权限证据；没有主动探测或制造审核事件。空日志保留 retention unknown，不能冒充无权限/过期/事件不存在。
+- 风险边界：服务端没有 until/关键词过滤，使用 since + finite tail，再在有限字节和总流截止时间内筛选；达到 tail 可能缺失；自由文本省略，匿名关联仅同进程稳定。
+- 本轮用户允许 DCE 本地阶段记录；此前“不提交”的历史回合不扩展为业务仓库提交授权。既有已验收未提交 DCE 基线与 V1.1 增量分开保存在本地分支；不 push/merge，不纳入业务仓库。
+- 交付与实际结果：harness/service-logs-v1.1-acceptance.md、harness/reports/service-logs-v1.1-summary.json。
+
 # 2026-11-05 当前增量：Agent-led V1 真实项目缺口
 
 本轮 A–D 已完成实现、测试、文档和当前范围真实只读 SDK 验收；全部保持未提交。保留此前未提交记录，业务 project.yaml 不修改、不自动迁移、不暂存/提交/推送。

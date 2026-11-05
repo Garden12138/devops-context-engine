@@ -347,7 +347,29 @@ def output_schema(name: str, model: type[BaseModel] | None = None) -> dict[str, 
                 "required": ["error"],
                 "properties": {
                     "status": {"const": "error"},
-                    "data": {"type": "null"},
+                    "data": (
+                        {
+                            "anyOf": [
+                                {"type": "null"},
+                                {
+                                    "allOf": [
+                                        {"$ref": "#/$defs/ToolData"},
+                                        {
+                                            "properties": {
+                                                "source": {
+                                                    "properties": {
+                                                        "operation": {"const": "service_logs"}
+                                                    }
+                                                }
+                                            }
+                                        },
+                                    ]
+                                },
+                            ]
+                        }
+                        if name == "portainer_query"
+                        else {"type": "null"}
+                    ),
                 },
             },
         ],

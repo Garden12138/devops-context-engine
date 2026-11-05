@@ -345,3 +345,16 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 业务v1文件前后指纹不变，28关系仍24 proposed/3 unresolved/1 confirmed；v2仅在私有目录预览，解析模型除版本外全部值一致，审批/证据/备注保留。本轮没有git add/commit/push，保留此前未提交改动。实际调用JSON保存在gitignored私有目录，公开例子全部合成。新版Cursor operation尚未观察，需重载dce连接后使用；SDK证据不冒充Cursor证据。完整报告 incremental-v1-acceptance.md，机器结果 reports/incremental-v1-summary.json。
 
 收尾独立检查：业务v1、纯迁移v2、两份公开project示例均通过运行时及JSON Schema校验，28条关系/审批/证据/备注保持；17份改动Markdown的70条相对链接有效，35个公开改动文件新增内容的私有路径/主机/项目坐标扫描通过。工作流文档2 passed（0.55s），ruff/strict mypy49 files/diff check通过；DCE索引为空、HEAD未变，业务文件最终指纹与本轮基线一致。
+
+
+## 2026-11-05 V1.1 Scoped Service Logs（T0→T7）
+
+先读 README/GOALS/PLANS/specs、安全边界并审计 Adapter、FactScope、九工具 Schema、DceError、脱敏与双份输出预算；确认上一轮已验收 DCE 基线仍未提交。先定义 docs/SCOPED_SERVICE_LOGS.md，再扩展既有 Portainer/facts/MCP。无业务目录读取/修改，无真实内网请求，无 .env/Token/私有日志读取，无远程写操作。
+
+新增 service_logs、独立 --portainer-log-scope E:S；核对 Stack.Id/Type/EndpointId/SwarmId、当前 Cluster.ID、Service.ID/namespace/Version，精确名称查找先服务端 name/label filters。服务日志 since/tail/follow=false，受控 raw payload、行数、输出双份字节与总流截止时间，不重试、不降级无限读；正确区分分帧/UTF-8/Task/TTY/Systemerr。任意原文省略，仅固定事件/异常/HTTP 状态/HMAC 关联摘要，不执行注入文本。错误保留来源、窗口、错误码与未知保留期；只有明确过期错误才 LOGS_EXPIRED。
+
+诊断记录：首次专项 33 passed/40 failed，主要因旧输出错误契约仅允许 data=null；修复为 service_logs 专属错误上下文扩展后，另发现并修正测试复用 calls 导致并发版本用例误判。首次全量受沙箱限制有3个 loopback bind错误；仅对本机合成服务器放行后，最终全量 `.venv/bin/pytest -q --tb=short --cov=src/dce --cov-report=term-missing`：323 passed/27.50s，97.63%。新专项96 passed/2.67s；新 stdio+HTTP 1项与原226项均通过。ruff check .、strict mypy52文件通过。uv首次缓存权限失败；获许可后 uv sync --locked --offline --dev 与 uv build --offline 通过，1.1.0 wheel 隔离导入/版本/输入Schema及临时Catalog doctor --mock通过。
+
+真实日志 not_verified：没有明确日志读取权限证据，所以未探测真实日志接口，没有制造审核事件或伪报403。管理员确认权限后才可在已授权测试 pair 上执行一次小窗口有限读取。服务端没有until/关键词过滤、tail可能挤出历史、日志保留期未知、原文省略和HMAC仅进程内稳定均已记录。交付 docs/SCOPED_SERVICE_LOGS.md、schemas/portainer-query.schema.json、harness/service-logs-v1.1-acceptance.md、reports/service-logs-v1.1-summary.json；ADR-025。按当前仓库本地分支协议保留已验收 DCE 基线及本轮增量，不提交业务内容，不push/merge。
+
+最终分帧审阅补充：多 Task 没有末尾换行时保留独立消息；合法超大 frame 到原始字节上限时归类截断。新增2项回归，最终96专项+1新stdio+226原回归=323通过，97.63%；wheel已按最终代码重建。DCE基线本地检查点74ab016，V1.1增量单独提交；Project Schema和业务项目未纳入增量。

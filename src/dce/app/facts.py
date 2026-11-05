@@ -9,6 +9,7 @@ from typing import Any
 
 from dce.app.services import AppServices, resource_key
 from dce.common.errors import DceError, ErrorCode
+from dce.common.service_logs import LogControls
 from dce.connectors.gitlab import GitLab, key
 from dce.connectors.portainer import Portainer
 from dce.connectors.zentao import ZenTao
@@ -73,6 +74,7 @@ class FactScope:
     zentao_bugs: set[str] = field(default_factory=set)
     portainer_endpoints: set[str] = field(default_factory=set)
     portainer_stacks: set[str] = field(default_factory=set)
+    portainer_log_scopes: set[tuple[str, str]] = field(default_factory=set)
 
 
 class FactQueries:
@@ -94,6 +96,19 @@ class FactQueries:
                 records, more, warnings, image, mime = self.zentao(ZenTao(reader), p)
             else:
                 records, more, warnings, image, mime = self.portainer(Portainer(reader), p)
+        return self.result(platform, p, records, more, warnings, image, mime)
+
+    def result(
+        self,
+        platform: str,
+        p: dict[str, Any],
+        records: list[dict[str, Any]],
+        more: bool = False,
+        warnings: list[str] | None = None,
+        image: bytes | None = None,
+        mime: str = "",
+    ) -> tuple[dict[str, Any], bytes | None, str]:
+        warnings = warnings or []
         secrets = tuple(
             c.token.get_secret_value()
             for c in (
@@ -116,7 +131,7 @@ class FactQueries:
         )
         source = {
             "platform": platform,
-            "instance": config.instance_id,
+            "instance": p["instance"],
             "operation": p["operation"],
             "resource_id": resource,
         }
@@ -152,12 +167,64 @@ class FactQueries:
             mime,
         )
 
+    async def execute_logs(self, p: dict[str, Any]) -> tuple[dict[str, Any], None, str]:
+        controls = LogControls.model_validate({k: p[k] for k in LogControls.model_fields})
+        record: dict[str, Any] = {
+            "identity": {},
+            "events": [],
+            "outcome": "error",
+            "error_type": None,
+            "truncated": False,
+            "retention": "not_verified",
+        }
+        try:
+            if not self.live:
+                deny()
+            config = self.services.settings.platform("portainer")
+            if config.instance_id != p["instance"]:
+                deny()
+            self.authorize("portainer", p)
+            with self.services.reader("portainer") as reader:
+                record = await Portainer(reader).service_logs(
+                    p["endpoint_id"],
+                    p["stack_id"],
+                    service_id=p["service_id"],
+                    service_name=p["service_name"],
+                    controls=controls,
+                )
+        except DceError as exc:
+            record["error_type"] = exc.code.value
+            if exc.code == ErrorCode.LOGS_EXPIRED:
+                record["retention"] = "expired"
+        record["query"] = {
+            "endpoint_id": p["endpoint_id"],
+            "stack_id": p["stack_id"],
+            "service_id": p["service_id"],
+            "service_name": p["service_name"],
+            "start_time": p["start_time"],
+            "end_time": p["end_time"],
+            "keyword_count": len(p["keywords"]),
+            "max_lines": p["max_lines"],
+            "max_bytes": p["max_bytes"],
+            "max_output_bytes": p["max_output_bytes"],
+            "timeout_seconds": p["timeout_seconds"],
+            "follow": False,
+        }
+        warnings = ["LOG_FREE_TEXT_OMITTED", "RETENTION_NOT_VERIFIED"]
+        if record["truncated"]:
+            warnings.append("CONTENT_TRUNCATED")
+        data, _, _ = self.result("portainer", p, [record], warnings=warnings)
+        if record["outcome"] == "error":
+            data["evidence"] = []
+        return data, None, ""
+
     def authorize(self, platform: str, p: dict[str, Any]) -> None:
         for name, value in p.items():
             if (
                 isinstance(value, str)
                 and value
                 and name not in {"operation", "search", "service_name"}
+                and name not in {"start_time", "end_time"}
             ):
                 resource_key(value)
         op, scope = p["operation"], self.scope
@@ -183,6 +250,11 @@ class FactQueries:
             if op == "products" and not scope.zentao_products:
                 deny()
         else:
+            if (
+                op == "service_logs"
+                and (p.get("endpoint_id"), p.get("stack_id")) not in scope.portainer_log_scopes
+            ):
+                deny()
             for key_, allowed in (
                 ("endpoint_id", scope.portainer_endpoints),
                 ("stack_id", scope.portainer_stacks),

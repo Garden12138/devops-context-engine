@@ -29,6 +29,7 @@ class Reader:
         self.config = config
         self.settings = settings
         self.max_bytes = max_bytes
+        self.transport = transport
         self.sleep = sleep
         self.client = httpx.Client(
             transport=transport, timeout=settings.timeout, follow_redirects=False, trust_env=False

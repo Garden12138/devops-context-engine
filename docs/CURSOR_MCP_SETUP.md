@@ -193,3 +193,6 @@ direction=both，max_depth=2；说明源码、镜像和服务之间已知与缺�
 本轮草案记录 20 个 Git roots、三平台资源 ID，以及 23 条带来源/时间/证据的关系：18 条本地模块结构、1 条精确 Git remote 身份、3 条 Stack/Swarm 候选、1 条 Bug 与当前代码的未知关联。状态为 22 proposed、1 unresolved、0 confirmed，不含 Token 或密码。保存草案后仍保留这些状态，不替用户确认业务关系。
 
 需要批准的是“允许在指定业务项目新增该文件”。用户要求严格遵循的 [规格 05 阶段 F](refactor/agent-led-initialization/dce-agent-led-refactor/specs/05-agent-workflow.md) 明确规定：“用户确认后创建/更新 `.dce/project.yaml`；写入前展示 diff”。未来逐条确认业务关系还需证据和真实审批元数据；本次文件保存审批不填写这些字段。聊天中省略关系的片段不能代替完整草案。
+# V1.1 日志增量
+
+包升级为 1.1.0 后，保留已有连接与凭证注入，仅对已批准测试环境追加 `--portainer-log-scope ENDPOINT_ID:STACK_ID`（且已有对应 `--portainer-endpoint`、`--portainer-stack`）。重载 DCE MCP，检查九工具仍在、portainer_query 契约 2.2。完整参数、有限窗口示例与权限限制见 [Scoped Service Logs](SCOPED_SERVICE_LOGS.md)；配置状态不是权限验收，当前真实日志 `not_verified`。不自动改业务 project.yaml。

@@ -1,4 +1,4 @@
-# MCP 事实工具清单（revision 2.1）
+# MCP 事实工具清单（Portainer revision 2.2，其余 2.1）
 
 DCE 暴露九工具。原六名称/参数/输出 Schema 保留兼容，关系部分是历史线索。三平台实例/凭证由已有 Settings 的安全进程环境/非秘密 TOML 配置读取；不自动加载 .env。`dce doctor --live --read-only` 独立检查三平台，失败不阻塞其他平台；MCP 枚举只报告配置条件，不进行认证探测。
 
@@ -34,6 +34,9 @@ DCE 暴露九工具。原六名称/参数/输出 Schema 保留兼容，关系部
 | portainer_query | stack_file | stack_id, endpoint_id；先校验 Stack.EndpointId，返回解析事实 |
 | portainer_query | stack_service | stack_id, endpoint_id, service_name；服务端选择精确 Compose key 后输出安全字段 |
 | portainer_query | service | endpoint_id, service_id |
+| portainer_query | service_logs | endpoint_id, stack_id, service_name 或 service_id（二选一）, start_time, end_time；独立启动日志授权，有限 lines/bytes/deadline |
+
+V1.1 日志能力的实际参数 Schema、安全投影、错误/空结果/过期边界和 Cursor 配置见 [Scoped Service Logs](SCOPED_SERVICE_LOGS.md)。必须额外设置 `--portainer-log-scope ENDPOINT_ID:STACK_ID`；旧元数据范围不自动开放私有日志。follow 禁止，日志 GET 不重试；原九工具及调用仍兼容。
 
 独立模块树使用官方 v1 `GET /modules?id=<Product ID>&type=<module_type>`；保留实际节点字段和 children 层级，屏蔽 URL/owner，最多 10000 节点、深度 30。接口不支持/权限失败时返回错误，不以部分 Bug 清单冒充完整目录。此路线由 [官方路由与 GET 实现](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php) 核对，真实实例仍 not_verified。
 

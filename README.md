@@ -1,5 +1,7 @@
 # DevOps Context Engine — Agent-led Project Initialization
 
+2026-11-05 V1.1 Scoped Service Logs：`portainer_query(service_logs)` 新增独立 Endpoint/Stack 日志授权、真实 Swarm/Service 标签校验、有界非 follow 读取与固定词汇脱敏事件。包 1.1.0，Portainer 契约 2.2；**323 tests passed / 97.63%**，ruff、strict mypy、stdio/合成 HTTP、wheel 验证通过。真实日志权限未取得明确证据，真实验收 `not_verified`。九工具与 Project Schema V2 保持，见 [完整契约、Schema 与 Cursor 示例](docs/SCOPED_SERVICE_LOGS.md)、[本轮验收](harness/service-logs-v1.1-acceptance.md)。
+
 DCE 为 Cursor/Codex 等 Agent 提供 ZenTao、GitLab、Portainer 的安全只读连接、结构化查询与证据。Host Agent 使用自己的模型和当前业务工作区源码，发现关系、解释冲突、取得人工审核并维护 `.dce/project.yaml`。DCE 默认不运行业务关系推理，也不写业务工作区。
 
 2026-11-05 增量完成：GitLab 项目/分支 Job 与 bridge 查询、服务端单 Compose Service 查询、向后兼容的 Project Context v2 和纯迁移预览。九工具名称不变，事实契约 2.1；最新 **226 tests passed / 97.63%**。当前范围真实 SDK 找到上游空 Job 对应的下游记录，单服务在 8KB 预算下完整返回。业务文件保留 24 proposed/3 unresolved/1 confirmed，字节未改，未提交。见 [增量使用与调用示例](docs/AGENT_LED_INCREMENTAL_V1.md)、[本轮增量验收](harness/incremental-v1-acceptance.md)。
