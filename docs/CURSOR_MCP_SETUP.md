@@ -4,6 +4,8 @@
 
 后续真实反馈：用户已确认 Cursor 中九个 DCE 工具和三次实际成功调用，额外 mcp_auth 属于宿主；初始化对话也已回传。由于该 Host 没有转发 structuredContent，旧文本 DCE result. 让模型无法看到事实/截断。服务器现同时提供相同 JSON 文本信封；关闭再开启 dce 连接，并在新会话复验文本 JSON。授权含图 Bug 的范围与显式图片预算也已装入连接，SDK 原生图片交付通过；模型实际接收仍需在 Cursor 观察。无需重复全部三平台调用或重新提供 Token。
 
+最新复验已回传：Cursor 实际看见 JSON 文本信封，Bug 查询信封/data.truncated 均 false、data.evidence 有记录；原生 PNG ImageContent 也已进入模型可见内容，未截断、未保存或转录图片。完整项目文件已获批准，由 Host 保存并通过 CLI 校验/复读，仍为 22 proposed/1 unresolved/0 confirmed；按用户要求未暂存、未提交。此前的待复验和待保存是历史状态，不需再次执行。
+
 # Cursor 桌面版接入 DCE MCP
 
 V1 使用本机 **stdio**：Cursor 启动和关闭 DCE 子进程，没有 HTTP 地址、端口或独立常驻服务。无需先在终端挂着一个 `dce mcp serve`。

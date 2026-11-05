@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "date": "2026-11-05",
+  "scope": "agent_led_v1_incremental_A_B_C_D",
+  "tools": {
+    "count": 9,
+    "legacy_contract": "1.1",
+    "fact_contract": "2.1",
+    "names_unchanged": true
+  },
+  "implementation": {
+    "project_jobs": true,
+    "branch_jobs_local_filter_with_upstream_pagination": true,
+    "pipeline_jobs_backward_compatible": true,
+    "manual_and_retried_filters": true,
+    "pipeline_bridges_explicit_downstream_no_auto_expansion": true,
+    "stack_service_selected_before_output_budget": true,
+    "schema_versions": [
+      1,
+      2
+    ],
+    "v1_frozen_schema_retained": true,
+    "lossless_explicit_migration_stdout_only": true,
+    "model_or_business_inference_added": false
+  },
+  "verification": {
+    "pytest": {
+      "passed": 226,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 23.032
+    },
+    "coverage": {
+      "combined_percent": 97.63,
+      "line_percent": 98.27,
+      "branch_percent": 95.72
+    },
+    "ruff": "passed",
+    "strict_mypy": "passed (49 files)",
+    "stdio_loopback_incremental_e2e": "passed",
+    "wheel_offline_build_and_isolated_install": "passed",
+    "safety_review": {
+      "malformed_environment_names_and_job_scalar_fields": "hardened",
+      "temporary_service_name_shadow_regression": "caught_by_3_tests_then_fixed",
+      "failing_intermediate_run": {
+        "failed": 3,
+        "passed": 223
+      },
+      "repaired_targeted_tests": 17,
+      "final_full_suite_passed": 226
+    },
+    "closing_checks": {
+      "business_v1_and_v2_preview_and_two_public_examples_schema_valid": true,
+      "changed_markdown_files_checked": 17,
+      "relative_links_valid": 70,
+      "public_added_lines_private_coordinates_scan_files": 35,
+      "business_file_sha256_matches_baseline": true,
+      "dce_index_empty_and_head_unchanged": true,
+      "git_diff_check": "passed",
+      "workflow_document_tests": "2 passed (0.55s)"
+    }
+  },
+  "live_read_only": {
+    "transport": "stdio_standard_sdk",
+    "tool_count": 9,
+    "output_schema_and_text_consistency": "passed",
+    "project_job_records_on_first_page": 3,
+    "manual_job_records_on_first_page": 3,
+    "branch_filter_empty_pages_with_more_data": 2,
+    "upstream_pipelines_observed": 3,
+    "ordinary_jobs_on_each_upstream_page": 0,
+    "bridges_on_each_upstream_page": 1,
+    "jobs_on_each_observed_same_project_downstream_page": 2,
+    "server_auto_downstream_traversal": false,
+    "same_8192_budget_full_stack_truncated": true,
+    "single_service": {
+      "records": 1,
+      "truncated": false,
+      "incomplete": false,
+      "final_output_bytes": 3634,
+      "budget": 8192,
+      "exact_service_name_matched": true
+    },
+    "private_logs_requested": false,
+    "raw_compose_persisted": false,
+    "zentao_requested": false,
+    "builds_or_deployments": 0,
+    "new_cursor_host_operations": "not_verified_requires_connection_reload",
+    "selected_acceptance_calls_returning_ok": 21,
+    "total_calls_including_intermediate_checks": 23,
+    "additional_intermediate_service_checks": 2
+  },
+  "business_project": {
+    "schema_version": 1,
+    "relationships": 28,
+    "statuses": {
+      "proposed": 24,
+      "unresolved": 3,
+      "confirmed": 1
+    },
+    "file_bytes_unchanged": true,
+    "all_approval_evidence_notes_preserved_in_v2_preview": true,
+    "workspace_file_auto_migrated": false,
+    "git_add_commit_push_executed": false
+  },
+  "omissions": [
+    "Current project validation is SDK stdio; no unobserved Cursor calls claimed.",
+    "Branch Jobs filters a project upstream page; an empty page may still have more.",
+    "Latest sampled upstream pipelines were obtained from current branch queries; not assumed identical to prior Cursor sample IDs.",
+    "Older ZenTao and independent GitLab sample gates are outside this incremental scope."
+  ],
+  "next_actions": [
+    "Reload the dce MCP connection in Cursor to consume revision 2.1; all nine names remain.",
+    "Use the private actual MCP examples or public synthetic examples.",
+    "Keep current business v1 file unchanged; future v2 adoption requires a separate reviewed Host change."
+  ]
+}

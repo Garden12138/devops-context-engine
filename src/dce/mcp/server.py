@@ -123,7 +123,7 @@ class McpApplication:
                 blockers.append("HTTP is not authorized")
             return {
                 **state,
-                "contract_revision": "2.0",
+                "contract_revision": "2.1",
                 "data_source": "upstream",
                 "platform": platform,
                 "blockers": blockers,

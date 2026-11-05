@@ -369,15 +369,40 @@ def project_schema() -> None:
 
 
 @project_app.command("template")
-def project_template(workspace_id: str = "business-project") -> None:
+def project_template(workspace_id: str = "business-project", schema_version: int = 1) -> None:
     from dce.project.context import template
 
     try:
-        typer.echo(json.dumps(template(workspace_id), ensure_ascii=False, indent=2))
+        typer.echo(json.dumps(template(workspace_id, schema_version), ensure_ascii=False, indent=2))
     except ValidationError:
         typer.echo(
             encode(
                 envelope(error=DceError(ErrorCode.INVALID_PAYLOAD, "Invalid workspace identity."))
+            )
+        )
+        raise typer.Exit(2) from None
+
+
+@project_app.command("migrate")
+def project_migrate(
+    workspace: Path, workspace_id: str | None = None, target_version: int = 2
+) -> None:
+    """Print a lossless v2 candidate to stdout; never changes the workspace file."""
+    from dce.project.context import load_project, migrate
+
+    try:
+        result = migrate(
+            load_project(workspace, workspace_id=workspace_id), target_version=target_version
+        )
+        typer.echo(
+            json.dumps(result.model_dump(mode="json", by_alias=True), ensure_ascii=False, indent=2)
+        )
+    except (DceError, OSError, ValueError):
+        typer.echo(
+            encode(
+                envelope(
+                    error=DceError(ErrorCode.INVALID_PAYLOAD, "Project migration preview failed.")
+                )
             )
         )
         raise typer.Exit(2) from None

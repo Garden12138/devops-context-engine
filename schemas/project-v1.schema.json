@@ -1,0 +1,583 @@
+{
+  "$defs": {
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "direct_config",
+            "structure",
+            "platform_observation",
+            "agent_analysis",
+            "human_statement",
+            "legacy_catalog"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Source",
+          "type": "string"
+        },
+        "locator": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Locator",
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "maxLength": 250,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Revision"
+        },
+        "summary": {
+          "maxLength": 2000,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "source",
+        "locator",
+        "observed_at",
+        "revision",
+        "summary"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "GitLabScope": {
+      "additionalProperties": false,
+      "properties": {
+        "instance": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "projects": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Projects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "instance"
+      ],
+      "title": "GitLabScope",
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        },
+        "initialized_by": {
+          "default": "host_agent",
+          "maxLength": 200,
+          "title": "Initialized By",
+          "type": "string"
+        },
+        "last_refresh_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Refresh At"
+        }
+      },
+      "title": "Metadata",
+      "type": "object"
+    },
+    "Node": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "zentao_product",
+            "zentao_project",
+            "zentao_module",
+            "zentao_bug",
+            "gitlab_project",
+            "code_module",
+            "source_path",
+            "ci_pipeline",
+            "ci_job",
+            "container_image",
+            "deployment_repository",
+            "compose_file",
+            "compose_service",
+            "portainer_endpoint",
+            "portainer_stack",
+            "swarm_cluster",
+            "swarm_service",
+            "environment"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "instance": {
+          "description": "Source-instance ID; never infer from a platform numeric ID.",
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "instance",
+        "id"
+      ],
+      "title": "Node",
+      "type": "object"
+    },
+    "PortainerScope": {
+      "additionalProperties": false,
+      "properties": {
+        "instance": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "endpoints": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Endpoints",
+          "type": "array"
+        },
+        "stacks": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Stacks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "instance"
+      ],
+      "title": "PortainerScope",
+      "type": "object"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "confirmed"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "approved_by": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "approved_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "approved_by",
+              "approved_at"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "from": {
+          "$ref": "#/$defs/Node"
+        },
+        "relation": {
+          "enum": [
+            "contains_module",
+            "implements",
+            "implemented_by",
+            "builds",
+            "produces_image",
+            "uses_image",
+            "declares_service",
+            "deployed_as",
+            "managed_by_stack",
+            "runs_in_environment",
+            "depends_on",
+            "related_to"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "to": {
+          "$ref": "#/$defs/Node"
+        },
+        "status": {
+          "default": "proposed",
+          "enum": [
+            "proposed",
+            "confirmed",
+            "rejected",
+            "stale",
+            "conflicted",
+            "unresolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "confidence": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "approved_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved By"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        },
+        "last_verified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Verified At"
+        },
+        "notes": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "from",
+        "relation",
+        "to",
+        "evidence"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    },
+    "Root": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "kind": {
+          "const": "git_repository",
+          "default": "git_repository",
+          "title": "Kind",
+          "type": "string"
+        },
+        "remote_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Remote Url"
+        },
+        "default_branch": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default Branch"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "Root",
+      "type": "object"
+    },
+    "Scope": {
+      "additionalProperties": false,
+      "properties": {
+        "zentao": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ZenTaoScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "gitlab": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GitLabScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "portainer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PortainerScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Scope",
+      "type": "object"
+    },
+    "Workspace": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "roots": {
+          "items": {
+            "$ref": "#/$defs/Root"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Roots",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "roots"
+      ],
+      "title": "Workspace",
+      "type": "object"
+    },
+    "ZenTaoScope": {
+      "additionalProperties": false,
+      "properties": {
+        "instance": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "projects": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Projects",
+          "type": "array"
+        },
+        "products": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Products",
+          "type": "array"
+        },
+        "bugs": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Bugs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "instance"
+      ],
+      "title": "ZenTaoScope",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "workspace": {
+      "$ref": "#/$defs/Workspace"
+    },
+    "scope": {
+      "$ref": "#/$defs/Scope"
+    },
+    "relationships": {
+      "items": {
+        "$ref": "#/$defs/Relationship"
+      },
+      "maxItems": 5000,
+      "title": "Relationships",
+      "type": "array"
+    },
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    }
+  },
+  "required": [
+    "workspace"
+  ],
+  "title": "ProjectContext",
+  "type": "object"
+}

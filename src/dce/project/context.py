@@ -86,8 +86,17 @@ def load_project(workspace: Path, *, workspace_id: str | None = None) -> Project
 
 
 def evidence_signature(r: Relationship) -> str:
+    comparison = r.version_match.model_dump(mode="json") if r.version_match else None
+    if comparison is not None and r.version_match is not None:
+        comparison["evidence"] = [
+            e.model_dump(mode="json", exclude={"observed_at"}) for e in r.version_match.evidence
+        ]
     return json.dumps(
-        [e.model_dump(mode="json", exclude={"observed_at"}) for e in r.evidence], sort_keys=True
+        {
+            "evidence": [e.model_dump(mode="json", exclude={"observed_at"}) for e in r.evidence],
+            "version_match": comparison,
+        },
+        sort_keys=True,
     )
 
 
@@ -111,6 +120,9 @@ def refresh(project: ProjectContext, observations: list[Relationship]) -> Projec
         elif evidence_signature(old) != evidence_signature(new):
             current.status = "stale" if old.status == "confirmed" else "conflicted"
             current.evidence = new.evidence
+            current.version_match = (
+                new.version_match.model_copy(deep=True) if new.version_match else None
+            )
         else:
             current.last_verified_at = timestamp
         merged.append(current)
@@ -127,7 +139,19 @@ def refresh(project: ProjectContext, observations: list[Relationship]) -> Projec
     return validate_text(yaml.safe_dump(data))
 
 
-def template(workspace_id: str = "business-project") -> dict[str, Any]:
+def template(workspace_id: str = "business-project", schema_version: int = 1) -> dict[str, Any]:
     return ProjectContext.model_validate(
-        {"workspace": {"id": workspace_id, "name": "Business Project", "roots": [{"path": "."}]}}
+        {
+            "schema_version": schema_version,
+            "workspace": {"id": workspace_id, "name": "Business Project", "roots": [{"path": "."}]},
+        }
     ).model_dump(mode="json", by_alias=True)
+
+
+def migrate(project: ProjectContext, *, target_version: int = 2) -> ProjectContext:
+    """Lossless explicit preview. Never reinterprets legacy nodes or writes a workspace."""
+    if target_version != 2:
+        raise DceError(ErrorCode.INVALID_PAYLOAD, "Only lossless migration to v2 is supported.")
+    data = project.model_dump(mode="json", by_alias=True)
+    data["schema_version"] = target_version
+    return validate_text(yaml.safe_dump(data))

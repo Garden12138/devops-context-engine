@@ -148,3 +148,9 @@ schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 s
 真实 Cursor Agent 已能枚举九工具并发起三平台调用，但只看见 DCE result.，无法消费 structuredContent 中的事实。九工具统一在 TextContent 返回相同的序列化 JSON，兼容只消费文本的 Host；Schema、名称和只读边界保持不变。按实际 UTF-8 ToolResult body 同时计量两份 JSON 与转义，超限明确遗漏，大 Catalog 查询需适当提高预算或缩小范围。
 
 真实授权图片超过旧 64KB 总预算。新增可选 image_output_budget（默认 null，最大 3MB），只在显式配置后用于原生图片总响应；文本/结构化元数据仍受 output_budget 限制，Reader 的 2MB 原图上限不变。Base64 不进入 JSON 文本、不自动缩图、不落盘、不扩大 Bug scope。合成与真实 SDK 均验证；SDK 收到图片不等于真实 Host 模型看见，验收仍分别记录。
+
+## ADR-024：增量 Job/单服务事实与显式项目 Schema v2
+
+保留原 Pipeline jobs 与九工具名称，新增 Project/Branch Job 和触发 Job 单页读取；Branch 是本地精确过滤，分页保持上游坐标，空页明确不能证明没有构建。下游标识返回 Host，DCE 不递归扩 scope、不执行业务推理。单 Compose Service 在服务端选择后解析/预算；安全字段白名单和输入上限保留，畸形环境条目/Job 嵌套字段不允许夹带敏感配置。
+
+项目 v1 默认行为/读取与静态 Schema 保留，新概念显式使用 v2 typed details。CI 定义/执行、tag/digest、保存定义/运行观察与环境/版本比较独立，不能由分支名或 latest 推断确认。迁移是纯函数/CLI stdout 预览，不重新解释旧节点，不修改业务文件，审批/证据/状态/备注语义保持。实际项目当前 24 proposed/3 unresolved/1 confirmed 在本轮按内容指纹保护。详细边界和验证见 docs/AGENT_LED_INCREMENTAL_V1.md 与 harness/incremental-v1-acceptance.md。

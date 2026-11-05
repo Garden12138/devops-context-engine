@@ -15,13 +15,49 @@ class Query(Input):
 
 class GitLabQuery(Query):
     operation: Literal[
-        "projects", "project", "tree", "file", "commit", "pipelines", "pipeline", "jobs", "trace"
+        "projects",
+        "project",
+        "tree",
+        "file",
+        "commit",
+        "pipelines",
+        "pipeline",
+        "jobs",
+        "trace",
+        "project_jobs",
+        "branch_jobs",
+        "pipeline_bridges",
     ]
     project_id: ResourceKey | None = None
     ref: ResourceKey | None = None
     path: ResourceKey | None = None
     pipeline_id: ResourceKey | None = None
     job_id: ResourceKey | None = None
+    include_retried: bool = Field(default=False, description="Pipeline jobs only; include retries.")
+    job_statuses: list[
+        Literal[
+            "created",
+            "pending",
+            "running",
+            "failed",
+            "success",
+            "canceled",
+            "skipped",
+            "waiting_for_resource",
+            "manual",
+            "scheduled",
+            "preparing",
+            "canceling",
+            "waiting_for_callback",
+        ]
+    ] = Field(
+        default_factory=list,
+        max_length=13,
+        description="Optional scope[] filter. Empty includes manual and all other states.",
+    )
+    trigger_api: Literal["bridges", "trigger_jobs"] = Field(
+        default="bridges", description="Explicit trigger route; trigger_jobs needs GitLab 19.2+."
+    )
     search: str = Field(default="", max_length=100)
     tail_lines: int = Field(default=100, ge=1, le=500)
     start_line: int = Field(default=1, ge=1, le=100000)
@@ -34,10 +70,18 @@ class GitLabQuery(Query):
             raise ValueError("ref required")
         if self.operation == "file" and self.path is None:
             raise ValueError("path required")
-        if self.operation in {"pipeline", "jobs"} and self.pipeline_id is None:
+        if self.operation in {"pipeline", "jobs", "pipeline_bridges"} and self.pipeline_id is None:
             raise ValueError("pipeline required")
         if self.operation == "trace" and self.job_id is None:
             raise ValueError("job required")
+        if self.operation == "branch_jobs" and self.ref is None:
+            raise ValueError("branch ref required")
+        if self.operation in {"project_jobs", "branch_jobs"} and self.pipeline_id is not None:
+            raise ValueError("use jobs for a pipeline-specific query")
+        if self.operation == "project_jobs" and self.ref is not None:
+            raise ValueError("use branch_jobs for a branch-specific query")
+        if self.include_retried and self.operation != "jobs":
+            raise ValueError("include_retried applies only to pipeline jobs")
         return self
 
 
@@ -90,21 +134,38 @@ class PortainerQuery(Query):
         "swarm_info",
         "services",
         "service",
+        "stack_service",
     ]
     endpoint_id: ResourceKey | None = None
     stack_id: ResourceKey | None = None
     service_id: ResourceKey | None = None
     namespace: ResourceKey | None = None
+    service_name: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=200,
+        pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$",
+        description="Exact Compose service key for stack_service; not a Swarm service name.",
+    )
 
     @model_validator(mode="after")
     def required_arguments(self) -> "PortainerQuery":
-        if self.operation in {"endpoint", "stack_file", "swarm_info", "services", "service"}:
+        if self.operation in {
+            "endpoint",
+            "stack_file",
+            "swarm_info",
+            "services",
+            "service",
+            "stack_service",
+        }:
             if self.endpoint_id is None:
                 raise ValueError("endpoint required")
-        if self.operation in {"stack", "stack_file"} and self.stack_id is None:
+        if self.operation in {"stack", "stack_file", "stack_service"} and self.stack_id is None:
             raise ValueError("stack required")
         if self.operation == "service" and self.service_id is None:
             raise ValueError("service required")
+        if self.operation == "stack_service" and self.service_name is None:
+            raise ValueError("Compose service name required")
         return self
 
 
@@ -154,9 +215,13 @@ FACT_DESCRIPTIONS = {
     "attachment metadata, or one authenticated MCP ImageContent. "
     "Search only within startup scope. No mapping. Instance must match configuration.",
     "gitlab_query": "GitLab scoped project/tree/ref file/commit/pipeline/jobs/trace facts. "
+    "project_jobs and branch_jobs page project executions; branch ref filtering is local to "
+    "each upstream page. Empty jobs do not prove no build; inspect pipeline_bridges separately. "
+    "Manual jobs included unless a status filter excludes them; no downstream auto traversal. "
     "Explicit page/limit; file uses start_line and tail_lines, trace uses tail_lines. "
     "Secret files forbidden; Compose excludes environment values. No inference.",
     "portainer_query": "Portainer scoped read-only endpoint/stack/Stack File/Swarm/services facts. "
+    "stack_service selects one exact Compose service server-side before output budgeting. "
     "Stack File returns parsed Compose facts only. Env/registry auth excluded. "
     "Status and replicas do not establish health, environment or deployment equivalence.",
 }
@@ -178,6 +243,9 @@ _required = {
         "pipelines": ["project_id"],
         "pipeline": ["project_id", "pipeline_id"],
         "jobs": ["project_id", "pipeline_id"],
+        "project_jobs": ["project_id"],
+        "branch_jobs": ["project_id", "ref"],
+        "pipeline_bridges": ["project_id", "pipeline_id"],
         "trace": ["project_id", "job_id"],
     },
     "zentao_query": {
@@ -195,6 +263,7 @@ _required = {
         "swarm_info": ["endpoint_id"],
         "services": ["endpoint_id"],
         "service": ["endpoint_id", "service_id"],
+        "stack_service": ["endpoint_id", "stack_id", "service_name"],
     },
 }
 for _tool, _operations in _required.items():
@@ -209,6 +278,31 @@ for _tool, _operations in _required.items():
                 },
             }
         )
+    if _tool == "gitlab_query":
+        _conditions.append(
+            {
+                "if": {
+                    "properties": {"include_retried": {"const": True}},
+                    "required": ["include_retried"],
+                },
+                "then": {"properties": {"operation": {"const": "jobs"}}},
+            }
+        )
+        for _operation in ("project_jobs", "branch_jobs"):
+            _conditions.append(
+                {
+                    "if": {
+                        "properties": {"operation": {"const": _operation}},
+                        "required": ["operation"],
+                    },
+                    "then": {
+                        "properties": {
+                            "pipeline_id": {"type": "null"},
+                            **({"ref": {"type": "null"}} if _operation == "project_jobs" else {}),
+                        }
+                    },
+                }
+            )
     if _tool == "zentao_query":
         _conditions.append(
             {

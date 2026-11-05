@@ -1,6 +1,6 @@
 # Agent-led 重构验收 — 2026-11-04
 
-结论：**代码与离线验证通过，三平台真实只读已部分通过；整体真实验收未完成。** 用户已回传 Cursor Agent 九工具、三次实际调用与初始化对话；SDK 另验证原生 PNG。Cursor 旧文本仅固定状态的缺陷已修复，仍需重载复验模型可见文本/图片。用户已给出业务工作区、凭证源、HTTP 连接和 Host 选择，不再作为缺失条件。
+结论：**核心 Agent-led 初始化链路通过；严格全样本验收仍有外部缺口。** 用户已回传 Cursor 九工具、三平台实际调用、初始化对话及修复后 JSON 文本/真实 PNG 进入模型的复验。完整候选关系文件已获批准，由 Host 保存、CLI 校验和复读通过；22 proposed、1 unresolved、0 confirmed，审批字段为空。用户最新要求不要提交，本轮未 git add/commit/push；完整模块树 403 和旧独立 GitLab 范围仍未解决。
 
 依据：docs/refactor/agent-led-initialization/dce-agent-led-refactor/CHANGE_PROPOSAL.md 与 specs/01–07；根 AGENTS/GOALS/PLANS。旧 V1 仅为历史兼容证据。T0 基线 6fd0a90（144 tests），代码按 T0→T7 本地分阶段提交；无 push/merge。审计见 [refactor-audit.md](refactor-audit.md)，执行过程见 [build-log.md](build-log.md)、[test-results.md](test-results.md)。
 
@@ -9,11 +9,11 @@
 | T0 | passed：核对旧六工具的实际名称/Schema/实现/测试、Adapter、Mapping/AI/Catalog，定义边界后改代码 |
 | T1 | passed：默认路径无语义 Mapping/模型调用；技术事实、Adapter、transport 与兼容入口保留 |
 | T2 | offline passed / live partial：三个事实工具加旧六工具，scope/分页/错误/证据/预算/ImageContent；真实完整模块树 403；原样本无图，新授权样本的原生 PNG 已通过 SDK |
-| T3 | offline passed / real draft ready：Schema/模板/六状态/人工审核/纯刷新/隔离；真实私有草案 22 proposed、1 unresolved、0 confirmed，未写业务目录 |
-| T4 | offline passed / Cursor user reported：九工具/三次实际调用/初始化对话已回传，文本兼容修复和原生图片的 Host 可见性待复验 |
+| T3 | passed offline and real saved：完整 683 行/23 关系按批准保存，Schema/CLI/复读通过；22 proposed、1 unresolved、0 confirmed，文件未跟踪 |
+| T4 | passed real Host user reported：九工具/三次实际调用/初始化对话，以及修复后 JSON 文本和原生 PNG 到模型均已回传 |
 | T5 | passed including real copy：真实旧库副本备份后迁移，保留全部历史数量和原库；角色为 resource_cache_and_history |
-| T6 | offline passed / live partial：208 tests，三平台 SDK 与用户回传 Host 证据分开，新增真实 PNG；修复后 Host 可见性/模块权限/文件审批/旧样本尚待验 |
-| T7 | documentation ready / acceptance incomplete：README/迁移/清单/harness/续跑同步；不虚报整体完成 |
+| T6 | offline passed / live partial：208 tests，三平台 SDK 与用户回传 Host 证据分开；项目文件/图片到模型通过，完整模块/旧独立样本尚待验 |
+| T7 | updated uncommitted / strict full-sample acceptance incomplete：README/清单/harness/续跑同步；按用户要求不提交，不虚报严格全验完成 |
 
 ## 最新离线结果
 
@@ -54,23 +54,23 @@
 | 历史 Swarm mismatch | 两个 Stack 的 SwarmId 仍不匹配当前集群，一个匹配；只作独立来源事实，关系未自动 confirmed |
 | SDK 协议 | 九工具枚举；27 次成功真实 tools/call，另一次完整模块树 PERMISSION_DENIED；输出 Schema 校验通过，分页遗漏显式标记 |
 | 真实 Catalog 副本 | SQLite backup 后迁移 0003，191 entities/219 edges/219 evidence/11 snapshots 保留，原库不改；迁移前备份已创建 |
-| Cursor 配置 | 全局 dce 备份更新为显式本地入口，保留其他四服务，配置无密码/Token；CLI 历史未登录不影响桌面用户回传；九工具/三次实际调用与初始化已记录，新增文本/图片修复待新会话复验 |
-| 项目关系草案 | 20 Git roots，18 本地模块提议，加精确源身份/独立 Swarm 候选和 Bug 未知；22 proposed、1 unresolved、0 confirmed；Schema 与纯 refresh 通过，具体 diff 已生成，业务目录未写 |
+| Cursor 配置 | 全局 dce 备份更新为显式本地入口，保留其他四服务，配置无密码/Token；CLI 历史未登录不影响桌面用户回传；九工具/三次实际调用与初始化已记录，用户最新复验确认 JSON 文本和原生 PNG 实际进入模型，不再待复验 |
+| 项目关系草案 | 20 Git roots，18 本地模块提议，加精确源身份/独立 Swarm 候选和 Bug 未知；22 proposed、1 unresolved、0 confirmed；完整 diff 获批后由 Host 保存，CLI validate exit 0/复读/字节一致性通过；文件 untracked，HEAD/index 不变 |
 
 安装包欢迎页曾导致禅道认证路由 404；按实际同源链接核实应用根，再用显式进程 URL 覆盖，未猜测接口/执行页面指令/修改 .env。SDK 入口只用 GET 和 v1 认证 POST。一次基于保存 Stack 元数据的 namespace 查询得到 0；该结果保留，不冒充运行 namespace。随后按实际 Service label 独立查询得到完整 78，两个来源不合并。
 
-## 未完成项与下一步
+## 核心验收收口与剩余项
 
 | 缺口 | 判定 / 下一步 |
 |---|---|
-| 真实 Cursor Agent | 九工具/三次实际 calls/初始化对话 passed_user_reported；旧文本只有固定状态，原三次截断 not_observable，不能记 false。现 JSON 文本兼容已通过离线/真实 SDK，待 Cursor 重载复验；不要求重复整轮 |
-| 业务项目文件落地 | 私有草案和 diff ready；依规格 05 阶段 F，先展示具体 diff、用户确认，再由 Host 保存并校验/复读；DCE 不写业务目录 |
-| 真实图片到模型 | 真实 SDK 已收到授权新 Bug 的原生 PNG（382396 字节，ToolResult 512314 字节），truncated=false，无图片落盘；Cursor 模型实际接收仍 not_verified，待新会话调用 image 复验 |
+| 真实 Cursor Agent | passed_user_reported；九工具/三次实际 calls/初始化对话及后续文本/图片模型接收均已回传。原三次 truncated 仍 not_observable，新 Bug 复验的信封/data.truncated 均 false，保留不同采集证据 |
+| 业务项目文件落地 | passed；用户批准完整 diff，Host 以只创建新文件方式保存，CLI 校验/复读与源字节一致；审批字段全空、文件未跟踪，Git HEAD/index 未变；本轮未提交 |
+| 真实图片到模型 | 真实 SDK 已收到授权新 Bug 的原生 PNG（382396 字节，ToolResult 512314 字节），truncated=false，无图片落盘；用户另回传 Cursor 实际收到 MCP ImageContent 并给出非敏感外观判断，image_delivery=delivered/truncated=false；模型接收 passed_user_reported |
 | 完整产品模块树 | PERMISSION_DENIED（403，Access not allowed）；同 Token 读 Bug 200，登录正常。官方 v1 模块入口的 tree/browse 会独立检查权限，推断应核对该读入口/产品范围；实际实例版本未确认，不以 Bug 页部分清单冒充 |
 | 旧独立 GitLab Project/Pipeline/Job 和 GitLab Compose | not_verified；补验命令被自动审批拒绝，原因是固定旧编号的本轮读取范围未明确授权。移除所有该类调用后只查当前工作区；需用户明确范围后再验，只读元数据，不请求私有日志 |
 | 跨平台业务关系、环境/健康/版本 | unresolved/unknown/not_verified；不因数量相等、名称或 ID 相似确认，不把旧 Catalog 当项目真相 |
 
-此前“地址/工作区/Host 选择缺失”的三轮 blocked 记录仅为历史。本轮没有重新宣布完成或重复旧阻塞计数。当前真实阻碍为修复后的 Cursor 文本/图片接收复验、完整项目文件保存批准、模块入口权限及旧独立样本授权。图片样本、原三次实际调用与初始化对话均已提供，不再重复索取。用户提供的信息足以继续完成不依赖这些条件的工作。
+此前“地址/工作区/Host 选择缺失”的三轮 blocked 记录仅为历史。本轮没有重新宣布完成或重复旧阻塞计数。当前仅剩完整模块树权限与旧独立样本授权/其仓库 Compose 重验。Cursor 文本/模型图片复验、项目保存批准及文件落地均已完成，不再索取或重复。核心初始化已闭环，严格全样本验收未完成，不标 goal complete。
 
 机器摘要见 [agent-led-summary.json](reports/agent-led-summary.json)，接续见 [resume.md](../prompts/agent-led/resume.md)。所有 fixtures 为合成或显式脱敏；无真实业务写、构建、部署、push 或 merge。
 
@@ -79,4 +79,9 @@
 
 详细契约、先行失败与修复结果见 [cursor-text-compatibility.md](context/agent-led/cursor-text-compatibility.md)。服务器九工具的 TextContent 与 structuredContent 返回同一脱敏 JSON，预算计入双副本和转义；图片可显式配置独立总预算（默认 null，最大 3MB），文本预算/Reader 2MB 上限/来源 scope 不变。Cursor 配置已备份更新授权含图 Bug 与图片预算，其他四服务保留，无凭证嵌入。
 
-用户提供的聊天 diff 省略了 relationships 条目，不能保存该片段；本机完整草案确有 683 行/23 关系、全部 evidence，经校验。已请求对完整 diff 的保存批准，未获批准前业务目录不写，confirmed 仍 0。
+用户提供的聊天 diff 省略了 relationships 条目，不能保存该片段；本机完整草案确有 683 行/23 关系、全部 evidence，经校验。用户随后明确批准完整 diff 并要求不要提交；Host 已保存、校验及复读，confirmed 仍 0、审批字段全空。详见 [cursor-recheck-and-approved-save.md](context/agent-led/cursor-recheck-and-approved-save.md)。本轮无新的平台读取，不 git add/commit/push。
+
+
+## 最新执行边界
+
+本轮无产品代码修改，208 项全库回归/97.93% 覆盖率为此前已通过的基线，不虚报重新跑过。实际新验证为目标业务文件的 CLI validate（exit 0）、Schema/工作区边界/复读、与获批完整草案的字节一致性和 Git HEAD/index 不变。Cursor 结果为用户回传的真实会话证据，来源标注 user_reported，不伪称执行器直接观察桌面。执行记录和文档更新保留本地未提交。

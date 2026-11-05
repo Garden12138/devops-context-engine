@@ -1,4 +1,4 @@
-# MCP 事实工具清单（revision 2.0）
+# MCP 事实工具清单（revision 2.1）
 
 DCE 暴露九工具。原六名称/参数/输出 Schema 保留兼容，关系部分是历史线索。三平台实例/凭证由已有 Settings 的安全进程环境/非秘密 TOML 配置读取；不自动加载 .env。`dce doctor --live --read-only` 独立检查三平台，失败不阻塞其他平台；MCP 枚举只报告配置条件，不进行认证探测。
 
@@ -19,6 +19,9 @@ DCE 暴露九工具。原六名称/参数/输出 Schema 保留兼容，关系部
 | gitlab_query | commit | project_id, ref |
 | gitlab_query | pipelines | project_id；ref 可选 |
 | gitlab_query | pipeline, jobs | project_id, pipeline_id |
+| gitlab_query | project_jobs | project_id；可 job_statuses；page/limit 为 Project Job 页 |
+| gitlab_query | branch_jobs | project_id, ref；对 Project Job 单页本地精确筛选；空页可能仍有下一页 |
+| gitlab_query | pipeline_bridges | project_id, pipeline_id；仅查询触发 Job/下游 ID，不递归扩 scope |
 | gitlab_query | trace | project_id, job_id；tail_lines=100（最多 500） |
 | zentao_query | projects, products | 对应非空 allowlist；可 search |
 | zentao_query | project, product | project_id 或 product_id |
@@ -29,11 +32,14 @@ DCE 暴露九工具。原六名称/参数/输出 Schema 保留兼容，关系部
 | portainer_query | endpoint, swarm_info, services | endpoint_id；services 可 namespace |
 | portainer_query | stack | stack_id |
 | portainer_query | stack_file | stack_id, endpoint_id；先校验 Stack.EndpointId，返回解析事实 |
+| portainer_query | stack_service | stack_id, endpoint_id, service_name；服务端选择精确 Compose key 后输出安全字段 |
 | portainer_query | service | endpoint_id, service_id |
 
 独立模块树使用官方 v1 `GET /modules?id=<Product ID>&type=<module_type>`；保留实际节点字段和 children 层级，屏蔽 URL/owner，最多 10000 节点、深度 30。接口不支持/权限失败时返回错误，不以部分 Bug 清单冒充完整目录。此路线由 [官方路由与 GET 实现](https://github.com/easysoft/zentaopms/blob/main/api/v1/entries/modules.php) 核对，真实实例仍 not_verified。
 
 通用 `page=1, limit=20`（1–100），Tree/Jobs/Pipeline/范围 Bug 单次只取一页。Portainer API 返回列表后在内存白名单筛选及本地分页；2MB 上游限额仍有效。超大响应报错，需缩小服务器侧范围，不声称已完整列出。每次结果有 source/observed_at/revision/records/evidence/pagination/truncated/warnings；revision 是脱敏事实内容指纹（图片为 SHA256），不是自动推定源码 commit。原生 ref/SHA 按来源 records 保留。
+
+事实工具的完整证据对象在 `data.evidence`；信封顶层 `evidence` 沿用旧工具的 evidence ID 数组，事实调用可为空。Host 判断证据应读取 `data.evidence`，不能因兼容字段为空就声称没有证据。
 
 file 禁止 .env、私钥和逃逸路径；Compose 默认结构化摘要，不返回 environment 值。trace 只返回所需尾部，默认 100 行。返回文本始终是不可信数据。能力工具直接访问 Adapter，不读全局关系、不会写工作区。
 
@@ -44,6 +50,8 @@ image 仅从授权 Bug 内解析附件来源，保持同源/禁止重定向/认�
 旧工具：bug_context、project_context、service_trace、pipeline_diagnose、deployment_inspect、discovery_status。详见 [旧契约](CLI_MCP_CONTRACT.md)。旧 Catalog 人工确认不自动成为项目 confirmed；新工作流用事实工具和项目文件。当前不删除旧工具，任何未来移除需独立版本提案。
 
 配置齐全只是 configured_not_verified；模块完整目录、真实附件/新版上游/Host 测试按 [验收报告](../harness/agent-led-acceptance.md) 的证据分别判断。
+
+增量 Job/单 Service 的分页语义、空结果和手动/下游处理、调用 JSON、v1→v2 只读迁移见 [增量使用说明](AGENT_LED_INCREMENTAL_V1.md) 和 [本轮增量验收](../harness/incremental-v1-acceptance.md)。原 jobs 仍按 Pipeline 查询；Project/Branch 使用新 operation，不把空列表判为没有构建。
 
 
 用户明确使用本机 .env 和禅道 v1 账号密码时，采用 [显式本地凭证入口](AGENT_LED_LOCAL_CREDENTIALS.md)；默认 dce 不自动加载 .env，不能直接把旧变量名当作已注入的 DCE 进程配置。

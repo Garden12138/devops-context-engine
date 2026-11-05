@@ -2,7 +2,9 @@
 
 DCE 为 Cursor/Codex 等 Agent 提供 ZenTao、GitLab、Portainer 的安全只读连接、结构化查询与证据。Host Agent 使用自己的模型和当前业务工作区源码，发现关系、解释冲突、取得人工审核并维护 `.dce/project.yaml`。DCE 默认不运行业务关系推理，也不写业务工作区。
 
-本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**208 tests passed，覆盖率 97.93%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。三平台已有真实只读证据，用户已回传 Cursor 九工具、三次实际调用与初始化对话；项目草案 22 proposed、1 unresolved、0 confirmed，文件保存待批准。针对 Cursor 只能看到固定文本的问题，九工具现同时返回相同的 JSON 文本与 structuredContent；另一个授权 Bug 的真实 PNG 已通过 SDK 原生 ImageContent 验证。Cursor 文本/图片复验、项目文件落地、模块入口 403 和旧独立 GitLab 样本仍有缺口。详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。
+2026-11-05 增量完成：GitLab 项目/分支 Job 与 bridge 查询、服务端单 Compose Service 查询、向后兼容的 Project Context v2 和纯迁移预览。九工具名称不变，事实契约 2.1；最新 **226 tests passed / 97.63%**。当前范围真实 SDK 找到上游空 Job 对应的下游记录，单服务在 8KB 预算下完整返回。业务文件保留 24 proposed/3 unresolved/1 confirmed，字节未改，未提交。见 [增量使用与调用示例](docs/AGENT_LED_INCREMENTAL_V1.md)、[本轮增量验收](harness/incremental-v1-acceptance.md)。
+
+2026-11-04 初始化基线：本地分支 `refactor/agent-led-project-init` 已完成代码与离线验证：**208 tests passed，覆盖率 97.93%，ruff/strict mypy、stdio/HTTP 合成 E2E、wheel 隔离导入通过**。用户已回传 Cursor 九工具、三平台实际调用、初始化对话，以及修复后 JSON 文本与真实 PNG 到模型的复验结果。完整项目文件已获批准，由 Host 保存、校验和复读通过：22 proposed、1 unresolved、0 confirmed，未暂存或提交。本轮遵照用户要求不执行 Git 提交；完整模块树 403 和旧独立 GitLab 样本仍未完成严格验收。详见 [本轮验收](harness/agent-led-acceptance.md)、[机器摘要](harness/reports/agent-led-summary.json)、[执行记录](harness/build-log.md)。
 
 ## 职责
 
@@ -42,7 +44,7 @@ uv run mypy src
 
 提供 **九个只读工具**：新增 `zentao_query`、`gitlab_query`、`portainer_query`，保留原六个 `bug_context`、`project_context`、`service_trace`、`pipeline_diagnose`、`deployment_inspect`、`discovery_status`。原 Catalog 工具和模块映射属于历史兼容数据，不能作为当前项目关系真相。
 
-三个事实工具直接查询 Adapter，使用显式来源 `instance` 与启动 allowlist；每次返回来源、revision、观察时间、证据、分页和遗漏。ZenTao `module_tree` 读取明确 Product 范围的完整模块树，并在本地搜索/分页；旧 `modules` 保留 Bug 页部分清单。路由与结构已按官方源码核对并通过合成测试，本轮真实账号返回 403，未取得完整树。图片通过 `zentao_query(image)` 返回 MCP ImageContent；仅 URL/Resource 不算图片已送达模型，当前真实样本无图片。
+三个事实工具直接查询 Adapter，使用显式来源 `instance` 与启动 allowlist；每次返回来源、revision、观察时间、证据、分页和遗漏。ZenTao `module_tree` 读取明确 Product 范围的完整模块树，并在本地搜索/分页；旧 `modules` 保留 Bug 页部分清单。路由与结构已按官方源码核对并通过合成测试，本轮真实账号返回 403，未取得完整树。图片通过 `zentao_query(image)` 返回 MCP ImageContent；仅 URL/Resource 不算图片已送达模型；本轮独立授权图片样本已由用户确认进入 Cursor 模型可见内容，原 Bug 无图片的事实保留。
 
 1. 按 [MCP 工具清单与启动参数](docs/MCP_FACT_TOOLS.md) 配置安全 stdio 子进程。Cursor 原有安装方式见 [接入文档](docs/CURSOR_MCP_SETUP.md)，需重新加载新进程/会话后枚举九工具。
 2. 在用户指定业务工作区使用 [初始化提示词](prompts/agent-led/initialize.md)，遵循 [Host 工作流](docs/AGENT_LED_WORKFLOW.md)。没有业务工作区时不要在 DCE 仓库制造项目关系。

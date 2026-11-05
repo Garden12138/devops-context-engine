@@ -123,7 +123,7 @@ def test_refresh_preserves_approval_rejection_notes_and_flags_change(document):
         lambda d: d["relationships"][0]["to"].update(instance="g-other"),
         lambda d: d["relationships"][0]["to"].update(id="foreign-project"),
         lambda d: d["relationships"].append(copy.deepcopy(d["relationships"][0])),
-        lambda d: d.update(schema_version=2),
+        lambda d: d.update(schema_version=3),
     ],
 )
 def test_reject_secrets_scope_escape_and_duplicate_ids(document, mutate):

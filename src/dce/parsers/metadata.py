@@ -84,11 +84,21 @@ def compose(text: str) -> dict[str, Any]:
         environment = spec.get("environment", {}) or {}
         names: list[str] = []
         if isinstance(environment, dict):
-            names = [str(key) for key in environment]
+            entries = list(environment)
         elif isinstance(environment, list):
-            names = [str(item).split("=", 1)[0] for item in environment]
+            entries = environment
         else:
+            entries = []
             incomplete = True
+        for entry in entries:
+            if not isinstance(entry, str):
+                incomplete = True
+                continue
+            environment_name = entry.split("=", 1)[0]
+            if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.-]{0,199}", environment_name):
+                names.append(environment_name)
+            else:
+                incomplete = True
         reference = spec.get("image")
         parsed = image(reference) if isinstance(reference, str) else None
         if "extends" in spec or parsed is None or parsed["incomplete"]:
@@ -107,6 +117,94 @@ def compose(text: str) -> dict[str, Any]:
             }
         )
     return {"services": result, "incomplete": incomplete}
+
+
+def compose_service(text: str, name: str) -> dict[str, Any]:
+    """Select before parsing unrelated services. No command, env values, auth or raw YAML."""
+    data, unresolved = yaml_metadata(text)
+    if unresolved:
+        raise DceError(ErrorCode.API_INCOMPATIBLE, "Compose aliases require explicit resolution.")
+    services = data.get("services", {})
+    if not isinstance(services, dict):
+        raise DceError(ErrorCode.INVALID_PAYLOAD, "Compose services must be a mapping.")
+    if name not in services:
+        raise DceError(ErrorCode.NOT_FOUND, "Compose service is not present in this Stack File.")
+    spec = services[name]
+    if not isinstance(spec, dict):
+        raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected Compose service definition.")
+    selected = compose(yaml.safe_dump({"services": {name: spec}}))
+    record = {**selected["services"][0], "incomplete": selected["incomplete"]}
+    labels = spec.get("labels", {}) or {}
+    if isinstance(labels, list):
+        labels = dict(
+            item.split("=", 1) for item in labels if isinstance(item, str) and "=" in item
+        )
+    allowed_labels = {
+        "com.docker.stack.namespace",
+        "com.docker.stack.service.name",
+        "org.opencontainers.image.revision",
+        "org.opencontainers.image.source",
+    }
+    record["labels"] = (
+        {k: v for k, v in labels.items() if k in allowed_labels and isinstance(v, str)}
+        if isinstance(labels, dict)
+        else {}
+    )
+    deploy = spec.get("deploy") or {}
+    record["deploy"] = {}
+    if isinstance(deploy, dict):
+        if deploy.get("mode") in {"replicated", "global", "replicated-job", "global-job"}:
+            record["deploy"]["mode"] = deploy["mode"]
+        elif "mode" in deploy:
+            record["incomplete"] = True
+        replicas = deploy.get("replicas")
+        if isinstance(replicas, int) and not isinstance(replicas, bool) and replicas >= 0:
+            record["deploy"]["replicas"] = replicas
+        elif "replicas" in deploy:
+            record["incomplete"] = True
+    else:
+        record["incomplete"] = True
+    ports = spec.get("ports", []) or []
+    record["ports"] = []
+    if not isinstance(ports, list):
+        ports = []
+        record["incomplete"] = True
+    for port in ports:
+        safe: dict[str, Any] = {}
+        if isinstance(port, (int, str)) and not isinstance(port, bool):
+            value, separator, protocol = str(port).partition("/")
+            parts = value.rsplit(":", 2)
+            if all(re.fullmatch(r"\d+(?:-\d+)?", p) for p in parts[-2:]):
+                safe = {"target": parts[-1]}
+                if len(parts) > 1:
+                    safe["published"] = parts[-2]
+                if separator and protocol in {"tcp", "udp", "sctp"}:
+                    safe["protocol"] = protocol
+                elif separator:
+                    record["incomplete"] = True
+        elif isinstance(port, dict):
+            for field in ("target", "published", "protocol", "mode"):
+                if field not in port:
+                    continue
+                value = port[field]
+                valid = (
+                    str(value) in {"tcp", "udp", "sctp"}
+                    if field == "protocol"
+                    else str(value) in {"ingress", "host"}
+                    if field == "mode"
+                    else isinstance(value, (int, str))
+                    and not isinstance(value, bool)
+                    and re.fullmatch(r"\d+(?:-\d+)?", str(value)) is not None
+                )
+                if valid:
+                    safe[field] = value
+                else:
+                    record["incomplete"] = True
+        if safe:
+            record["ports"].append(safe)
+        else:
+            record["incomplete"] = True
+    return record
 
 
 def modules(path: str, text: str) -> dict[str, Any]:

@@ -13,7 +13,7 @@ from dce.connectors.gitlab import GitLab, key
 from dce.connectors.portainer import Portainer
 from dce.connectors.zentao import ZenTao
 from dce.graph.model import fingerprint
-from dce.parsers.metadata import ci, compose, yaml_metadata
+from dce.parsers.metadata import ci, compose, compose_service, yaml_metadata
 from dce.security.redact import redact
 
 
@@ -154,7 +154,11 @@ class FactQueries:
 
     def authorize(self, platform: str, p: dict[str, Any]) -> None:
         for name, value in p.items():
-            if isinstance(value, str) and value and name not in {"operation", "search"}:
+            if (
+                isinstance(value, str)
+                and value
+                and name not in {"operation", "search", "service_name"}
+            ):
                 resource_key(value)
         op, scope = p["operation"], self.scope
         if platform == "gitlab":
@@ -198,7 +202,8 @@ class FactQueries:
     def gitlab(self, a: GitLab, p: dict[str, Any]) -> tuple[Any, bool, list[str], None, str]:
         op, project = p["operation"], p["project_id"]
         base = f"/api/v4/projects/{key(project)}"
-        more, warnings = False, []
+        more = False
+        warnings: list[str] = []
         if op == "projects":
             # Search scoped IDs locally; never enumerate company-wide projects.
             ids = sorted(self.scope.gitlab_projects)
@@ -207,11 +212,23 @@ class FactQueries:
             records = [
                 r for r in records if p["search"].casefold() in str(r.get("name", "")).casefold()
             ]
-        elif op in {"tree", "pipelines", "jobs"}:
+        elif op in {"jobs", "project_jobs", "branch_jobs", "pipeline_bridges"}:
+            records, more, warnings = a.job_page(
+                project,
+                pipeline=p["pipeline_id"] if op in {"jobs", "pipeline_bridges"} else None,
+                ref=p["ref"] if op == "branch_jobs" else None,
+                trigger_api=p.get("trigger_api", "bridges") if op == "pipeline_bridges" else None,
+                page=p["page"],
+                limit=p["limit"],
+                statuses=p.get("job_statuses", []),
+                include_retried=p.get("include_retried", False),
+            )
+            if p["ref"] is not None and op in {"jobs", "pipeline_bridges"}:
+                warnings.append("PIPELINE_QUERY_REF_FILTER_NOT_APPLIED")
+        elif op in {"tree", "pipelines"}:
             routes = {
                 "tree": "/repository/tree",
                 "pipelines": "/pipelines",
-                "jobs": f"/pipelines/{key(p['pipeline_id'])}/jobs",
             }
             params = {"page": p["page"], "per_page": p["limit"]}
             if p["ref"]:
@@ -280,15 +297,42 @@ class FactQueries:
                 )
                 for r in records
             ]
-        elif op in {"pipeline", "pipelines", "jobs"}:
-            records = [
-                select(
-                    r,
+        elif op in {
+            "pipeline",
+            "pipelines",
+            "jobs",
+            "project_jobs",
+            "branch_jobs",
+            "pipeline_bridges",
+        }:
+            safe_records = []
+            for record in records:
+                safe = select(
+                    record,
                     "id status ref sha name stage created_at updated_at "
-                    "started_at finished_at duration failure_reason",
+                    "started_at finished_at duration failure_reason allow_failure tag source",
                 )
-                for r in records
-            ]
+                if any(
+                    not isinstance(v, (str, int, float, bool, type(None))) for v in safe.values()
+                ):
+                    raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected Job metadata shape.")
+                for field in ("pipeline", "downstream_pipeline"):
+                    nested = record.get(field)
+                    if nested is not None:
+                        if not isinstance(nested, dict):
+                            raise DceError(
+                                ErrorCode.API_INCOMPATIBLE, "Unexpected pipeline identity."
+                            )
+                        safe[field] = select(nested, "id project_id status ref sha source")
+                        if any(
+                            not isinstance(v, (str, int, float, bool, type(None)))
+                            for v in safe[field].values()
+                        ):
+                            raise DceError(
+                                ErrorCode.API_INCOMPATIBLE, "Unexpected pipeline metadata."
+                            )
+                safe_records.append(safe)
+            records = safe_records
         elif op == "commit":
             records = [
                 select(r, "id short_id title message parent_ids authored_date committed_date")
@@ -402,11 +446,23 @@ class FactQueries:
             records = [s for s in a.stacks() if str(s.get("Id")) in self.scope.portainer_stacks]
         elif op == "stack":
             records = [a.stack(p["stack_id"])]
-        elif op == "stack_file":
+        elif op in {"stack_file", "stack_service"}:
             stack = a.stack(p["stack_id"])
             if str(stack.get("EndpointId")) != endpoint:
                 deny()
-            records = [compose(a.stack_file(p["stack_id"], endpoint))]
+            text = a.stack_file(p["stack_id"], endpoint)
+            records = (
+                [
+                    {
+                        **compose_service(text, p["service_name"]),
+                        "stack_id": p["stack_id"],
+                        "endpoint_id": endpoint,
+                        "stack_file_revision": hashlib.sha256(text.encode()).hexdigest(),
+                    }
+                ]
+                if op == "stack_service"
+                else [compose(text)]
+            )
         elif op == "swarm_info":
             swarm = a.docker_info(endpoint)["Swarm"]
             cluster = swarm.get("Cluster") or {}
