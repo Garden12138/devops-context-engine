@@ -1,0 +1,21 @@
+{
+  "tests": 133,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "python": "3.12.11",
+  "coverage_total_percent": 98.57716161984678,
+  "line_percent": 99.18465227817745,
+  "branch_percent": 96.64634146341463,
+  "core_safety_branches": {
+    "src/dce/catalog/db.py": 100.0,
+    "src/dce/app/mapping.py": 100.0,
+    "src/dce/graph/rules.py": 100.0,
+    "src/dce/connectors/zentao.py": 100.0,
+    "src/dce/discovery/checkpoint.py": 100.0,
+    "src/dce/discovery/snapshots.py": 100.0,
+    "src/dce/security/redact.py": 100.0
+  },
+  "external_platforms": "not_verified",
+  "junit_sanitization": "hostname replaced with offline-runner; all cases synthetic"
+}

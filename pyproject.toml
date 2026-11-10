@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "devops-context-engine"
+version = "1.1.1"
+description = "Read-only DevOps discovery and evidence catalog"
+requires-python = ">=3.12"
+dependencies = [
+  "typer>=0.16,<1", "rich>=14,<15", "httpx>=0.28,<1",
+  "pydantic>=2.11,<3", "pydantic-settings>=2.9,<3", "python-dotenv>=1.2,<2",
+  "sqlalchemy>=2.0,<3", "alembic>=1.16,<2", "pyyaml>=6,<7",
+  "beautifulsoup4>=4.13,<5", "mcp>=1.12,<2",
+]
+
+[project.scripts]
+dce = "dce.cli:app"
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-cov>=6,<8", "ruff>=0.11,<1", "mypy>=1.15,<2", "types-PyYAML", "types-beautifulsoup4"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dce"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["dce"]
+mypy_path = "src"
+
+[tool.coverage.run]
+source = ["dce"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 75
+show_missing = true

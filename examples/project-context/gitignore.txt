@@ -1,0 +1,4 @@
+.dce/local.yaml
+.dce/runs/
+.dce/evidence/raw/
+# Add .dce/project.yaml if topology cannot be committed by company policy.

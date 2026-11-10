@@ -1,0 +1,7 @@
+# Local-only settings example. Never store secrets in project.yaml.
+dce:
+  working_directory: ""
+  env_file: ""
+  output_budget:
+    max_items: 100
+    max_text_chars: 20000

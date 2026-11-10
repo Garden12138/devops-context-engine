@@ -1,4 +1,22 @@
-# GOALS — DCE V1.0
+# 当前目标 — Agent-led Project Initialization
+
+本轮以 docs/refactor/agent-led-initialization/dce-agent-led-refactor/CHANGE_PROPOSAL.md 与 specs/01–07 为准。
+
+1. DCE 是模型无关只读能力层，提供三平台连接、范围查询、分页、错误、脱敏、预算与证据/原生图片内容。
+2. Host 在指定业务工作区读取本地上下文，推理多对多候选、解释冲突、取得用户审核并维护 .dce/project.yaml；DCE 不直接写业务仓库。
+3. confirmed 需证据和真实人工审批，环境归属不凭名称；刷新保留审批/备注/拒绝，新关系 proposed，证据变化 stale/conflicted。
+4. 全局 Catalog 先备份再降级为资源缓存/历史；保留旧消费者，不自动把旧 confirmed 导入项目。
+5. 离线单元/契约/E2E、安全、隔离与多对多检查通过；至少一个真实 Host 完成 connect/list/三次真实只读调用和当前项目初始化对话，并确认一条关系或明确 unresolved。
+6. 未验证的版本接口、图片到模型与外部事实保留 not_verified，不能以历史证据/合成数据替代。
+
+当前离线 208 tests passed、总体覆盖率 97.93%，ruff/strict mypy 通过。三平台真实读取、旧库副本迁移、Cursor 九工具/实际调用/初始化与修复后 JSON 文本和原生图片到模型均有证据。用户已批准完整项目文件保存并要求不提交；Host 创建文件后校验/复读通过，22 proposed/1 unresolved/0 confirmed，审批字段为空，Git HEAD/index 未变，文件未跟踪。本轮不 git add/commit/push。核心初始化链路通过；完整模块树仍 403，旧独立 GitLab 样本范围未明确授权，严格全样本验收仍未完成。详见 harness/agent-led-acceptance.md。
+
+## 2026-11-05 增量目标 A–D
+
+已按本轮范围补齐 Job/单服务事实和 Schema v2，九工具保持兼容；226 tests passed/97.63%，当前 Project/Stack 的真实 stdio SDK 验收通过。业务 project.yaml 只读，原 24 proposed/3 unresolved/1 confirmed 与全部审批/证据/备注保持；v2 只在私有目录生成候选，未自动写入。当前回合不暂存/提交/推送；新增 Cursor operation 的实际会话调用未观察，需重载连接后使用，不冒充 Host 证据。见 harness/incremental-v1-acceptance.md。
+
+## 旧 V1 目标（历史兼容依据）
+
 
 ## 核心成果
 

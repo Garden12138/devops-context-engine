@@ -1,3 +1,5 @@
+> 历史 V1 兼容文档。当前业务关系推理与 project.yaml 归 Host，默认 DCE 核心不调用语义 Mapping；参见 [Agent-led 工作流](AGENT_LED_WORKFLOW.md)。旧实现保留作缓存/历史兼容。
+
 # AI 关联推理、证据评级与人工审核
 
 ## 1. 为什么不全交给大模型
