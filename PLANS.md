@@ -1,3 +1,11 @@
+# 2026-11-11 授权推送、清理及CI修复完成
+
+统一开发分支已正常推送至origin/feature/upgrade-chatgpt。远端无用work/dce-v1-offline已在精确旧HEAD lease和备份验证后删除；main=078962e、Tag为空、开放PR #1来源fix=2748c7b保持。本地独立干净候选及worktree保留。
+
+推送后发现并修复runner遗漏UV_CACHE_DIR导致的GitHub离线Wheel问题，保持offline与凭证隔离。新增缓存行为回归后本地20阶段PASS，432 passed、覆盖率97.24%。修复提交8a6249047c0d292fc425e322adbe086b834a627c的真实GitHub工作流42949449061已success，Wheel/隔离安装/摘要上传阶段全部成功；已只读核对任务和步骤状态。附件存在且未过期，但两次CLI下载发生TLS握手超时，未伪称复读其JSON；托管任务成功由GitHub实际状态证明，本地432计数来自本机本轮报告。
+
+最后仅归档上述结果并同步同一feature分支；不会把报告归档提交伪称当时被测提交。详细证据见docs/UPGRADE_EXECUTION_REPORT.md第9–10节。以下为历史阶段记录。
+
 # 2026-11-11 CI缓存修复本地验收通过，待GitHub复核
 
 新增缓存/凭证隔离回归后，本轮完整离线20阶段全部PASS：432 passed、0 failed/0 skipped、覆盖率97.24%。修复仅作用验收器环境白名单，源业务包/锁/平台授权不变。执行HEAD=508bf90，dirty=True，被测源码以新实现摘要c10f4a0d504eca421e4400c11c8c332f6e626d808884c147262adbe9e967d867记录，不把旧提交伪称干净被测版本。准备提交并推送缓存修复，GitHub托管结果另行实际核对。

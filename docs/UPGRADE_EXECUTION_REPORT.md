@@ -171,3 +171,8 @@ Cursor 使用绝对 `.venv/bin/python` + `scripts/serve_dce_local.py`，指定�
 首次托管[CI运行42948651340](https://github.com/Garden12138/devops-context-engine/actions/runs/42948651340)实际失败：Ruff/Mypy/pytest/合成STDIO/安全检查通过，离线Wheel失败。setup-uv设置专用UV_CACHE_DIR，原验收器清理环境时遗漏该非秘密路径。修复只将UV_CACHE_DIR加入白名单，仍剔除业务凭证/代理/其他UV配置并强制offline；新增子进程读取自定义缓存合成标记且确认凭证未继承的行为测试。契约和ADR-032先记录该边界。
 
 GitHub报告改存独立runner.temp目录，仅上传本轮两份摘要并保留7天；无法生成时不上传checkout旧报告，失败不隐藏。本地新一轮完整20阶段PASS，432 passed/0failed/0skipped，覆盖率97.24%，被测实现摘要`c10f4a0d504eca421e4400c11c8c332f6e626d808884c147262adbe9e967d867`。执行时HEAD=508bf90且dirty=true，JSON如实记录；修复提交以实现摘要核对，不沿用原431项报告冒充此次执行。准备推送后实际复核托管CI，结果以随后记录为准。
+
+
+后续实际结果：缓存修复提交 `8a6249047c0d292fc425e322adbe086b834a627c` 已正常推送，同步源码与本地432项验收摘要一致。[GitHub离线CI 42949449061](https://github.com/Garden12138/devops-context-engine/actions/runs/42949449061) 在2026-11-11T02:57:06Z–02:58:23Z整体success，统一验收、Wheel/隔离安装、摘要上传及后处理全部通过；gh run watch退出0，后续gh run view再次核对实际head/任务/步骤状态。首次失败记录仍保留，没有关闭测试或放宽offline制造通过。
+
+摘要附件已通过API确认存在（5120字节、未过期），但两次CLI下载遇TLS握手超时，因此附件JSON内容复读仍not_verified。此限制不改变已核对的GitHub实际任务success，也不把本地432计数冒充附件复读结果。最后文档归档提交只记录这些真实事实，源实现摘要不变；本地与远端最终SHA一致性另由git ls-remote确认。

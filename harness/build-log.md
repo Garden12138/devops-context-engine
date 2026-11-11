@@ -458,3 +458,6 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 2026-11-11 首次真实GitHub托管离线CI核对：run42948651340（cf667fd）失败，已用gh run view只读核对阶段和合成失败日志。setup-uv设置UV_CACHE_DIR=/home/runner/work/_temp/setup-uv-cache；runner的环境白名单遗漏该非秘密路径。pytest等前置全部PASS，wheel_build失败。按契约补充只继承UV_CACHE_DIR并维持凭证/代理隔离、offline=true；新增子进程缓存/凭证隔离行为回归。CI改在新runner.temp生成报告并always上传两份摘要，避免旧跟踪报告冒充本次结果。需本地完整回归和新推送CI实证后才能标修复通过。
 
 CI缓存修复本地新验收：2026-11-11T02:55:00.853797+00:00至2026-11-11T02:55:55.171111+00:00，20阶段PASS，432 passed/0failed/0skipped，覆盖率97.24%。6个验收器行为测试也单独通过。真实执行HEAD=508bf9054ebd32f311823828eed361a47da1419f，dirty=true（修复未提交），新实现摘要c10f4a0d504eca421e4400c11c8c332f6e626d808884c147262adbe9e967d867，随后提交代码据此核对。没有降低离线/安全/覆盖率约束，GitHub实际结果仍待新推送核对。
+
+
+CI缓存修复已真实托管复核：8a6249047c0d292fc425e322adbe086b834a627c推送成功，run42949449061/job130290046546在2026-11-11T02:57:06Z至02:58:23Z整体success；准备依赖、统一离线验收、actions/upload-artifact、后处理全部成功。gh run watch --exit-status退出0，gh run view再次只读核对headSHA/任务/步骤success。API确认新摘要artifact13823709365存在、未过期、5120字节；两次下载均因TLS握手超时未复读附件，不把它伪称已验证JSON内容。本地真实432 passed/97.24%和实现摘要c10f4a0d504eca421e4400c11c8c332f6e626d808884c147262adbe9e967d867保持。随后仅提交本段/计划/执行报告并同步feature；源业务包、Schema、锁、平台Scope继续与干净候选一致。main/PR/Tag未修改，work远端已删除，当前分支upstream正确。
