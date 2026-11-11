@@ -24,7 +24,14 @@ flowchart LR
 
 ## 快速开始
 
-Python >=3.12、uv、Git。本轮代码只在本机，尚未推送；在当前交付仓库运行：
+Python >=3.12、uv、Git。统一使用 `feature/upgrade-chatgpt`；首次获取代码：
+
+```sh
+git clone --single-branch --branch feature/upgrade-chatgpt https://github.com/Garden12138/devops-context-engine.git
+cd devops-context-engine
+```
+
+已有交付仓库可直接进入目录，然后运行：
 
 ```sh
 git switch feature/upgrade-chatgpt

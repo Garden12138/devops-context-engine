@@ -1,3 +1,9 @@
+# 2026-11-11 后续授权：提交推送与无用分支清理
+
+用户已明确授权提交、推送和删除无用分支。重新核对工作区干净、远端main=078962e、无Tag、目标分支尚不存在；当前实现与既有431项通过/97.24%报告的摘要一致，当前HEAD的6个可达提交/275个唯一path-blob模式检查通过。更新README/安装指南以支持直接克隆feature/upgrade-chatgpt；只推送该开发分支，不合入main、不创建Tag或PR。
+
+远端work/dce-v1-offline仍为5ab897f，属于已整合旧历史且包含在已验证私有bundle中，待新分支推送验证后删除。fix/zentao-token-refresh-v1.1.1仍是开放PR #1来源（2748c7b），有实际用途，保留；本地独立干净候选及其worktree保持。以下为原整顿任务的历史记录，本条新授权不改写旧验收结论。
+
 # 2026-11-11 本地产品交付完成
 
 结论READY_WITH_LIMITATIONS。最终feature/upgrade-chatgpt在干净提交a9a037b重跑完整离线验收：20阶段PASS，431 passed/0 failed/0 skipped，src/dce覆盖率97.24%。main和独立候选未变、无Tag，四个已整合旧本地分支已在私有bundle恢复/fsck验证后删除，远端引用未动。最终实现摘要复核一致，之后只归档文档/报告。

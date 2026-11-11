@@ -15,7 +15,16 @@ uv python install 3.12
 
 安装 uv/Python 和首次依赖下载需要公网包源；验收命令本身强制离线。不要将下载失败解释为产品功能失败，先完成依赖准备。
 
-本轮成果只存在本地分支，没有推送。使用现有仓库：
+统一使用 `feature/upgrade-chatgpt` 分支。首次从 GitHub 获取：
+
+```sh
+git clone --single-branch --branch feature/upgrade-chatgpt https://github.com/Garden12138/devops-context-engine.git /absolute/path/to/dce-local-trial
+cd /absolute/path/to/dce-local-trial
+uv sync --locked --dev --python 3.12
+uv run --offline dce doctor --mock
+```
+
+使用现有交付仓库：
 
 ```sh
 cd /absolute/path/to/devops-context-engine
@@ -46,7 +55,7 @@ git bundle verify /absolute/private/dce-local-trial.bundle
 git clone --branch feature/upgrade-chatgpt /absolute/private/dce-local-trial.bundle /absolute/path/to/dce-local-trial
 ```
 
-远端仓库地址是 `https://github.com/Garden12138/devops-context-engine.git`。普通 `git clone` 只能得到远端已有内容，无法获得尚未推送的本轮分支；不要编造远端有这个分支。勿复制整个 `.local` 或旧历史备份作为安装包。
+远端仓库地址是 `https://github.com/Garden12138/devops-context-engine.git`。使用上面明确选择 `feature/upgrade-chatgpt` 的克隆命令；默认 main 仍是保留的旧基线。勿复制整个 `.local` 或旧历史备份作为安装包。
 
 ## 2. 无凭证体验
 
@@ -187,7 +196,7 @@ uv sync --locked --dev
 uv run --offline python scripts/run_acceptance.py
 ```
 
-不需要 git pull/push；本轮未改变远端。重新安装包可 `uv sync --locked --dev --reinstall-package devops-context-engine`；完整重装优先采用第 1 节的全新目录，保留旧凭证/业务文件/Catalog，避免直接删除 `.venv` 或 `.local`。
+需要同步 GitHub 的已推送更新时，先保留本地改动并运行 `git pull --ff-only origin feature/upgrade-chatgpt`；发生分叉先审查差异，不强制覆盖。重新安装包可 `uv sync --locked --dev --reinstall-package devops-context-engine`；完整重装优先采用第 1 节的全新目录，保留旧凭证/业务文件/Catalog，避免直接删除 `.venv` 或 `.local`。
 
 构建并在新环境安装 Wheel：
 

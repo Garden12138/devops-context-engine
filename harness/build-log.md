@@ -447,3 +447,6 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 2026-11-11 最终交付：本地临时分支提交dba07db/bfa9c2d/a9a037b后命名feature/upgrade-chatgpt，目标预先不存在。四个旧分支全部按备份审计显式删除，本地仅main/feature/独立干净候选；main=078962e、候选2748c7b与零Tag均保持。没有修改origin引用。最终在干净a9a037b501949047e58abe7b6c27cf2b93c4a53a执行完整入口，20阶段全PASS、431 passed/0failed/0skipped、97.24%；执行时间2026-11-11T02:23:42.165971+00:00至2026-11-11T02:24:40.275142+00:00。实现SHA256 ef6a689d26fdb1bbf2803a5b27206d8e5063f0155531b9047b03e43a41744428重算一致。最终报告/指南归档不改变被测代码。测试过程中再生的18个缓存路径收尾定点删除，保护根未动。
 
 最终补充重装实测：在临时目录使用git clone --no-local --single-branch --branch feature/upgrade-chatgpt，仅本机传输；git cat-file确认四个旧开发HEAD对象不在新对象库。新目录锁定离线uv sync、导入路径在新clone、CLI --help、doctor --mock均PASS，临时目录自动移除。指南明确--no-local防止本地克隆优化硬链接旧对象库；此补充不冒充runner计数。
+
+
+2026-11-11 用户追加授权提交推送与删除无用分支：只读git ls-remote确认main=078962e、fix=2748c7b、work=5ab897f、无Tag，feature尚不存在。gh pr list只读确认PR #1仍OPEN且head是fix，因此保留该有用分支，不修改PR。现有本地工作区干净；6个待推送可达提交/275个唯一path-blob模式检查PASS，运行实现摘要匹配原431 passed/97.24%证据，不无意义重跑未改变的实现。私有旧分支bundle再次verify通过，work远端HEAD是备份中5092d6a的祖先。README/指南补GitHub指定开发分支安装与ff-only更新，计划先推送并验证新分支，再以精确旧HEAD lease删除无用work分支。无main/Tag/真实公司服务操作。
