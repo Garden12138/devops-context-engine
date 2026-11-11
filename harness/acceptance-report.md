@@ -11,8 +11,8 @@
 
 ## 真实质量证据
 
-- pytest：133 passed，0 failures/errors/skipped；[JUnit](reports/pytest.xml)。主机名已替换为 offline-runner，测试数据全部合成。
-- 覆盖率：总体 98.58%（启用分支统计）、行 99.18%、纯分支 96.65%；[完整覆盖率](reports/coverage.json)、[摘要](reports/summary.json)。
+- pytest：133 passed，0 failures/errors/skipped；当时 JUnit 使用合成数据，主机名已替换为 offline-runner。原始 XML 已在 2026-11-11 产品整顿中移除，可从干净候选 2748c7b 恢复。
+- 覆盖率：总体 98.58%（启用分支统计）、行 99.18%、纯分支 96.65%；原始 coverage JSON 同期移除，[历史摘要](reports/summary.json) 保留。本轮新结果见 [当前验收](../docs/acceptance/AUTOMATED_ACCEPTANCE.md)，不能替代这里的历史数值。
 - Catalog、MappingService、关系规则、ZenTao、Checkpoint、Stack/Swarm 判定、脱敏模块：纯分支覆盖率均 100%。
 - `ruff check .`、`mypy src`（39 files）、`git diff --check` 均 exit 0。
 - 真实 CLI 子进程与 MCP ClientSession stdio 集成通过；MCP stdout 仅协议，六工具只读且无审核/部署/触发工具。

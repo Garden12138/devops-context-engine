@@ -1,3 +1,9 @@
+# 当前交付：本地产品化体验版
+
+2026-11-11：将既有DCE 1.1.1整理为可安装、运行、离线验收、Cursor接入与继续开发的本地产品。统一开发分支feature/upgrade-chatgpt；main与所有现有Tag保持，独立干净候选保留。本轮不发布、不访问真实公司平台。
+
+完成依据：docs/UPGRADE_EXECUTION_REPORT.md、docs/acceptance/AUTOMATED_ACCEPTANCE.md、docs/guides/LOCAL_DEPLOYMENT.md、docs/guides/USER_GUIDE.md。以下旧目标与旧结果保留原时间语义；本轮结果只看新报告。真实Token过期恢复、当前Cursor桌面交互与新环境平台权限仍需单列not_verified。
+
 # 当前目标 — Agent-led Project Initialization
 
 本轮以 docs/refactor/agent-led-initialization/dce-agent-led-refactor/CHANGE_PROPOSAL.md 与 specs/01–07 为准。
