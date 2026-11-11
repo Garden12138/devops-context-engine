@@ -2,6 +2,8 @@
 
 最终结论：**READY_WITH_LIMITATIONS**。
 
+第1–8节记录原本地整顿任务；用户后续已授权提交推送及清理无用远端分支，实际结果见第9节。
+
 DCE 1.1.1 已具备本机安装、CLI、九工具 STDIO、合成端到端验收与部署/使用文档。当前开发统一在 `feature/upgrade-chatgpt`。本轮没有访问真实公司服务，Cursor 桌面交互、真实 Token 过期恢复和新环境平台权限仍未验证。
 
 ## 1. 完成情况与提交
@@ -145,3 +147,20 @@ Cursor 使用绝对 `.venv/bin/python` + `scripts/serve_dce_local.py`，指定�
 | 共享Web服务、MR/CI触发、自动修复/部署/回写 | 规划或明确范围外，不属于现有产品 |
 
 本地核心运行没有关键阻塞，故为READY_WITH_LIMITATIONS。后续先按手册完成无凭证体验，再逐平台配置最小Scope、重载Cursor、验证一个已授权资源；仅在单独批准后体验服务日志。继续开发从feature/upgrade-chatgpt开始，真实外部验收另行记录，不借历史Gate A/B冒充本次现场结果。
+
+
+## 9. 2026-11-11 后续授权：提交推送与分支清理
+
+用户明确追加授权“执行提交推送，删除没用的分支”，替代前一阶段不推送/不删远端分支的限制；不扩大到合并main、修改PR、创建Tag/Release或访问真实公司平台。
+
+重新核对时工作区干净。只读git ls-remote确认main仍078962e、无Tag，旧fix为2748c7b、旧work为5ab897f，新feature不存在。当前实现摘要与431 passed/97.24%的已验收代码匹配；初始6个可达提交/275个唯一path-blob模式检查PASS，旧敏感开发HEAD不在产品祖先中。README与部署手册补充直接克隆GitHub指定分支和ff-only更新方式，文档链接及工作树安全检查通过。只变文档，未冒充重跑完整测试。
+
+已提交cf667fd9db4e4444376727064eef470e83049d0c并正常推送到origin/feature/upgrade-chatgpt，设置同名upstream；实际git ls-remote核对远端SHA一致。随后删除origin上的work/dce-v1-offline，删除前以精确旧HEAD `5ab897f292167f872e5ae0959a247b4b72f0bfa1` 作lease，若有并发新提交会拒绝。新分支先成功验证再删除旧分支，没有强推产品分支或main。
+
+旧work的有效功能已在干净快照，原HEAD是私有bundle内5092d6a的祖先；本轮再次git bundle verify通过。删除结果再次用远端实际分支清单确认，不仅是清理本地tracking ref。
+
+远端保留main、feature/upgrade-chatgpt、fix/zentao-token-refresh-v1.1.1。fix仍是[开放PR #1](https://github.com/Garden12138/devops-context-engine/pull/1)的来源分支，不能视为无用；本轮仅只读检查该PR，没有修改、关闭或合并。main保持078962e，fix保持2748c7b，远端Tag仍为空。
+
+本地保留main、feature/upgrade-chatgpt、release/v1.1.1-public-clean；独立干净候选及其现有worktree仍有保留用途，不删除用户目录。本节和执行日志随后作为文档归档提交同步同一feature分支；最终HEAD以 `git rev-parse HEAD` 与 `git ls-remote origin refs/heads/feature/upgrade-chatgpt` 的一致结果为准。
+
+所有历史本地验收和未验证项保持原时点语义。本次GitHub推送不等于Cursor桌面或真实Token过期恢复通过；这些项目仍not_verified。

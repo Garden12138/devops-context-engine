@@ -450,3 +450,6 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 
 
 2026-11-11 用户追加授权提交推送与删除无用分支：只读git ls-remote确认main=078962e、fix=2748c7b、work=5ab897f、无Tag，feature尚不存在。gh pr list只读确认PR #1仍OPEN且head是fix，因此保留该有用分支，不修改PR。现有本地工作区干净；6个待推送可达提交/275个唯一path-blob模式检查PASS，运行实现摘要匹配原431 passed/97.24%证据，不无意义重跑未改变的实现。私有旧分支bundle再次verify通过，work远端HEAD是备份中5092d6a的祖先。README/指南补GitHub指定开发分支安装与ff-only更新，计划先推送并验证新分支，再以精确旧HEAD lease删除无用work分支。无main/Tag/真实公司服务操作。
+
+
+2026-11-11 授权操作已执行：cf667fd9db4e4444376727064eef470e83049d0c提交文档与授权范围，git -c push.followTags=false push --porcelain --set-upstream origin HEAD:refs/heads/feature/upgrade-chatgpt成功；ls-remote确认同SHA。随后git push仅删除work/dce-v1-offline，并使用--force-with-lease=refs/heads/work/dce-v1-offline:5ab897f292167f872e5ae0959a247b4b72f0bfa1作并发保护，返回deleted；再次ls-remote实际仅main/feature/fix三个远端分支，无Tag。main078962e/fix2748c7b未变。PR #1仍OPEN，fix有用途保留；本地稳定候选及worktree不动。无强推产品/main、PR操作、Tag/Release或公司API调用。最终归档文档后将同步同一feature分支，并核对本地/远端一致及工作区干净。

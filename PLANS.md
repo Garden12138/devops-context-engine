@@ -1,3 +1,9 @@
+# 2026-11-11 授权推送与分支清理结果
+
+已提交cf667fd并推送origin/feature/upgrade-chatgpt，远端SHA核对一致、同名upstream已设置。新分支成功后，以精确旧HEAD lease删除远端work/dce-v1-offline（5ab897f），再次ls-remote确认已不存在。旧历史私有bundle已verify；有效功能已整合。main=078962e、Tag为空保持；fix=2748c7b是开放PR #1来源，保留且不改PR。本地独立候选及worktree保留。
+
+README/本地部署手册现含GitHub指定开发分支克隆和ff-only更新；本轮运行实现不变，沿用真实431 passed/97.24%证据并复核摘要，不伪称重跑。后续报告归档仍推送同一feature分支；详细实际操作见docs/UPGRADE_EXECUTION_REPORT.md第9节。以下计划与不推送表述均是原阶段历史。
+
 # 2026-11-11 后续授权：提交推送与无用分支清理
 
 用户已明确授权提交、推送和删除无用分支。重新核对工作区干净、远端main=078962e、无Tag、目标分支尚不存在；当前实现与既有431项通过/97.24%报告的摘要一致，当前HEAD的6个可达提交/275个唯一path-blob模式检查通过。更新README/安装指南以支持直接克隆feature/upgrade-chatgpt；只推送该开发分支，不合入main、不创建Tag或PR。
