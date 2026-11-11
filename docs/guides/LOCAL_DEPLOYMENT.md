@@ -29,10 +29,10 @@ uv run --offline python scripts/run_acceptance.py
 
 切换前若有未提交文件，先保存到自己的本地分支，不要 reset/clean。`uv sync` 自动建立 `.venv`，不需要手动 activate。
 
-在同一 Mac 全新安装到另一个目录，可从本地交付仓库克隆：
+在同一 Mac 全新安装到另一个目录，可从本地交付仓库克隆。`--no-local` 避免本地优化复制/硬链接整个旧对象库，只传选定干净分支的可达对象：
 
 ```sh
-git clone --single-branch --branch feature/upgrade-chatgpt /absolute/path/to/devops-context-engine /absolute/path/to/dce-local-trial
+git clone --no-local --single-branch --branch feature/upgrade-chatgpt /absolute/path/to/devops-context-engine /absolute/path/to/dce-local-trial
 cd /absolute/path/to/dce-local-trial
 uv sync --locked --dev --python 3.12
 uv run --offline python scripts/run_acceptance.py

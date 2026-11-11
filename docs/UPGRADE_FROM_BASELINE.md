@@ -8,7 +8,7 @@
 
 有效功能来源为 `release/v1.1.1-public-clean = 2748c7b123462a1389f17f50ee1acf45e8342ab9`，唯一父提交就是 main。它与原验收 HEAD `5092d6a` 的 src、tests、scripts、fixtures、examples、schemas、pyproject.toml、uv.lock 完全一致；全部差异是 8 个历史文档，其中 5 份做脱敏泛化，另 3 份追加候选构建说明。当前原分支历史含敏感样本的风险已有 ADR-029 记录，本轮没有继承这些祖先。
 
-在 `codex/upgrade-work` 从 main 导入干净快照并形成本地提交 `dba07db`；该提交树与 `2748c7b` 完全相同。后续本地产品整顿提交见 [执行报告](UPGRADE_EXECUTION_REPORT.md)；本次真实验收的 Git Commit 由 [机器摘要](acceptance/acceptance-summary.json) 精确记录。报告文件随后提交会形成不同 HEAD，不能把报告提交伪称执行时提交。
+在 `codex/upgrade-work` 从 main 导入干净快照并形成本地提交 `dba07db`；该提交树与 `2748c7b` 完全相同。最终分支重验的产品提交为 `a9a037b501949047e58abe7b6c27cf2b93c4a53a`；其后只归档报告/文档。后续本地产品整顿提交见 [执行报告](UPGRADE_EXECUTION_REPORT.md)；本次真实验收的 Git Commit 由 [机器摘要](acceptance/acceptance-summary.json) 精确记录。报告文件随后提交会形成不同 HEAD，不能把报告提交伪称执行时提交。
 
 | 原本地分支 | HEAD | 实际作用/整合判断 |
 |---|---|---|

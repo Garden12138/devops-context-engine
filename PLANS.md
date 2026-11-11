@@ -1,3 +1,9 @@
+# 2026-11-11 本地产品交付完成
+
+结论READY_WITH_LIMITATIONS。最终feature/upgrade-chatgpt在干净提交a9a037b重跑完整离线验收：20阶段PASS，431 passed/0 failed/0 skipped，src/dce覆盖率97.24%。main和独立候选未变、无Tag，四个已整合旧本地分支已在私有bundle恢复/fsck验证后删除，远端引用未动。最终实现摘要复核一致，之后只归档文档/报告。
+
+入口：docs/UPGRADE_EXECUTION_REPORT.md；复现：uv run --offline python scripts/run_acceptance.py。Cursor桌面/真实平台/真实Token过期恢复仍not_verified。以下记录保留各阶段原时间语义。
+
 # 2026-11-11 本地产品化整顿（当前）
 
 T0：工作区原先干净；main=078962e、无Tag；干净候选2748c7b与原5092d6a功能文件逐字节相同。临时工作分支从main创建，dba07db导入候选树，未继承旧敏感祖先。先建立分支以遵守AGENTS本地工作分支提交要求，最终命名和旧分支整理在交付完成后执行。

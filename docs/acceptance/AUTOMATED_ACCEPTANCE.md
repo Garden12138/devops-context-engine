@@ -2,8 +2,8 @@
 
 结论：**PASS**（仅离线本地验收）。
 
-执行时间：2026-11-11T02:21:19.589040+00:00 至 2026-11-11T02:22:15.854590+00:00。
-Git HEAD：`dba07db2fd6c708cc729446b9155aff78b1047a9`；执行时 dirty：`True`。
+执行时间：2026-11-11T02:23:42.165971+00:00 至 2026-11-11T02:24:40.275142+00:00。
+Git HEAD：`a9a037b501949047e58abe7b6c27cf2b93c4a53a`；执行时 dirty：`False`。
 实现 SHA256：`ef6a689d26fdb1bbf2803a5b27206d8e5063f0155531b9047b03e43a41744428`。
 Python：3.12.11；系统：macOS-26.5.1-arm64-arm-64bit。
 
@@ -13,24 +13,24 @@ Python：3.12.11；系统：macOS-26.5.1-arm64-arm-64bit。
 |---|---|---|---|---|
 | python_compatibility | PASS | — | — | `in-process check` |
 | uv_version | PASS | 0 | 0.009 | `uv --version` |
-| lock_consistency | PASS | 0 | 0.016 | `uv lock --check --offline` |
-| locked_dependency_install | PASS | 0 | 0.014 | `uv sync --locked --offline --dev` |
-| ruff | PASS | 0 | 0.1 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m ruff check .` |
-| mypy | PASS | 0 | 4.513 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m mypy --strict src/dce` |
-| pytest | PASS | 0 | 38.684 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m pytest -q --tb=short -p pytest_cov.plugin -o cache_dir=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/pytest-cache --basetemp=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/pytest-tmp --cov=src/dce --cov-report=term --cov-report=json:/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/coverage.json --junitxml=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/pytest.xml` |
-| synthetic_cli_init | PASS | 0 | 0.523 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/dce --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/synthetic-catalog.sqlite3 init --fixture /Users/cengjiada/Documents/github/devops-context-engine/fixtures/synthetic-discovery.json --no-ai` |
-| catalog_stdio_checker | PASS | 0 | 1.025 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 scripts/check_mcp_stdio.py --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/synthetic-catalog.sqlite3` |
-| index_safety | PASS | 0 | 1.801 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 scripts/check_public_data.py` |
+| lock_consistency | PASS | 0 | 0.014 | `uv lock --check --offline` |
+| locked_dependency_install | PASS | 0 | 0.013 | `uv sync --locked --offline --dev` |
+| ruff | PASS | 0 | 0.086 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m ruff check .` |
+| mypy | PASS | 0 | 4.628 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m mypy --strict src/dce` |
+| pytest | PASS | 0 | 40.692 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m pytest -q --tb=short -p pytest_cov.plugin -o cache_dir=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/pytest-cache --basetemp=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/pytest-tmp --cov=src/dce --cov-report=term --cov-report=json:/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/coverage.json --junitxml=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/pytest.xml` |
+| synthetic_cli_init | PASS | 0 | 0.528 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/dce --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/synthetic-catalog.sqlite3 init --fixture /Users/cengjiada/Documents/github/devops-context-engine/fixtures/synthetic-discovery.json --no-ai` |
+| catalog_stdio_checker | PASS | 0 | 0.988 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 scripts/check_mcp_stdio.py --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/synthetic-catalog.sqlite3` |
+| index_safety | PASS | 0 | 1.514 | `/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 scripts/check_public_data.py` |
 | working_tree_safety | PASS | — | — | `in-process check` |
-| diff_whitespace | PASS | 0 | 0.011 | `git diff --check` |
-| wheel_build | PASS | 0 | 0.243 | `uv build --wheel --offline --out-dir /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/dist` |
-| isolated_venv | PASS | 0 | 0.013 | `uv venv --offline --python /Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/installed` |
-| locked_runtime_export | PASS | 0 | 0.014 | `uv export --frozen --offline --no-dev --no-emit-project --format requirements-txt --output-file /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/runtime-requirements.txt` |
-| isolated_locked_dependencies | PASS | 0 | 0.089 | `uv sync --locked --offline --no-dev --no-install-project --python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/installed/bin/python` |
-| isolated_wheel_install | PASS | 0 | 0.051 | `uv pip install --offline --python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/installed/bin/python --no-deps /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/dist/devops_context_engine-1.1.1-py3-none-any.whl` |
-| installed_cli_help | PASS | 0 | 5.85 | `/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/installed/bin/dce --help` |
-| installed_cli_doctor | PASS | 0 | 0.882 | `/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/installed/bin/dce --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/doctor.sqlite3 doctor --mock` |
-| installed_wheel_mcp | PASS | 0 | 2.123 | `/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/installed/bin/python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-r4jxe2lo/wheel_smoke.py` |
+| diff_whitespace | PASS | 0 | 0.008 | `git diff --check` |
+| wheel_build | PASS | 0 | 0.238 | `uv build --wheel --offline --out-dir /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/dist` |
+| isolated_venv | PASS | 0 | 0.011 | `uv venv --offline --python /Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/installed` |
+| locked_runtime_export | PASS | 0 | 0.014 | `uv export --frozen --offline --no-dev --no-emit-project --format requirements-txt --output-file /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/runtime-requirements.txt` |
+| isolated_locked_dependencies | PASS | 0 | 0.086 | `uv sync --locked --offline --no-dev --no-install-project --python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/installed/bin/python` |
+| isolated_wheel_install | PASS | 0 | 0.051 | `uv pip install --offline --python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/installed/bin/python --no-deps /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/dist/devops_context_engine-1.1.1-py3-none-any.whl` |
+| installed_cli_help | PASS | 0 | 5.891 | `/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/installed/bin/dce --help` |
+| installed_cli_doctor | PASS | 0 | 0.899 | `/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/installed/bin/dce --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/doctor.sqlite3 doctor --mock` |
+| installed_wheel_mcp | PASS | 0 | 2.131 | `/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/installed/bin/python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-gb2aa617/wheel_smoke.py` |
 
 测试：431 总计，431 通过，0 失败，0 跳过；通过率 100.0%；覆盖率 97.24%。
 

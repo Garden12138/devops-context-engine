@@ -442,3 +442,8 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 2026-11-11 备份与复核：四条旧开发分支分别为原最终5092d6a的祖先，独有历史18/33/35/38提交均已有最终干净功能快照覆盖；旧资料脱敏差异刻意不导回产品。创建新的.local/upgrade-chatgpt-history-backup-20261111/development-branches.bundle（0700目录/0600文件），git bundle verify通过；在临时裸仓库恢复四个原HEAD完全一致，git fsck --full --no-reflogs通过。不checkout旧代码，不读取既有.local私有材料，备份不进入Git。
 
 产品代码审阅确认src/Schema/fixture/example/Prompt/pyproject/uv.lock与2748c7b仍无差异；只有验收编排、合成测试、checker修复与文档/CI入口改动。CI改为调用同一验收入口（未触发真实GitHub工作流）。README精简为入口，旧历史结论转向带原日期的harness，不再混入当前安装步骤。
+
+
+2026-11-11 最终交付：本地临时分支提交dba07db/bfa9c2d/a9a037b后命名feature/upgrade-chatgpt，目标预先不存在。四个旧分支全部按备份审计显式删除，本地仅main/feature/独立干净候选；main=078962e、候选2748c7b与零Tag均保持。没有修改origin引用。最终在干净a9a037b501949047e58abe7b6c27cf2b93c4a53a执行完整入口，20阶段全PASS、431 passed/0failed/0skipped、97.24%；执行时间2026-11-11T02:23:42.165971+00:00至2026-11-11T02:24:40.275142+00:00。实现SHA256 ef6a689d26fdb1bbf2803a5b27206d8e5063f0155531b9047b03e43a41744428重算一致。最终报告/指南归档不改变被测代码。测试过程中再生的18个缓存路径收尾定点删除，保护根未动。
+
+最终补充重装实测：在临时目录使用git clone --no-local --single-branch --branch feature/upgrade-chatgpt，仅本机传输；git cat-file确认四个旧开发HEAD对象不在新对象库。新目录锁定离线uv sync、导入路径在新clone、CLI --help、doctor --mock均PASS，临时目录自动移除。指南明确--no-local防止本地克隆优化硬链接旧对象库；此补充不冒充runner计数。
