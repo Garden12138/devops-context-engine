@@ -375,10 +375,26 @@
       {
         "id": 1001,
         "path": "demo/multimodule",
+        "default_branch": "master",
         "modules": [
           "ui-template",
           "api-template",
           "common-lib"
+        ],
+        "build_jobs": [
+          {
+            "name": "build-shared",
+            "module_paths": ["ui-template", "common-lib"],
+            "images": ["registry.example.invalid/demo/image-001:latest"]
+          },
+          {
+            "name": "build-api",
+            "module_paths": ["api-template", "common-lib"],
+            "images": [
+              "registry.example.invalid/demo/image-002:latest",
+              "registry.example.invalid/demo/image-003:latest"
+            ]
+          }
         ]
       }
     ],

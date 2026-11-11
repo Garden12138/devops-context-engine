@@ -8,5 +8,6 @@
 - 78 个业务 Service、73 个不同镜像，5 个镜像分别被两个 Service 复用；
 - ZenTao Bug 内嵌两张图片但 files 字段为空；
 - GitLab Pipeline 构建报错仅为合成摘要，无真实日志。
+- 源码仓库的两条合成 build_jobs 声明把 common-lib 与另外两个模块组合到多个镜像；镜像仍属于原有 73 个引用。
 
 实现时可以拆成更精细的 `tests/fixtures/*.json`，但不能把现场环境输出写入这里。

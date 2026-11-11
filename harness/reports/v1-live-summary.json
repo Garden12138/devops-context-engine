@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "date": "2026-11-03",
+  "scope": "shipped_v1_scoped_live_acceptance",
+  "status": "passed_for_scoped_v1_paths",
+  "product_feature_added": false,
+  "discover": {
+    "status": "passed",
+    "scope": "one_authorized_source_project_default_ref",
+    "metadata_files": 3,
+    "parsed_build_jobs": 6,
+    "ci_incomplete_warnings": 1
+  },
+  "catalog_counts": {
+    "entities": 191,
+    "edges": 219,
+    "evidence": 219,
+    "snapshots": 11
+  },
+  "tool_handler_results": [
+    {
+      "tool": "bug_context",
+      "status": "passed",
+      "source": "live_upstream",
+      "bytes": 983
+    },
+    {
+      "tool": "pipeline_diagnose",
+      "status": "passed",
+      "source": "live_upstream",
+      "bytes": 519
+    },
+    {
+      "tool": "project_context",
+      "status": "passed",
+      "source": "catalog",
+      "bytes": 5785
+    },
+    {
+      "tool": "service_trace",
+      "status": "passed",
+      "source": "catalog",
+      "bytes": 948
+    },
+    {
+      "tool": "deployment_inspect",
+      "status": "passed",
+      "source": "catalog",
+      "bytes": 12289
+    },
+    {
+      "tool": "discovery_status",
+      "status": "passed",
+      "source": "catalog",
+      "bytes": 1991
+    }
+  ],
+  "mcp_layers": {
+    "this_run": "product_McpApplication.call_tool",
+    "sdk_stdio": "previous_captured_real_catalog_checks_passed",
+    "actual_cursor_grok_host": "not_verified"
+  },
+  "request_audit": {
+    "guarded_gitlab_get": 15,
+    "guarded_zentao_get": 1,
+    "denied": 0,
+    "separate_authentication": "one_authorized_zentao_v1_login"
+  },
+  "catalog_unchanged_by_tool_reads": true,
+  "automatic_confirmed": 0,
+  "observations": {
+    "bug_context_module_count": 0,
+    "business_mapping": "unconfirmed",
+    "pipeline_checked": "success_without_failed_log_reads"
+  },
+  "offline_baseline": {
+    "passed": 139,
+    "summary": "http-encoding-summary.json"
+  },
+  "not_verified": [
+    "additional_discovery_scopes",
+    "real_images",
+    "Compose_originals",
+    "private_failed_job_traces",
+    "actual_Agent_Host"
+  ],
+  "out_of_scope": [
+    "business_GUI_automation",
+    "business_Bug_fix_regression",
+    "release_approval_callback_execution"
+  ]
+}

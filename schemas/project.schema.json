@@ -1,0 +1,2171 @@
+{
+  "$defs": {
+    "BranchDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "source_branch",
+          "title": "Kind",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "ref": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "commit_sha": {
+          "anyOf": [
+            {
+              "pattern": "^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commit Sha"
+        }
+      },
+      "required": [
+        "kind",
+        "project_id",
+        "ref"
+      ],
+      "title": "BranchDetails",
+      "type": "object"
+    },
+    "DeploymentDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "deployment_definition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "endpoint_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Endpoint Id",
+          "type": "string"
+        },
+        "stack_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Stack Id",
+          "type": "string"
+        },
+        "service_name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]*$",
+          "title": "Service Name",
+          "type": "string"
+        },
+        "file_revision": {
+          "anyOf": [
+            {
+              "maxLength": 250,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "File Revision"
+        }
+      },
+      "required": [
+        "kind",
+        "endpoint_id",
+        "stack_id",
+        "service_name"
+      ],
+      "title": "DeploymentDetails",
+      "type": "object"
+    },
+    "EnvironmentDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "environment",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "title": "EnvironmentDetails",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "direct_config",
+            "structure",
+            "platform_observation",
+            "agent_analysis",
+            "human_statement",
+            "legacy_catalog"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Source",
+          "type": "string"
+        },
+        "locator": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Locator",
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "maxLength": 250,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Revision"
+        },
+        "summary": {
+          "maxLength": 2000,
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "source",
+        "locator",
+        "observed_at",
+        "revision",
+        "summary"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "GitLabScope": {
+      "additionalProperties": false,
+      "properties": {
+        "instance": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "projects": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Projects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "instance"
+      ],
+      "title": "GitLabScope",
+      "type": "object"
+    },
+    "ImageDigestDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "image_digest",
+          "title": "Kind",
+          "type": "string"
+        },
+        "repository": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w.-]+(?::\\d+)?(?:/[\\w.-]+)*$",
+          "title": "Repository",
+          "type": "string"
+        },
+        "digest": {
+          "pattern": "^sha256:[a-fA-F0-9]{64}$",
+          "title": "Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "repository",
+        "digest"
+      ],
+      "title": "ImageDigestDetails",
+      "type": "object"
+    },
+    "ImageTagDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "image_tag",
+          "title": "Kind",
+          "type": "string"
+        },
+        "repository": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w.-]+(?::\\d+)?(?:/[\\w.-]+)*$",
+          "title": "Repository",
+          "type": "string"
+        },
+        "tag": {
+          "pattern": "^[\\w][\\w.-]{0,127}$",
+          "title": "Tag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "repository",
+        "tag"
+      ],
+      "title": "ImageTagDetails",
+      "type": "object"
+    },
+    "JobDefinitionDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "ci_job_definition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "ref": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Path",
+          "type": "string"
+        },
+        "job_name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Job Name",
+          "type": "string"
+        },
+        "content_revision": {
+          "anyOf": [
+            {
+              "maxLength": 250,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Revision"
+        }
+      },
+      "required": [
+        "kind",
+        "project_id",
+        "ref",
+        "path",
+        "job_name"
+      ],
+      "title": "JobDefinitionDetails",
+      "type": "object"
+    },
+    "JobExecutionDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "ci_job_execution",
+          "title": "Kind",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "pipeline_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Pipeline Id",
+          "type": "string"
+        },
+        "job_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Job Id",
+          "type": "string"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "maxLength": 250,
+              "minLength": 1,
+              "pattern": "^[\\w./:@-]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        },
+        "sha": {
+          "anyOf": [
+            {
+              "pattern": "^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        }
+      },
+      "required": [
+        "kind",
+        "project_id",
+        "pipeline_id",
+        "job_id"
+      ],
+      "title": "JobExecutionDetails",
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        },
+        "initialized_by": {
+          "default": "host_agent",
+          "maxLength": 200,
+          "title": "Initialized By",
+          "type": "string"
+        },
+        "last_refresh_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Refresh At"
+        }
+      },
+      "title": "Metadata",
+      "type": "object"
+    },
+    "Node": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "zentao_product"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "zentao_product"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "zentao_project"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "zentao_project"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "zentao_module"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "zentao_module"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "zentao_bug"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "zentao_bug"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "gitlab_project"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "gitlab_project"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "code_module"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "code_module"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "source_path"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "source_path"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ci_pipeline"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "ci_pipeline"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ci_job"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "ci_job"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "container_image"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "container_image"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "deployment_repository"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "deployment_repository"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "compose_file"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "compose_file"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "compose_service"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "compose_service"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "portainer_endpoint"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "portainer_endpoint"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "portainer_stack"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "portainer_stack"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "swarm_cluster"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "swarm_cluster"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "swarm_service"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "swarm_service"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "environment"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "environment"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "source_branch"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "source_branch"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "details"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "git_ref"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "git_ref"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "details"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ci_job_definition"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "ci_job_definition"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "details"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ci_job_execution"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "ci_job_execution"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "details"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "image_tag"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "image_tag"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "details"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "image_digest"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "image_digest"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "details"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "deployment_definition"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "deployment_definition"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "details"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "runtime_observation"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "details": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "runtime_observation"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "details"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "zentao_product",
+            "zentao_project",
+            "zentao_module",
+            "zentao_bug",
+            "gitlab_project",
+            "code_module",
+            "source_path",
+            "ci_pipeline",
+            "ci_job",
+            "container_image",
+            "deployment_repository",
+            "compose_file",
+            "compose_service",
+            "portainer_endpoint",
+            "portainer_stack",
+            "swarm_cluster",
+            "swarm_service",
+            "environment",
+            "source_branch",
+            "git_ref",
+            "ci_job_definition",
+            "ci_job_execution",
+            "image_tag",
+            "image_digest",
+            "deployment_definition",
+            "runtime_observation"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "instance": {
+          "description": "Source-instance ID; never infer from a platform numeric ID.",
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "ci_job_definition": "#/$defs/JobDefinitionDetails",
+                  "ci_job_execution": "#/$defs/JobExecutionDetails",
+                  "deployment_definition": "#/$defs/DeploymentDetails",
+                  "environment": "#/$defs/EnvironmentDetails",
+                  "git_ref": "#/$defs/RefDetails",
+                  "image_digest": "#/$defs/ImageDigestDetails",
+                  "image_tag": "#/$defs/ImageTagDetails",
+                  "runtime_observation": "#/$defs/RuntimeDetails",
+                  "source_branch": "#/$defs/BranchDetails"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/BranchDetails"
+                },
+                {
+                  "$ref": "#/$defs/RefDetails"
+                },
+                {
+                  "$ref": "#/$defs/JobDefinitionDetails"
+                },
+                {
+                  "$ref": "#/$defs/JobExecutionDetails"
+                },
+                {
+                  "$ref": "#/$defs/ImageTagDetails"
+                },
+                {
+                  "$ref": "#/$defs/ImageDigestDetails"
+                },
+                {
+                  "$ref": "#/$defs/DeploymentDetails"
+                },
+                {
+                  "$ref": "#/$defs/RuntimeDetails"
+                },
+                {
+                  "$ref": "#/$defs/EnvironmentDetails"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Details"
+        }
+      },
+      "required": [
+        "type",
+        "instance",
+        "id"
+      ],
+      "title": "Node",
+      "type": "object"
+    },
+    "PortainerScope": {
+      "additionalProperties": false,
+      "properties": {
+        "instance": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "endpoints": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Endpoints",
+          "type": "array"
+        },
+        "stacks": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Stacks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "instance"
+      ],
+      "title": "PortainerScope",
+      "type": "object"
+    },
+    "RefDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "git_ref",
+          "title": "Kind",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "ref": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "ref_kind": {
+          "enum": [
+            "branch",
+            "tag",
+            "commit"
+          ],
+          "title": "Ref Kind",
+          "type": "string"
+        },
+        "commit_sha": {
+          "anyOf": [
+            {
+              "pattern": "^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commit Sha"
+        }
+      },
+      "required": [
+        "kind",
+        "project_id",
+        "ref",
+        "ref_kind"
+      ],
+      "title": "RefDetails",
+      "type": "object"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "confirmed"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "approved_by": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "approved_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "approved_by",
+              "approved_at"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "from": {
+          "$ref": "#/$defs/Node"
+        },
+        "relation": {
+          "enum": [
+            "contains_module",
+            "implements",
+            "implemented_by",
+            "builds",
+            "produces_image",
+            "uses_image",
+            "declares_service",
+            "deployed_as",
+            "managed_by_stack",
+            "runs_in_environment",
+            "depends_on",
+            "related_to"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "to": {
+          "$ref": "#/$defs/Node"
+        },
+        "status": {
+          "default": "proposed",
+          "enum": [
+            "proposed",
+            "confirmed",
+            "rejected",
+            "stale",
+            "conflicted",
+            "unresolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "confidence": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "approved_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved By"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        },
+        "last_verified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Verified At"
+        },
+        "notes": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Notes",
+          "type": "string"
+        },
+        "version_match": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VersionMatch"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "from",
+        "relation",
+        "to",
+        "evidence"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    },
+    "Root": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "kind": {
+          "const": "git_repository",
+          "default": "git_repository",
+          "title": "Kind",
+          "type": "string"
+        },
+        "remote_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Remote Url"
+        },
+        "default_branch": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default Branch"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "Root",
+      "type": "object"
+    },
+    "RuntimeDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "runtime_observation",
+          "title": "Kind",
+          "type": "string"
+        },
+        "endpoint_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Endpoint Id",
+          "type": "string"
+        },
+        "service_id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Service Id",
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "image": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Image"
+        },
+        "digest": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[a-fA-F0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Digest"
+        },
+        "version_index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version Index"
+        }
+      },
+      "required": [
+        "kind",
+        "endpoint_id",
+        "service_id",
+        "observed_at"
+      ],
+      "title": "RuntimeDetails",
+      "type": "object"
+    },
+    "Scope": {
+      "additionalProperties": false,
+      "properties": {
+        "zentao": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ZenTaoScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "gitlab": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GitLabScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "portainer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PortainerScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Scope",
+      "type": "object"
+    },
+    "VersionMatch": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "matched",
+                  "mismatched"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "basis": {
+                      "const": "image_digest"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "expected": {
+                      "pattern": "^sha256:[a-fA-F0-9]{64}$"
+                    },
+                    "observed": {
+                      "pattern": "^sha256:[a-fA-F0-9]{64}$"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "basis": {
+                      "const": "commit_sha"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "expected": {
+                      "pattern": "^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$"
+                    },
+                    "observed": {
+                      "pattern": "^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$"
+                    }
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "basis": {
+                "type": "string"
+              },
+              "expected": {
+                "type": "string"
+              },
+              "observed": {
+                "type": "string"
+              },
+              "evidence": {
+                "minItems": 1
+              }
+            },
+            "required": [
+              "basis",
+              "expected",
+              "observed",
+              "evidence"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "status": {
+          "default": "not_verified",
+          "enum": [
+            "not_verified",
+            "matched",
+            "mismatched",
+            "inconclusive"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "basis": {
+          "anyOf": [
+            {
+              "enum": [
+                "image_digest",
+                "commit_sha"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Basis"
+        },
+        "expected": {
+          "anyOf": [
+            {
+              "maxLength": 250,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected"
+        },
+        "observed": {
+          "anyOf": [
+            {
+              "maxLength": 250,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 100,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "notes": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "title": "VersionMatch",
+      "type": "object"
+    },
+    "Workspace": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "roots": {
+          "items": {
+            "$ref": "#/$defs/Root"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Roots",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "roots"
+      ],
+      "title": "Workspace",
+      "type": "object"
+    },
+    "ZenTaoScope": {
+      "additionalProperties": false,
+      "properties": {
+        "instance": {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^[\\w./:@-]+$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "projects": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Projects",
+          "type": "array"
+        },
+        "products": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Products",
+          "type": "array"
+        },
+        "bugs": {
+          "items": {
+            "maxLength": 250,
+            "minLength": 1,
+            "pattern": "^[\\w./:@-]+$",
+            "type": "string"
+          },
+          "maxItems": 1000,
+          "title": "Bugs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "instance"
+      ],
+      "title": "ZenTaoScope",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "relationships": {
+            "items": {
+              "properties": {
+                "version_match": {
+                  "type": "null"
+                },
+                "from": {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "zentao_product",
+                        "zentao_project",
+                        "zentao_module",
+                        "zentao_bug",
+                        "gitlab_project",
+                        "code_module",
+                        "source_path",
+                        "ci_pipeline",
+                        "ci_job",
+                        "container_image",
+                        "deployment_repository",
+                        "compose_file",
+                        "compose_service",
+                        "portainer_endpoint",
+                        "portainer_stack",
+                        "swarm_cluster",
+                        "swarm_service",
+                        "environment"
+                      ]
+                    },
+                    "details": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "to": {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "zentao_product",
+                        "zentao_project",
+                        "zentao_module",
+                        "zentao_bug",
+                        "gitlab_project",
+                        "code_module",
+                        "source_path",
+                        "ci_pipeline",
+                        "ci_job",
+                        "container_image",
+                        "deployment_repository",
+                        "compose_file",
+                        "compose_service",
+                        "portainer_endpoint",
+                        "portainer_stack",
+                        "swarm_cluster",
+                        "swarm_service",
+                        "environment"
+                      ]
+                    },
+                    "details": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "enum": [
+        1,
+        2
+      ],
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "workspace": {
+      "$ref": "#/$defs/Workspace"
+    },
+    "scope": {
+      "$ref": "#/$defs/Scope"
+    },
+    "relationships": {
+      "items": {
+        "$ref": "#/$defs/Relationship"
+      },
+      "maxItems": 5000,
+      "title": "Relationships",
+      "type": "array"
+    },
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    }
+  },
+  "required": [
+    "workspace"
+  ],
+  "title": "ProjectContext",
+  "type": "object"
+}

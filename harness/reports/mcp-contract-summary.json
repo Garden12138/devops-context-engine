@@ -1,0 +1,111 @@
+{
+  "checked_at": "2026-11-03T11:31:39.734480+00:00",
+  "status": "passed_for_published_contract",
+  "contract_revision": "1.1",
+  "tool_count": 6,
+  "capabilities_inspection": {
+    "platform_and_data_source_in_descriptions": true,
+    "input_field_descriptions": true,
+    "deployment_exclusive_keys_in_schema": true,
+    "per_tool_typed_data": true,
+    "complete_error_and_truncation_schemas": true,
+    "no_platform_requests_during_list": true,
+    "response_time_distinguished_from_observation_time": true
+  },
+  "current_catalog_profile": {
+    "bug_context": {
+      "contract_revision": "1.1",
+      "data_source": "upstream",
+      "availability": "blocked",
+      "blockers": [
+        "authorized scope is empty",
+        "platform configuration is missing"
+      ],
+      "platform": "zentao"
+    },
+    "project_context": {
+      "contract_revision": "1.1",
+      "data_source": "catalog",
+      "availability": "local_catalog",
+      "blockers": []
+    },
+    "service_trace": {
+      "contract_revision": "1.1",
+      "data_source": "catalog",
+      "availability": "local_catalog",
+      "blockers": []
+    },
+    "pipeline_diagnose": {
+      "contract_revision": "1.1",
+      "data_source": "upstream",
+      "availability": "blocked",
+      "blockers": [
+        "authorized scope is empty",
+        "platform configuration is missing"
+      ],
+      "platform": "gitlab"
+    },
+    "deployment_inspect": {
+      "contract_revision": "1.1",
+      "data_source": "catalog",
+      "availability": "local_catalog",
+      "blockers": []
+    },
+    "discovery_status": {
+      "contract_revision": "1.1",
+      "data_source": "catalog",
+      "availability": "local_catalog",
+      "blockers": []
+    }
+  },
+  "stdio_sdk": {
+    "status": "passed",
+    "mode": "catalog_only",
+    "transport": "stdio",
+    "server_version": "1.0.0",
+    "contract_revision": "1.1",
+    "tool_count": 6,
+    "successful_reads": 4,
+    "scope_denials": 2,
+    "unknown_write_denied": true,
+    "response_bytes": [
+      7980,
+      11593,
+      12340,
+      1991
+    ],
+    "catalog_counts": {
+      "entities": 191,
+      "edges": 219,
+      "evidence": 219,
+      "snapshots": 11
+    },
+    "catalog_counts_unchanged": true,
+    "cursor_host": "not_verified"
+  },
+  "regression": {
+    "tests_passed": 144,
+    "seconds": 11.66,
+    "coverage_overall_percent": 98.73,
+    "coverage_line_percent": 99.29,
+    "coverage_branch_percent": 96.88,
+    "contract_module_coverage_percent": 100,
+    "ruff": "passed",
+    "mypy_source_files": 40
+  },
+  "cursor": {
+    "user_reported_pre_fix_six_tools_listed": true,
+    "post_fix_process_reload": "observed",
+    "post_fix_agent_schema_check": "not_verified",
+    "business_tool_call": "not_verified",
+    "new_processes_observed": 1,
+    "pre_fix_processes_still_present_at_observation": 1,
+    "all_cursor_windows_reloaded": "not_verified"
+  },
+  "limitations": [
+    "No upstream credentials or scopes enabled by this fix.",
+    "Four Catalog tools still read saved data; deployment_inspect does not refresh Portainer.",
+    "Configured metadata is not a successful authentication or connectivity test.",
+    "Discovery/mapping CLI features are not additional MCP tools; no writes or deployments exposed."
+  ]
+}

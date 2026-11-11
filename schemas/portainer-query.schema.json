@@ -1,0 +1,462 @@
+{
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "endpoint"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "endpoint_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "stack"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "stack_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "stack_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "stack_file"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "stack_id": {
+            "type": "string"
+          },
+          "endpoint_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "stack_id",
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "swarm_info"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "endpoint_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "services"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "endpoint_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "service"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "endpoint_id": {
+            "type": "string"
+          },
+          "service_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint_id",
+          "service_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "stack_service"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "endpoint_id": {
+            "type": "string"
+          },
+          "stack_id": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint_id",
+          "stack_id",
+          "service_name"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "service_logs"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "endpoint_id": {
+            "type": "string"
+          },
+          "stack_id": {
+            "type": "string"
+          },
+          "start_time": {
+            "type": "string"
+          },
+          "end_time": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint_id",
+          "stack_id",
+          "start_time",
+          "end_time"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "service_logs"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "oneOf": [
+          {
+            "properties": {
+              "service_id": {
+                "type": "string"
+              },
+              "service_name": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "service_id"
+            ]
+          },
+          {
+            "properties": {
+              "service_name": {
+                "type": "string"
+              },
+              "service_id": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "service_name"
+            ]
+          }
+        ],
+        "properties": {
+          "page": {
+            "const": 1
+          },
+          "namespace": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "start_time": {
+      "anyOf": [
+        {
+          "maxLength": 35,
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d{1,9})?(?:Z|[+-]\\d\\d:\\d\\d)$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Inclusive RFC3339 with timezone.",
+      "title": "Start Time"
+    },
+    "end_time": {
+      "anyOf": [
+        {
+          "maxLength": 35,
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d{1,9})?(?:Z|[+-]\\d\\d:\\d\\d)$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Exclusive RFC3339; window <=15 min.",
+      "title": "End Time"
+    },
+    "keywords": {
+      "description": "Literal case-insensitive OR; never echoed.",
+      "items": {
+        "maxLength": 64,
+        "minLength": 1,
+        "pattern": "^[^\\x00-\\x1f\\x7f]+$",
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Keywords",
+      "type": "array"
+    },
+    "max_lines": {
+      "default": 100,
+      "description": "Finite server tail and event cap.",
+      "maximum": 500,
+      "minimum": 1,
+      "title": "Max Lines",
+      "type": "integer"
+    },
+    "max_bytes": {
+      "default": 65536,
+      "description": "Raw log payload byte cap.",
+      "maximum": 262144,
+      "minimum": 1024,
+      "title": "Max Bytes",
+      "type": "integer"
+    },
+    "max_output_bytes": {
+      "default": 8192,
+      "description": "Complete MCP result cap, including both copies.",
+      "maximum": 16384,
+      "minimum": 4096,
+      "title": "Max Output Bytes",
+      "type": "integer"
+    },
+    "timeout_seconds": {
+      "default": 10,
+      "description": "Total log HTTP deadline; no retry or follow.",
+      "exclusiveMinimum": 0,
+      "maximum": 15,
+      "title": "Timeout Seconds",
+      "type": "number"
+    },
+    "instance": {
+      "description": "Exact configured source-instance identity.",
+      "maxLength": 250,
+      "minLength": 1,
+      "pattern": "^(?!.*\\.\\.)(?!.*://)[\\w./:-]+$",
+      "title": "Instance",
+      "type": "string"
+    },
+    "page": {
+      "default": 1,
+      "description": "page; scoped read-only query parameter.",
+      "maximum": 10000,
+      "minimum": 1,
+      "title": "Page",
+      "type": "integer"
+    },
+    "limit": {
+      "default": 20,
+      "description": "limit; scoped read-only query parameter.",
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    },
+    "operation": {
+      "description": "operation; scoped read-only query parameter.",
+      "enum": [
+        "endpoints",
+        "endpoint",
+        "stacks",
+        "stack",
+        "stack_file",
+        "swarm_info",
+        "services",
+        "service",
+        "stack_service",
+        "service_logs"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "endpoint_id": {
+      "anyOf": [
+        {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^(?!.*\\.\\.)(?!.*://)[\\w./:-]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "endpoint id; scoped read-only query parameter.",
+      "title": "Endpoint Id"
+    },
+    "stack_id": {
+      "anyOf": [
+        {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^(?!.*\\.\\.)(?!.*://)[\\w./:-]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "stack id; scoped read-only query parameter.",
+      "title": "Stack Id"
+    },
+    "service_id": {
+      "anyOf": [
+        {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^(?!.*\\.\\.)(?!.*://)[\\w./:-]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "service id; scoped read-only query parameter.",
+      "title": "Service Id"
+    },
+    "namespace": {
+      "anyOf": [
+        {
+          "maxLength": 250,
+          "minLength": 1,
+          "pattern": "^(?!.*\\.\\.)(?!.*://)[\\w./:-]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "namespace; scoped read-only query parameter.",
+      "title": "Namespace"
+    },
+    "service_name": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Exact Compose service key for stack_service/service_logs (namespace added).",
+      "title": "Service Name"
+    }
+  },
+  "required": [
+    "instance",
+    "operation"
+  ],
+  "title": "PortainerQuery",
+  "type": "object"
+}

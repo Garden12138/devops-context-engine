@@ -1,0 +1,281 @@
+# Entirely synthetic v2 example. No business project is modified.
+schema_version: 2
+workspace:
+  id: example-workspace
+  name: Business Project
+  roots:
+  - path: .
+    kind: git_repository
+    remote_url: null
+    default_branch: null
+scope:
+  zentao: null
+  gitlab:
+    instance: gitlab
+    projects:
+    - example/service
+  portainer:
+    instance: portainer
+    endpoints:
+    - endpoint-a
+    stacks:
+    - stack-a
+relationships:
+- id: example-0
+  from:
+    type: source_branch
+    instance: gitlab
+    id: example-service:topic-a
+    details:
+      kind: source_branch
+      project_id: example/service
+      ref: topic-a
+      commit_sha: null
+  relation: related_to
+  to:
+    type: ci_job_definition
+    instance: gitlab
+    id: build:topic-a
+    details:
+      kind: ci_job_definition
+      project_id: example/service
+      ref: topic-a
+      path: .gitlab-ci.yml
+      job_name: build
+      content_revision: null
+  status: proposed
+  confidence: 0.0
+  evidence:
+  - kind: structure
+    source: example-workspace
+    locator: synthetic-example
+    observed_at: '2026-11-05T00:00:00Z'
+    revision: synthetic-only
+    summary: Synthetic example; no real branch, environment or version is confirmed.
+  approved_by: null
+  approved_at: null
+  last_verified_at: null
+  notes: Manual is an execution record awaiting action, not a completed build.
+  version_match:
+    status: not_verified
+    basis: null
+    expected: null
+    observed: null
+    evidence: []
+    notes: A mutable tag does not prove a deployed version.
+- id: example-1
+  from:
+    type: ci_job_execution
+    instance: gitlab
+    id: execution-a
+    details:
+      kind: ci_job_execution
+      project_id: example/service
+      pipeline_id: pipeline-a
+      job_id: job-a
+      ref: topic-a
+      sha: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      status: manual
+  relation: related_to
+  to:
+    type: ci_job_definition
+    instance: gitlab
+    id: build:topic-a
+    details:
+      kind: ci_job_definition
+      project_id: example/service
+      ref: topic-a
+      path: .gitlab-ci.yml
+      job_name: build
+      content_revision: null
+  status: proposed
+  confidence: 0.0
+  evidence:
+  - kind: structure
+    source: example-workspace
+    locator: synthetic-example
+    observed_at: '2026-11-05T00:00:00Z'
+    revision: synthetic-only
+    summary: Synthetic example; no real branch, environment or version is confirmed.
+  approved_by: null
+  approved_at: null
+  last_verified_at: null
+  notes: Manual is an execution record awaiting action, not a completed build.
+  version_match:
+    status: not_verified
+    basis: null
+    expected: null
+    observed: null
+    evidence: []
+    notes: A mutable tag does not prove a deployed version.
+- id: example-2
+  from:
+    type: deployment_definition
+    instance: portainer
+    id: definition:stack-a:api
+    details:
+      kind: deployment_definition
+      endpoint_id: endpoint-a
+      stack_id: stack-a
+      service_name: api
+      file_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  relation: uses_image
+  to:
+    type: image_tag
+    instance: portainer
+    id: example-api:latest
+    details:
+      kind: image_tag
+      repository: example/api
+      tag: latest
+  status: proposed
+  confidence: 0.0
+  evidence:
+  - kind: structure
+    source: example-workspace
+    locator: synthetic-example
+    observed_at: '2026-11-05T00:00:00Z'
+    revision: synthetic-only
+    summary: Synthetic example; no real branch, environment or version is confirmed.
+  approved_by: null
+  approved_at: null
+  last_verified_at: null
+  notes: Manual is an execution record awaiting action, not a completed build.
+  version_match:
+    status: not_verified
+    basis: null
+    expected: null
+    observed: null
+    evidence: []
+    notes: A mutable tag does not prove a deployed version.
+- id: example-3
+  from:
+    type: runtime_observation
+    instance: portainer
+    id: observation-a
+    details:
+      kind: runtime_observation
+      endpoint_id: endpoint-a
+      service_id: service-a
+      observed_at: '2026-11-05T00:00:00Z'
+      image: example/api:latest
+      digest: null
+      version_index: null
+  relation: related_to
+  to:
+    type: image_digest
+    instance: portainer
+    id: digest-a
+    details:
+      kind: image_digest
+      repository: example/api
+      digest: sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  status: proposed
+  confidence: 0.0
+  evidence:
+  - kind: structure
+    source: example-workspace
+    locator: synthetic-example
+    observed_at: '2026-11-05T00:00:00Z'
+    revision: synthetic-only
+    summary: Synthetic example; no real branch, environment or version is confirmed.
+  approved_by: null
+  approved_at: null
+  last_verified_at: null
+  notes: Manual is an execution record awaiting action, not a completed build.
+  version_match:
+    status: not_verified
+    basis: null
+    expected: null
+    observed: null
+    evidence: []
+    notes: A mutable tag does not prove a deployed version.
+- id: example-4
+  from:
+    type: deployment_definition
+    instance: portainer
+    id: definition:stack-a:api
+    details:
+      kind: deployment_definition
+      endpoint_id: endpoint-a
+      stack_id: stack-a
+      service_name: api
+      file_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  relation: related_to
+  to:
+    type: runtime_observation
+    instance: portainer
+    id: observation-a
+    details:
+      kind: runtime_observation
+      endpoint_id: endpoint-a
+      service_id: service-a
+      observed_at: '2026-11-05T00:00:00Z'
+      image: example/api:latest
+      digest: null
+      version_index: null
+  status: unresolved
+  confidence: 0.0
+  evidence:
+  - kind: structure
+    source: example-workspace
+    locator: synthetic-example
+    observed_at: '2026-11-05T00:00:00Z'
+    revision: synthetic-only
+    summary: Synthetic example; no real branch, environment or version is confirmed.
+  approved_by: null
+  approved_at: null
+  last_verified_at: null
+  notes: Manual is an execution record awaiting action, not a completed build.
+  version_match:
+    status: not_verified
+    basis: null
+    expected: null
+    observed: null
+    evidence: []
+    notes: A mutable tag does not prove a deployed version.
+- id: example-5
+  from:
+    type: deployment_definition
+    instance: portainer
+    id: definition:stack-a:api
+    details:
+      kind: deployment_definition
+      endpoint_id: endpoint-a
+      stack_id: stack-a
+      service_name: api
+      file_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  relation: runs_in_environment
+  to:
+    type: environment
+    instance: example-workspace
+    id: environment-a
+    details:
+      kind: environment
+      name: Unreviewed environment A
+      description: ''
+  status: unresolved
+  confidence: 0.0
+  evidence:
+  - kind: structure
+    source: example-workspace
+    locator: synthetic-example
+    observed_at: '2026-11-05T00:00:00Z'
+    revision: synthetic-only
+    summary: Synthetic example; no real branch, environment or version is confirmed.
+  approved_by: null
+  approved_at: null
+  last_verified_at: null
+  notes: Manual is an execution record awaiting action, not a completed build.
+  version_match:
+    status: not_verified
+    basis: null
+    expected: null
+    observed: null
+    evidence: []
+    notes: A mutable tag does not prove a deployed version.
+metadata:
+  created_at: null
+  updated_at: null
+  initialized_by: host_agent
+  last_refresh_at: null

@@ -1,3 +1,5 @@
+> 当前 Agent-led 重构请先按 [agent-led/resume.md](agent-led/resume.md) 接续；以下旧 V1 流程仅供历史参考。
+
 # 长任务续跑提示词（Codex / Cursor 通用）
 
 ```text
