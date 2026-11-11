@@ -1,3 +1,13 @@
+# 2026-11-11 本地产品化整顿（当前）
+
+T0：工作区原先干净；main=078962e、无Tag；干净候选2748c7b与原5092d6a功能文件逐字节相同。临时工作分支从main创建，dba07db导入候选树，未继承旧敏感祖先。先建立分支以遵守AGENTS本地工作分支提交要求，最终命名和旧分支整理在交付完成后执行。
+
+T1–T4：定点删除25个可再生路径和2份旧原始报告；有效源码/测试/fixture/Schema/Prompt、历史脱敏证据与用户私有目录保留。按真实工具契约整理差异、部署和十五个教程，新增离线验收边界先于编排代码。
+
+T5–T7：新增一键验收，清除业务环境、Python仅loopback、uv强制offline；记录阶段、命令、版本、新JUnit和覆盖率、Wheel隔离CLI/MCP。修复旧stdio checker的2.0过时断言。首轮430/431通过（仅新增自测断言失败），requirements离线解析缺缓存索引；已修复自测与改用锁文件同步独立环境。第二轮431/431、97.24%，Ruff、strict Mypy、锁一致性、Wheel/全隔离九工具通过。增加合成CLI/旧checker验收后将再重跑。
+
+本轮真实平台、Cursor桌面Host、真实Token过期恢复均not_verified，不挪用历史Gate A/B。最终状态、分支/Tag保全、删除备份和最终重跑见docs/UPGRADE_EXECUTION_REPORT.md与docs/acceptance/acceptance-summary.json。禁止push/PR/Tag/远端操作，未修改用户配置或凭证。
+
 # 2026-11-10 独立公开发布候选（本地，待审核）
 
 公开审核发现旧资料包含真实样本身份，并在关联提示词/验收说明中重复。原验收分支和私有证据保留；从已审核的main建立独立候选，导入完整已验收应用快照，仅泛化5份历史文档中的具体身份及现场接入观察。不把旧feature历史作为候选祖先，不改远端、不force push。
@@ -249,3 +259,6 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 ### Agent-led cursor-recheck-and-approved-save（2026-11-04）
 
 用户回传 Cursor 修复后两次实际调用：JSON 文本信封可见，Bug 信封/data.truncated 均 false、data.evidence 1（兼容顶层为空）；原生 PNG 实际进入模型，delivered/truncated=false，未保存或转录。用户明确批准完整文件保存并要求不要提交。Host 将与批准 diff 逐字匹配的 683 行/22451 字节草案只创建为业务 .dce/project.yaml，拒绝覆盖/symlink；23 关系保持 22 proposed/1 unresolved/0 confirmed，审批字段全空。真实 CLI validate exit 0、load_project 复读/字节一致/roots 在 workspace 内通过，业务 Git HEAD/index 前后不变，文件 untracked。本轮无 git add/commit/push、真实平台调用或产品代码修改；208 passed/97.93% 保留既有基线，不重复全库测试。更新记录与文档仅本地未提交。核心初始化闭环；完整模块树403、旧独立GitLab范围/Compose仍未验证，严格全样本验收不虚报完成。详见 harness/context/agent-led/cursor-recheck-and-approved-save.md。
+
+
+2026-11-11 补充诊断：增加旧Catalog checker独立阶段后发现其把合法有界截断一律判失败。合成大Catalog中project_context/discovery_status完整返回，service_trace/deployment_inspect按16KB预算省略data，正确携带omissions/next_action。修复checker为验证Schema、status、字节预算及截断披露，并分别报告complete_reads=2、truncated_reads=2；错误与越权负例仍必须拒绝，未提高预算或屏蔽错误。单独全新合成Catalog实跑已通过。工作树文档JSON用实际Pydantic输入校验，4个调用示例通过；迁移参数修正为--target-version。

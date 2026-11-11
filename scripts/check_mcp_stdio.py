@@ -71,6 +71,7 @@ async def check(catalog_path: Path) -> dict[str, Any]:
             cwd="/",  # Prove the executable and catalog do not depend on the host cwd.
         )
         sizes = []
+        truncated_reads = 0
         with open(os.devnull, "w") as errlog:
             async with stdio_client(parameters, errlog=errlog) as (read, write):
                 async with ClientSession(
@@ -85,7 +86,13 @@ async def check(catalog_path: Path) -> dict[str, Any]:
                         and t.inputSchema.get("additionalProperties") is False
                         and t.meta
                         and t.meta.get("dce", {}).get("contract_revision")
-                        == ("2.0" if t.name.endswith("_query") else "1.1")
+                        == (
+                            "2.2"
+                            if t.name == "portainer_query"
+                            else "2.1"
+                            if t.name.endswith("_query")
+                            else "1.1"
+                        )
                         for t in listed.tools
                     ):
                         raise CheckFailure("Read-only tool contract mismatch.")
@@ -101,8 +108,14 @@ async def check(catalog_path: Path) -> dict[str, Any]:
                             raise CheckFailure("Catalog query failed.")
                         validators[name].validate(payload)
                         size = len(json.dumps(payload, ensure_ascii=False).encode())
-                        if size > 16000 or payload.get("truncated"):
+                        if size > 16000:
                             raise CheckFailure("Response exceeded the configured budget.")
+                        if payload.get("truncated"):
+                            if not payload.get("omissions") or not payload.get("next_action"):
+                                raise CheckFailure(
+                                    "Truncation must disclose omissions and recovery."
+                                )
+                            truncated_reads += 1
                         sizes.append(size)
                     for name, arguments, expected in (
                         ("bug_context", {"bug_id": "unconfigured"}, "PERMISSION_DENIED"),
@@ -129,9 +142,11 @@ async def check(catalog_path: Path) -> dict[str, Any]:
             "mode": "catalog_only",
             "transport": "stdio",
             "server_version": initialized.serverInfo.version,
-            "contract_revision": "2.0 (legacy 1.1)",
+            "contract_revision": "Portainer 2.2; other facts 2.1; legacy 1.1",
             "tool_count": len(listed.tools),
             "successful_reads": len(requests),
+            "complete_reads": len(requests) - truncated_reads,
+            "truncated_reads": truncated_reads,
             "scope_denials": 2,
             "unknown_write_denied": True,
             "response_bytes": sizes,

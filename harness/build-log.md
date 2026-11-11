@@ -1,3 +1,15 @@
+## 2026-11-11 本地产品整顿与验收（当前）
+
+初始Git只读盘点：main 078962e，无Tag，当前fix分支5092d6a，工作区干净；干净候选2748c7b直接基于main，src/tests/scripts/fixtures/examples/schemas/pyproject/lock与原HEAD无差异。无fetch或远端变更。git创建分支首次因沙箱index.lock拒绝，申请本地Git写权限后成功，不是自动审批拒绝；从main创建codex/upgrade-work并导入干净快照，dba07db树一致。
+
+25个未跟踪生成路径及2份旧原始测试报告定点删除；删除前排除symlink与Git跟踪内容，不递归进入.local/.dce/private/.venv。清理记录保留每个路径和引用判断。未删除正式测试/Prompt/Schema。先定义ACCEPTANCE_CONTRACT，再编排与失败路径测试；旧check_mcp_stdio断言从2.0修正到Portainer2.2/其他事实2.1。
+
+第一轮完整离线验收：431总计，430通过、1失败、0跳过，97.24%；唯一失败是新增runner测试把命令文字也当作输出泄漏，改为通过合成环境变量提供输出。Wheel构建成功，隔离requirements解析因markupsafe缓存索引不足失败；uv sync已有锁可直接消费锁中下载证据，改为UV_PROJECT_ENVIRONMENT指定新venv，--locked --offline --no-dev --no-install-project，不修改锁、不降低门槛。新增测试最初4/5，通过修正5/5。
+
+第二轮完整离线验收431 passed、0 failed/skipped、97.24%，Ruff、strict Mypy55源文件、锁检查/安装、Wheel、新venv锁定依赖、源码目录外CLI/doctor/九工具STDIO通过。报告由本次临时XML/coverage生成，不用旧harness结果。补充合成CLI/旧checker独立阶段以及用户指南，最终重跑结果将在最终执行报告与机器摘要中记录。
+
+所有平台响应合成，SDK为本机STDIO，不读取用户凭证、不签发真实日志授权、不访问公司服务；历史Gate A/B保留其原时间语义，真实Token过期恢复仍not_verified。无push/PR/merge/Tag/Release，用户MCP、.env、业务project.yaml均未改。
+
 # Agent 执行日志
 
 状态：AGENT_LED_OFFLINE_PASSED_LIVE_PARTIAL
@@ -422,3 +434,11 @@ Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry G
 初始一致性检查尝试write-tree时因沙箱只读索引锁失败，改为只读cached diff核对，失败发生在文档写入前。随后逐文件比较确认功能代码、测试、Schema和依赖锁定文件未变。独立虚拟环境uv sync --locked --offline --dev通过；完整426 passed/38.29s/97.24%，ruff、strict mypy55文件通过，包实际从候选路径加载。没有连接公司平台或重新运行真实日志验收，没有修改原venv、MCP配置、凭证或业务工作区。
 
 本地候选以干净main为唯一父基线，不纳入旧feature/验收分支的敏感祖先；原分支和旧远端均不重写。当前只准备可审核候选，后续推送须使用新SHA和新范围，不能声称旧公开历史已清除。只提交脱敏快照，不push、不force push、不创建PR/Tag/Release。
+
+
+2026-11-11 补充诊断：增加旧Catalog checker独立阶段后发现其把合法有界截断一律判失败。合成大Catalog中project_context/discovery_status完整返回，service_trace/deployment_inspect按16KB预算省略data，正确携带omissions/next_action。修复checker为验证Schema、status、字节预算及截断披露，并分别报告complete_reads=2、truncated_reads=2；错误与越权负例仍必须拒绝，未提高预算或屏蔽错误。单独全新合成Catalog实跑已通过。工作树文档JSON用实际Pydantic输入校验，4个调用示例通过；迁移参数修正为--target-version。
+
+
+2026-11-11 备份与复核：四条旧开发分支分别为原最终5092d6a的祖先，独有历史18/33/35/38提交均已有最终干净功能快照覆盖；旧资料脱敏差异刻意不导回产品。创建新的.local/upgrade-chatgpt-history-backup-20261111/development-branches.bundle（0700目录/0600文件），git bundle verify通过；在临时裸仓库恢复四个原HEAD完全一致，git fsck --full --no-reflogs通过。不checkout旧代码，不读取既有.local私有材料，备份不进入Git。
+
+产品代码审阅确认src/Schema/fixture/example/Prompt/pyproject/uv.lock与2748c7b仍无差异；只有验收编排、合成测试、checker修复与文档/CI入口改动。CI改为调用同一验收入口（未触发真实GitHub工作流）。README精简为入口，旧历史结论转向带原日期的harness，不再混入当前安装步骤。
