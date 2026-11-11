@@ -103,3 +103,33 @@ def test_impl_digest_changes_when_code_changes_and_ignores_cache(tmp_path):
     (tmp_path / "src/__pycache__").mkdir()
     (tmp_path / "src/__pycache__/demo.pyc").write_bytes(b"ignored")
     assert after == acceptance.implementation_digest(tmp_path)
+
+
+def test_offline_child_uses_prepared_cache_without_inheriting_credentials(tmp_path):
+    cache = tmp_path / "prepared-cache"
+    cache.mkdir()
+    (cache / "ready").write_text("synthetic-build-dependency")
+    env = acceptance.acceptance_environment(
+        {
+            **os.environ,
+            "UV_CACHE_DIR": str(cache),
+            "DCE_ZENTAO_TOKEN": "synthetic-business-secret",
+            "GITHUB_TOKEN": "synthetic-host-secret",
+            "HTTP_PROXY": "https://proxy.example.invalid",
+        }
+    )
+    code = (
+        "import os;from pathlib import Path;"
+        "assert (Path(os.environ['UV_CACHE_DIR'])/'ready').read_text()"
+        " == 'synthetic-build-dependency';"
+        "assert os.environ['UV_OFFLINE'] == 'true';"
+        "assert not any(k in os.environ for k in "
+        "('DCE_ZENTAO_TOKEN','GITHUB_TOKEN','HTTP_PROXY'))"
+    )
+    result, _ = acceptance.command_result(
+        "prepared_cache",
+        [sys.executable, "-c", code],
+        cwd=tmp_path,
+        env=env,
+    )
+    assert result["status"] == "PASS"

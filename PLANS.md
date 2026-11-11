@@ -1,3 +1,13 @@
+# 2026-11-11 CI缓存修复本地验收通过，待GitHub复核
+
+新增缓存/凭证隔离回归后，本轮完整离线20阶段全部PASS：432 passed、0 failed/0 skipped、覆盖率97.24%。修复仅作用验收器环境白名单，源业务包/锁/平台授权不变。执行HEAD=508bf90，dirty=True，被测源码以新实现摘要c10f4a0d504eca421e4400c11c8c332f6e626d808884c147262adbe9e967d867记录，不把旧提交伪称干净被测版本。准备提交并推送缓存修复，GitHub托管结果另行实际核对。
+
+# 2026-11-11 推送后CI修复（进行中）
+
+GitHub离线工作流42948651340实际失败：锁/安装、Ruff、Mypy、完整pytest、合成CLI/STDIO和安全检查均PASS，wheel_build失败。日志显示setup-uv已设置独立UV_CACHE_DIR，runner清理环境时没有保留该非秘密路径，导致离线构建未使用已准备缓存。仅允许继承UV_CACHE_DIR，其他业务/凭证/代理/UV配置仍剔除；保持offline，不降测试或构建门槛。新增子进程从自定义缓存读取合成准备标记并验证凭证不继承的回归。
+
+CI报告输出改为新runner.temp目录，always上传本轮两份摘要（7天），不回传checkout内旧报告。先契约后实现；准备重跑本地完整验收并推送同一feature分支验证GitHub结果。旧失败不隐藏，原本地431通过仍为当时事实，不能冒充CI通过。
+
 # 2026-11-11 授权推送与分支清理结果
 
 已提交cf667fd并推送origin/feature/upgrade-chatgpt，远端SHA核对一致、同名upstream已设置。新分支成功后，以精确旧HEAD lease删除远端work/dce-v1-offline（5ab897f），再次ls-remote确认已不存在。旧历史私有bundle已verify；有效功能已整合。main=078962e、Tag为空保持；fix=2748c7b是开放PR #1来源，保留且不改PR。本地独立候选及worktree保留。

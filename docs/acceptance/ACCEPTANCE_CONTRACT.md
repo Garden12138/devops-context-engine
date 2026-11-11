@@ -15,3 +15,5 @@ Host 初始化验收是合成 Host harness：仓库/模块发现、关系候选�
 Cursor SDK STDIO 测试覆盖真实本地子进程、握手、九工具/Schema、多次调用、参数/错误、版本/PID/request_id、stdout 协议和 stderr 隔离。Cursor 桌面 UI 重载、模型可见图片、本轮真实平台读取、真实 Token 过期恢复均为 NOT_RUN / not_verified。旧 Gate A/B 仅是带原时间的历史证据。
 
 新增编排器必须测试失败命令、超时清理、缺失/损坏测试产物与跳过处理，防止“执行失败但报告通过”。
+
+CI 缓存边界：允许继承非秘密 `UV_CACHE_DIR`，确保离线子进程使用依赖准备阶段实际填充的同一缓存；仍剔除 DCE/业务凭证、代理和其他 UV 配置，不回退联网或复制现有 site-packages。回归测试必须让子进程实际从自定义缓存读取合成准备标记，同时确认业务凭证未继承。GitHub CI 的本轮报告输出到独立 runner.temp 目录，只上传本轮生成的两份摘要，不能上传 checkout 中的旧报告冒充本次结果。

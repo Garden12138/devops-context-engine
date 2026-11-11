@@ -212,3 +212,10 @@ schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 s
 统一runner清除DCE/业务凭证及代理环境，Python子进程限制loopback，uv命令强制offline。每次新临时目录，JUnit/coverage缺失或损坏失败闭合，失败/跳过不标PASS，命令超时终止进程组。分类来自本次完整测试集，可重叠不相加；人工Host/真实平台项始终分开。
 
 隔离依赖安装直接消费uv.lock并指定独立UV_PROJECT_ENVIRONMENT；不依赖可能缺少的requirements解析索引，不复制现有site-packages。新Wheel装入后从源码目录外验证CLI与STDIO，断言dce导入路径在新venv内。当前包仍1.1.1，Schema/授权不因产品整理改变。首次联网准备缓存与本轮完全离线验收分开；其他Python版本未执行不宣称通过。
+
+
+## ADR-032：离线验收继承准备缓存路径，CI报告使用新目录
+
+授权推送后的首次GitHub离线任务暴露环境差异：setup-uv把依赖放到非默认UV_CACHE_DIR，runner去除业务环境时也去掉了该路径，后续离线Wheel构建无法消费准备缓存。白名单只增加非秘密UV_CACHE_DIR，仍拒绝业务凭证、代理和其他用户UV配置，不允许联网回退或复制现有site-packages。行为测试由真实子进程读取自定义缓存合成标记并断言业务凭证没有进入环境。
+
+CI报告输出到runner.temp的新目录，只上传本轮AUTOMATED_ACCEPTANCE.md和acceptance-summary.json，7天保留；失败前没有生成新报告时不上传旧checkout报告。原历史本地报告不冒充托管CI证据。新环境结果必须等待实际执行，失败不屏蔽。

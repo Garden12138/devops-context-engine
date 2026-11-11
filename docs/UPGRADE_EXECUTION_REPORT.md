@@ -164,3 +164,10 @@ Cursor 使用绝对 `.venv/bin/python` + `scripts/serve_dce_local.py`，指定�
 本地保留main、feature/upgrade-chatgpt、release/v1.1.1-public-clean；独立干净候选及其现有worktree仍有保留用途，不删除用户目录。本节和执行日志随后作为文档归档提交同步同一feature分支；最终HEAD以 `git rev-parse HEAD` 与 `git ls-remote origin refs/heads/feature/upgrade-chatgpt` 的一致结果为准。
 
 所有历史本地验收和未验证项保持原时点语义。本次GitHub推送不等于Cursor桌面或真实Token过期恢复通过；这些项目仍not_verified。
+
+
+## 10. 推送后发现并修复GitHub离线缓存边界
+
+首次托管[CI运行42948651340](https://github.com/Garden12138/devops-context-engine/actions/runs/42948651340)实际失败：Ruff/Mypy/pytest/合成STDIO/安全检查通过，离线Wheel失败。setup-uv设置专用UV_CACHE_DIR，原验收器清理环境时遗漏该非秘密路径。修复只将UV_CACHE_DIR加入白名单，仍剔除业务凭证/代理/其他UV配置并强制offline；新增子进程读取自定义缓存合成标记且确认凭证未继承的行为测试。契约和ADR-032先记录该边界。
+
+GitHub报告改存独立runner.temp目录，仅上传本轮两份摘要并保留7天；无法生成时不上传checkout旧报告，失败不隐藏。本地新一轮完整20阶段PASS，432 passed/0failed/0skipped，覆盖率97.24%，被测实现摘要`c10f4a0d504eca421e4400c11c8c332f6e626d808884c147262adbe9e967d867`。执行时HEAD=508bf90且dirty=true，JSON如实记录；修复提交以实现摘要核对，不沿用原431项报告冒充此次执行。准备推送后实际复核托管CI，结果以随后记录为准。

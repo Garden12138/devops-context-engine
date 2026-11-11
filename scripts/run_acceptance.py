@@ -17,6 +17,7 @@ import tempfile
 import time
 import tomllib
 import xml.etree.ElementTree as ET
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -382,13 +383,11 @@ def write_reports(summary: dict, output: Path) -> None:
         temporary.replace(target)
 
 
-def run(output: Path) -> int:
-    started = datetime.now(UTC).isoformat()
-    stages: list[dict] = []
-    test_data: dict = {"status": "NOT_RUN"}
-    coverage = None
+def acceptance_environment(environ: Mapping[str, str]) -> dict[str, str]:
     # Deliberately omit business credentials, DCE variables, proxies, PYTHONPATH and user config.
-    env = {k: os.environ[k] for k in ("PATH", "TMPDIR", "SYSTEMROOT", "LANG") if k in os.environ}
+    # setup-uv prepares a non-default cache; offline build children must use that same cache.
+    allowed = ("PATH", "TMPDIR", "SYSTEMROOT", "LANG", "UV_CACHE_DIR")
+    env = {k: environ[k] for k in allowed if k in environ}
     env.update(
         UV_OFFLINE="true",
         UV_PYTHON_DOWNLOADS="never",
@@ -396,6 +395,15 @@ def run(output: Path) -> int:
         PYTEST_DISABLE_PLUGIN_AUTOLOAD="1",
         NO_COLOR="1",
     )
+    return env
+
+
+def run(output: Path) -> int:
+    started = datetime.now(UTC).isoformat()
+    stages: list[dict] = []
+    test_data: dict = {"status": "NOT_RUN"}
+    coverage = None
+    env = acceptance_environment(os.environ)
     git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip()
     git_dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT))
     with tempfile.TemporaryDirectory(prefix="dce-acceptance-") as tmp:

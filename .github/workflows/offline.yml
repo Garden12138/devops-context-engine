@@ -11,4 +11,13 @@ jobs:
         with:
           python-version: '3.12'
       - run: uv sync --locked --dev
-      - run: uv run --offline python scripts/run_acceptance.py
+      - run: uv run --offline python scripts/run_acceptance.py --output-dir "$RUNNER_TEMP/dce-acceptance"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-acceptance-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/dce-acceptance/AUTOMATED_ACCEPTANCE.md
+            ${{ runner.temp }}/dce-acceptance/acceptance-summary.json
+          if-no-files-found: ignore
+          retention-days: 7
