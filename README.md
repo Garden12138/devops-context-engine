@@ -1,6 +1,6 @@
 # DevOps Context Engine（DCE）
 
-DCE 把 ZenTao 缺陷、GitLab 代码/CI 和 Portainer/Swarm 部署事实连接到 Cursor 等 Agent，减少每次排查时重复查平台、猜项目关系的工作。当前本地体验版：**1.1.1**；后续开发分支：`feature/upgrade-chatgpt`。
+DCE 把 ZenTao 缺陷、GitLab 代码/CI 和 Portainer/Swarm 部署事实连接到 Cursor 等 Agent，减少每次排查时重复查平台、猜项目关系的工作。当前本地体验版：**1.2.0**；后续开发分支：`feature/upgrade-chatgpt`。
 
 DCE 提供安全只读能力，Host Agent 使用当前业务源码和自己的模型提出关系，经用户审核后维护 `.dce/project.yaml`。关系可跨仓库、模块、镜像和服务；来源实例和各平台 ID 分开，不因同名或同数字自动确认。未知关系保持 proposed/unresolved，环境和部署版本要有证据。
 
@@ -17,7 +17,7 @@ flowchart LR
 
 核心能力：
 
-- 九个只读 MCP 工具：bug_context、project_context、discovery_status、deployment_inspect、pipeline_diagnose、service_trace、zentao_query、gitlab_query、portainer_query。
+- project模式增加用户主动调用的 `project_initialize` 本地控制工具；原九个查询工具保持：bug_context、project_context、discovery_status、deployment_inspect、pipeline_diagnose、service_trace、zentao_query、gitlab_query、portainer_query。
 - 项目/模块发现、证据、候选与人工审核、跨会话恢复及变化标记；Project Schema v1/v2 校验和迁移预览。
 - Bug、原生图片、固定 ref 的代码、CI Job/Trace、Stack 保存配置与 Swarm 运行事实；分页、输出预算、结构化错误和脱敏。
 - ZenTao 进程内 Token 缓存与有限恢复；Service Logs 默认关闭，可另行限定精确服务、短窗口、单次额度并撤销。
@@ -45,9 +45,9 @@ uv run --offline python scripts/run_acceptance.py
 
 ## 连接 Cursor 与开始使用
 
-按 [macOS 本地部署手册](docs/guides/LOCAL_DEPLOYMENT.md) 创建私有配置，使用 `.venv/bin/python scripts/serve_dce_local.py` 的真实启动参数接入 `~/.cursor/mcp.json`。凭证留在 0600 本机文件或受保护进程环境；默认不读 dotenv。为各平台提供独立 instance 与显式资源 allowlist，重载后验证九工具及版本 1.1.1。不要把 Token 写进聊天或 MCP 参数。
+按 [macOS 本地部署手册](docs/guides/LOCAL_DEPLOYMENT.md) 创建私有配置，使用 `.venv/bin/python scripts/serve_dce_local.py` 的真实启动参数接入 `~/.cursor/mcp.json`。凭证留在 0600 本机文件或受保护进程环境；默认不读 dotenv。新使用场景选择 `--mode project`，只配置平台连接和凭证，启动不填业务ID或固定工作区。重载后验证十工具及版本1.2.0；legacy模式继续保留旧九工具。不要把 Token 写进聊天或 MCP 参数。
 
-然后在**业务工作区**让 Agent 按 [初始化 Prompt](prompts/agent-led/initialize.md) 发现结构、收集事实、展示关系与 diff，经审核再保存项目文件。完整十五个教程及“Bug→代码→CI→部署服务”示例见 [用户手册](docs/guides/USER_GUIDE.md)。
+打开目录、连接MCP、新建对话或查询Bug均不会初始化。只有用户在**业务工作区**明确要求“初始化当前项目”时，Agent才按 [初始化 Prompt](prompts/agent-led/initialize.md) 发现结构、收集有界事实、展示关系和访问范围，经用户确认后由Host保存项目文件并激活项目授权；之后只需在对话指定Bug ID。新的[项目模式启动、对话初始化和恢复指南](docs/guides/PROJECT_WORKFLOW.md)说明完整流程。原有十五个教程及“Bug→代码→CI→部署服务”示例见 [用户手册](docs/guides/USER_GUIDE.md)。
 
 ## 当前边界与证据
 

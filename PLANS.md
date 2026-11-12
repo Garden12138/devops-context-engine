@@ -1,3 +1,13 @@
+# 2026-11-12 Project mode 1.2 实施（当前）
+
+按用户已确认的重新设计实现：用户在当前工作区对话明确初始化才发现，连接/新聊天/Bug查询不能触发；全程Host对话确认，原生表单优先、本机页面兜底；平台权限与持久项目范围相交。新增--mode project，无业务ID/固定workspace启动参数；原legacy九工具保持。
+
+T0契约docs/PROJECT_MODE_CONTRACT.md先于代码；T1本机/原生确认和边界；T2有界三平台元数据发现；T3工作区独立状态/权限/CAS/Host保存复读；T4真实审核与未变审批保留；T5双启动入口；T6十工具项目模式与SDK STDIO；T7完整验收和手册。实现源文件58个，版本1.2.0，MCP依赖最低1.30（锁版本仍1.30）。不改真实凭证、业务project.yaml或Cursor配置，不访问公司平台。
+
+首轮完整456 passed/93.45%（新增模块计入分母），仅新增Wheel smoke字符串Ruff长行使总验收FAIL；修正并补充审阅发现的边界后，最新本机20阶段PASS，468 passed、0failed/skip、93.79%。增加未变化审批保留/伪造审批拒绝、Root/form协议能力回退和递归提案拒绝；准备提交后干净工作区重验。浏览器测试最初被全局禁IP夹具拒绝，专用模块仅允许loopback且补外部IP拒绝回归；macOS拒绝POST未读body导致RST已修正为有界读取+明确Content-Length。所有旧失败保留，未降低覆盖率阈值或删旧测试。
+
+新指南docs/guides/PROJECT_WORKFLOW.md及项目模式Prompt说明完整begin/review/Host保存/complete流程、Roots回退、分页和独立精确日志策略。真实Cursor桌面/公司接口/真实Token过期恢复仍not_verified，合成SDK测试不替代现场。以下为旧阶段历史。
+
 # 2026-11-11 授权推送、清理及CI修复完成
 
 统一开发分支已正常推送至origin/feature/upgrade-chatgpt。远端无用work/dce-v1-offline已在精确旧HEAD lease和备份验证后删除；main=078962e、Tag为空、开放PR #1来源fix=2748c7b保持。本地独立干净候选及worktree保留。

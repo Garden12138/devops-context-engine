@@ -1,6 +1,12 @@
 # macOS 本地部署与 Cursor 接入
 
-适用交付：本地 `feature/upgrade-chatgpt`，包版本 **1.1.1**。DCE 运行方式是 Python CLI 和 Cursor 启动的 STDIO 子进程，无需 Docker、开放端口或后台 Web 服务。真实公司连接由用户本地配置；本轮验收完全离线。
+适用交付：本地 `feature/upgrade-chatgpt`，包版本 **1.2.0**。DCE 运行方式是 Python CLI 和 Cursor 启动的 STDIO 子进程，无需 Docker、开放端口或后台 Web 服务。真实公司连接由用户本地配置；本轮验收完全离线。
+
+## 1.2 项目模式入口
+
+日常使用请按[项目模式指南](PROJECT_WORKFLOW.md)配置 `--mode project`：连接一次，在对话中由用户明确初始化，后续只提供Bug ID。无需在启动命令填写GitLab/Portainer/Bug ID。项目模式十工具，legacy模式保留旧九工具。
+
+以下原固定资源Scope的示例属于legacy兼容入口，适合限定资源验收；不会自动把旧Scope或全局Catalog变成已初始化项目。用户现有配置不被程序自动改写。项目模式新的Cursor JSON与主动初始化步骤以项目模式指南为准。
 
 ## 1. 环境与代码准备
 
@@ -104,7 +110,7 @@ instance_id = "company-portainer"
 base_url = "https://portainer.example.invalid"
 ```
 
-地址使用应用根，ZenTao 不要填安装包欢迎页、`/tokens` 或具体 Bug 页面。Portainer Endpoint ID 是另一个启动 Scope 参数，不是 base_url。一个进程每平台一个 instance；多个来源实例用独立 MCP 配置项。
+地址使用应用根，ZenTao 不要填安装包欢迎页、`/tokens` 或具体 Bug 页面。Portainer Endpoint ID 在项目模式中由初始化发现，legacy模式才通过启动Scope参数提供；它不是base_url。一个进程每平台一个 instance；多个来源实例用独立 MCP 配置项。
 
 凭证文件仅填写当前需要的平台；下面全是占位符：
 
@@ -168,7 +174,7 @@ Scope 必须来自用户授权，并非 Agent 按同数字 ID 猜测。示例均
 
 Cursor 中关闭再开启 DCE MCP 连接，必要时重载窗口/新会话。让 Agent 枚举工具，应有九个：bug_context、project_context、discovery_status、deployment_inspect、pipeline_diagnose、service_trace、gitlab_query、portainer_query、zentao_query。
 
-初始化版本应为 1.1.1，Portainer revision 2.2，其余事实工具 2.1、兼容工具 1.1。握手说明保持稳定；实际调用 runtime 中的 PID/request_id 与 stderr 审计用于识别当前进程（预算太小时诊断字段可能省略）。工具可见不证明上游权限。先调用一个已授权资源，并检查 status/error、来源 instance、revision、observed_at、truncated/omissions。桌面按钮名称随 Cursor 版本变化，本轮只自动化验证 SDK STDIO，没有实测当前桌面 UI。
+初始化版本应为 1.2.0，Portainer revision 2.2，其余事实工具 2.1、兼容工具 1.1。握手说明保持稳定；实际调用 runtime 中的 PID/request_id 与 stderr 审计用于识别当前进程（预算太小时诊断字段可能省略）。工具可见不证明上游权限。先调用一个已授权资源，并检查 status/error、来源 instance、revision、observed_at、truncated/omissions。桌面按钮名称随 Cursor 版本变化，本轮只自动化验证 SDK STDIO，没有实测当前桌面 UI。
 
 也可仅用受保护进程环境启动 `.venv/bin/dce --config ... --catalog ... mcp serve --transport stdio --live --read-only ...`；账号密码模式与显式文件加载使用脚本入口。STDIO 等待协议输入时终端无提示是正常现象，不能向 stdout 加调试 print。
 
@@ -203,7 +209,7 @@ uv run --offline python scripts/run_acceptance.py
 ```sh
 uv build --wheel --offline --out-dir /absolute/new-build-output
 uv venv --python 3.12 /absolute/new-trial-venv
-uv pip install --python /absolute/new-trial-venv/bin/python /absolute/new-build-output/devops_context_engine-1.1.1-py3-none-any.whl
+uv pip install --python /absolute/new-trial-venv/bin/python /absolute/new-build-output/devops_context_engine-1.2.0-py3-none-any.whl
 /absolute/new-trial-venv/bin/dce --help
 ```
 

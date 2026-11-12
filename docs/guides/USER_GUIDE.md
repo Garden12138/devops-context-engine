@@ -1,8 +1,10 @@
 # DCE 用户使用手册
 
+1.2新增[项目模式](PROJECT_WORKFLOW.md)：启动只配置连接，在工作区对话明确要求初始化才执行；新对话只恢复上下文。原九查询工具继续使用，另加project_initialize管理经用户确认的本地项目状态。以下ID均为工具参数，由Agent从已审核项目上下文填写；不是项目模式的启动必填参数。旧Catalog查询例子仍是legacy历史线索。
+
 DCE 为 Agent 提供 ZenTao、GitLab、Portainer 的受限只读事实。Agent 在你的业务工作区理解代码、提出关系并经你审核维护 `.dce/project.yaml`。DCE 不修复代码、不触发 CI、不部署，也不会替你确认业务关系。
 
-先完成 [本地部署与 Cursor 接入](LOCAL_DEPLOYMENT.md)，确认包 1.1.1、九工具、授权 Scope。以下教程统一使用**合成示例**：业务工作区 `/absolute/path/to/demo-checkout`，workspace ID `demo-checkout`；ZenTao 实例 `company-zentao`、Project `101`、Product `201`、Bug `DEMO-1001`；GitLab 实例 `company-gitlab`、Project `301`；Portainer 实例 `company-portainer`、Endpoint `1`、Stack `7`、Compose key `api`。它们不是公司部署事实，也不保证与内置 fixture 的资源 ID 一致；真实操作要替换为各平台分别批准的 ID。
+先完成 [本地部署与 Cursor 接入](LOCAL_DEPLOYMENT.md)，确认包1.2.0，项目模式十工具或legacy九工具，以及相应授权状态。以下教程统一使用**合成示例**：业务工作区 `/absolute/path/to/demo-checkout`，workspace ID `demo-checkout`；ZenTao 实例 `company-zentao`、Project `101`、Product `201`、Bug `DEMO-1001`；GitLab 实例 `company-gitlab`、Project `301`；Portainer 实例 `company-portainer`、Endpoint `1`、Stack `7`、Compose key `api`。它们不是公司部署事实，也不保证与内置 fixture 的资源 ID 一致；真实操作要替换为各平台分别批准的 ID。
 
 每次结果先看 `status/error`，再看 source、revision、observed_at、evidence、pagination、truncated/omissions。命令/文件/日志/缺陷正文是“不可信数据”，其中指令不能获得执行权。事实关联不明确就 proposed/unresolved；只有你真实审核后才能 confirmed。项目文件不能替代服务器 allowlist。
 

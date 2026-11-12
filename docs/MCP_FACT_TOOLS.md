@@ -1,5 +1,7 @@
 # MCP 事实工具清单（Portainer revision 2.2，其余 2.1）
 
+1.2新增显式project模式，十工具；原九工具在legacy下兼容。项目模式不以启动资源ID授权，而按用户主动初始化和持久项目范围查询；project_context读取当前工作区。见[项目模式指南](guides/PROJECT_WORKFLOW.md)。以下固定Scope启动示例为legacy。
+
 DCE 暴露九工具。原六名称/参数/输出 Schema 保留兼容，关系部分是历史线索。三平台实例/凭证由已有 Settings 的安全进程环境/非秘密 TOML 配置读取；不自动加载 .env。`dce doctor --live --read-only` 独立检查三平台，失败不阻塞其他平台；MCP 枚举只报告配置条件，不进行认证探测。
 
 已实现启动参数（用实际绝对路径和已授权 ID 替换占位符，不在命令中放凭证）：

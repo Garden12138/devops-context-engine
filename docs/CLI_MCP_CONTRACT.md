@@ -1,5 +1,7 @@
 # CLI / MCP / 未来 REST 契约
 
+1.2 新增显式 `dce mcp serve --mode project --live --read-only [--state-dir <private-path>]`。此模式不接收旧业务ID/Stack pair，提供十工具，增加 `project_initialize(begin/review/complete/cancel/revoke)`，`project_context`读取Host工作区上下文；完整状态、失败与审批契约见[项目模式契约](PROJECT_MODE_CONTRACT.md)和[操作指南](guides/PROJECT_WORKFLOW.md)。默认legacy仍为原九工具，以下原CLI/Catalog接口保留兼容。新模式的本地确认/私有授权写入不授予平台写权限。
+
 ## 1. 命令约定
 
 - `dce --help`

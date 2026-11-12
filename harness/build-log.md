@@ -461,3 +461,16 @@ CI缓存修复本地新验收：2026-11-11T02:55:00.853797+00:00至2026-11-11T02
 
 
 CI缓存修复已真实托管复核：8a6249047c0d292fc425e322adbe086b834a627c推送成功，run42949449061/job130290046546在2026-11-11T02:57:06Z至02:58:23Z整体success；准备依赖、统一离线验收、actions/upload-artifact、后处理全部成功。gh run watch --exit-status退出0，gh run view再次只读核对headSHA/任务/步骤success。API确认新摘要artifact13823709365存在、未过期、5120字节；两次下载均因TLS握手超时未复读附件，不把它伪称已验证JSON内容。本地真实432 passed/97.24%和实现摘要c10f4a0d504eca421e4400c11c8c332f6e626d808884c147262adbe9e967d867保持。随后仅提交本段/计划/执行报告并同步feature；源业务包、Schema、锁、平台Scope继续与干净候选一致。main/PR/Tag未修改，work远端已删除，当前分支upstream正确。
+
+
+## 2026-11-12 用户主动项目初始化1.2
+
+初始feature/upgrade-chatgpt=3be4651，工作区干净，main/独立干净候选保留。按用户确认方案先写PROJECT_MODE_CONTRACT，再实现确认broker（SDK原生/127.0.0.1一次页面）、有界发现、ProjectRuntime/私有CAS授权、双入口和十工具。DCE只写私有授权状态，不写业务工作区。无公司平台连接、用户凭证/真实项目读取或Cursor配置修改。
+
+新增真实本机SDK合成STDIO双入口完整初始化/保存/恢复/连续新Bug/Stack服务隔离/撤销；Roots缺失/多root/跨根、持久文件篡改/权限/symlink、审核拒绝/原生/本机页CSRF/Origin/重放/超时、分页与审批保留等行为测试。原九工具legacy测试保留，版本断言改为真实1.2.0。MCP最低依赖升到已锁定且实测的1.30，使用form确认和Roots接口；未放宽业务scope/日志授权。
+
+初次局部旧E2E因沙箱禁止loopback bind失败，授权仅本机合成服务后通过；新页面测试最初受全局禁止IP夹具阻挡，专用页面模块仅允许loopback并验证外部IP仍拒绝。macOS拒绝POST后未读body引起TCP reset，改为有界读取/超时/Content-Length，未隐藏失败。新增测试一处缺失import及stderr断言与既有协议不符已修复。
+
+首次完整runner：456 passed、0failed/skip、93.45%，但Ruff新增Wheel smoke字符串长行FAIL；其他19阶段含Wheel双模式均PASS。长行修正后第二轮20阶段PASS。审阅进一步补精确日志策略与项目范围相交、部分初始化状态、未变审批保留、未知confirmed降为候选，最终结果另记。本次覆盖率分母扩展，75%原硬阈值不变，未删失败测试或伪报97.24%。
+
+2026-11-12 项目模式提交前验收：10:40:12→10:41:16 UTC，20阶段全部PASS，468 passed、0failed/skip、93.79%。Ruff、strict mypy58源码、锁一致性、Wheel1.2.0隔离安装及两种模式SDK均通过。追加Roots/form不支持的显式回退、原生拒绝不绕行审批、递归提案拒绝；修正后实跑，不伪造外部验收。最终审阅给Wheel机器证据补project_tools=10和无初始化启动字段；待干净提交重验并按既有授权推送同一feature分支、核对托管CI。当前只读ls-remote确认feature仍3be4651、main078962e、fix2748c7b且无Tag，没有新增分支可清理。

@@ -219,3 +219,12 @@ schema_version=1 的 project.yaml 由 Host 写入，DCE 提供 Schema、模板 s
 授权推送后的首次GitHub离线任务暴露环境差异：setup-uv把依赖放到非默认UV_CACHE_DIR，runner去除业务环境时也去掉了该路径，后续离线Wheel构建无法消费准备缓存。白名单只增加非秘密UV_CACHE_DIR，仍拒绝业务凭证、代理和其他用户UV配置，不允许联网回退或复制现有site-packages。行为测试由真实子进程读取自定义缓存合成标记并断言业务凭证没有进入环境。
 
 CI报告输出到runner.temp的新目录，只上传本轮AUTOMATED_ACCEPTANCE.md和acceptance-summary.json，7天保留；失败前没有生成新报告时不上传旧checkout报告。原历史本地报告不冒充托管CI证据。新环境结果必须等待实际执行，失败不屏蔽。
+
+
+## ADR-033：主动初始化、项目授权与Host持有关系
+
+1.2通过显式--mode project选择新行为，旧启动方式保持legacy九工具。MCP不因连接、Roots或新聊天初始化，只通过用户明确要求的project_initialize和真实用户确认开始有界发现。Host持有模型/源码并写project.yaml，DCE只保存0700/0600隔离状态和权限；本机管理员/受控Host不是本机制可认证的敌手，不能把Agent参数当真人同意。
+
+Roots选工作区，缺失时确认路径；多root选择，根改变须新会话。临时发现30分钟，确认页/receipt10分钟，原生表单优先，过大或不支持时仅127.0.0.1页面完整展示，不截断授权。项目范围与业务关系分别审核，Host保存后语义hash相同才CAS激活；反复保存、并发授权变更、撤销和复制文件不能扩权。
+
+项目Bug读取允许按ID核验归属，返回前Project/Product同时命中（已配置的维度），不猜Execution。附件/图片/列表复用校验。共享Endpoint服务只返回授权Stack namespace并核对Swarm。未变化的已审核关系用私有确认记录中的关系摘要保留，新增/变更的confirmed不能伪造审批。源配置身份改变须重审，不导入旧全局Catalog真相。日志默认关闭，只允许单独精确策略且与项目范围相交。真实Cursor/公司环境未验收不称通过。

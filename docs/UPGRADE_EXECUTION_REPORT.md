@@ -2,9 +2,9 @@
 
 最终结论：**READY_WITH_LIMITATIONS**。
 
-第1–8节记录原本地整顿任务；用户后续已授权提交推送及清理无用远端分支，实际结果见第9节。
+当前已实现 **1.2.0 project模式**：启动无业务ID，用户主动初始化，原生/本机页面审核，工作区独立授权与跨会话恢复。实现提交 `d30ac9e`；本机最新468项通过、93.79%，提交后重验及托管CI记录见第11节。原legacy九工具继续兼容，project模式十工具。
 
-DCE 1.1.1 已具备本机安装、CLI、九工具 STDIO、合成端到端验收与部署/使用文档。当前开发统一在 `feature/upgrade-chatgpt`。本轮没有访问真实公司服务，Cursor 桌面交互、真实 Token 过期恢复和新环境平台权限仍未验证。
+第1–8节为原1.1.1整顿记录，第9–10节为后续授权推送及CI修复的历史记录；其中数量/版本均按当时时点理解，当前以第11节和最新验收JSON为准。当前开发统一在 `feature/upgrade-chatgpt`。本轮没有访问真实公司服务，Cursor桌面交互、真实Token过期恢复和新环境平台权限仍未验证。
 
 ## 1. 完成情况与提交
 
@@ -176,3 +176,26 @@ GitHub报告改存独立runner.temp目录，仅上传本轮两份摘要并保留
 后续实际结果：缓存修复提交 `8a6249047c0d292fc425e322adbe086b834a627c` 已正常推送，同步源码与本地432项验收摘要一致。[GitHub离线CI 42949449061](https://github.com/Garden12138/devops-context-engine/actions/runs/42949449061) 在2026-11-11T02:57:06Z–02:58:23Z整体success，统一验收、Wheel/隔离安装、摘要上传及后处理全部通过；gh run watch退出0，后续gh run view再次核对实际head/任务/步骤状态。首次失败记录仍保留，没有关闭测试或放宽offline制造通过。
 
 摘要附件已通过API确认存在（5120字节、未过期），但两次CLI下载遇TLS握手超时，因此附件JSON内容复读仍not_verified。此限制不改变已核对的GitHub实际任务success，也不把本地432计数冒充附件复读结果。最后文档归档提交只记录这些真实事实，源实现摘要不变；本地与远端最终SHA一致性另由git ls-remote确认。
+
+
+## 11. 2026-11-12：主动初始化的项目模式1.2
+
+当前结论：**READY_WITH_LIMITATIONS**。功能实现提交 `d30ac9e`，基于原统一开发分支 `3be4651` 继续开发，无旧分支合并或敏感祖先导入。package版本1.2.0；未创建Tag/Release。main和独立稳定候选、现有Tag均不变。
+
+| 用户场景 | 当前行为 |
+|---|---|
+| 启动/新对话/打开工作区 | 只建立STDIO；无业务ID/固定工作区启动参数，无平台探测或初始化 |
+| 用户明确初始化 | project_initialize开始30分钟有界发现，Host分析本地结构和关系 |
+| 人工审核 | 原生表单优先；不支持或提案过大时127.0.0.1一次性页面；完整展示提案和范围 |
+| 保存与激活 | Host写.dce/project.yaml，DCE复读匹配receipt/hash后CAS激活私有策略 |
+| 日常Bug→代码→CI→部署定位 | Bug归属按已审核项目/产品验证；Host修复源码与本地测试；DCE提供授权内事实，不触发CI/部署 |
+| 多工作区/刷新/撤销 | 会话绑定工作区、独立缓存、篡改不扩权、未变审批保留；其他进程下一次请求观察撤销 |
+| Service Logs | 默认关闭；独立精确策略必须落在已审核项目内，原单次/跨进程限制保留 |
+
+新增3个project核心模块及5个合成测试模块。保留原测试、有效fixtures、Prompt、Schema、harness和稳定候选worktree；本增量不删除业务文件或未知用途资料。旧分支已在历史阶段清理，本次无新增可删分支；PR仍使用的远端fix分支保留。实际Cursor配置、凭证、业务项目和原私有资料未读取/改写。
+
+本机提交前最新完整验收：2026-11-12 10:40:12→10:41:16 UTC，Python3.12.11/macOS arm64；20阶段PASS，**468/468 passed、0failed、0skipped、93.79%**。Ruff、strict mypy58源码、锁一致性/锁定安装、隔离Wheel1.2.0、legacy九工具及project十工具SDK通过。原75%覆盖率硬门槛保持，新增模块计入分母，不能沿用历史97.24%冒充本次覆盖率。提交后干净工作区验收和推送CI将在完成后据实追加；执行Commit/实现摘要以最新JSON为准。
+
+部署仍使用uv sync --locked --dev，切换Cursor入口时增加--mode project，并移除旧业务ID/Stack pair/单catalog参数；不要同时启用重复旧入口。可复制命令、完整mcp.json、主动初始化、分页保存和独立日志授权见[项目模式指南](guides/PROJECT_WORKFLOW.md)；平台连接/凭证模板见[部署手册](guides/LOCAL_DEPLOYMENT.md)，原十五教程见[用户手册](guides/USER_GUIDE.md)，[版本增量](UPGRADE_FROM_BASELINE.md)和[安全边界](SECURITY.md)已同步。
+
+未验证项目：真实Cursor桌面Roots/表单/浏览器交互及图片进入模型；真实公司接口兼容和权限；真实ZenTao Token过期恢复；真实人工关系推理质量；其他Python/OS完整矩阵。SDK+合成HTTP测试不能替代这些现场项目。后续由用户手动重载新配置，在业务工作区明确说“初始化当前项目”，核对范围后再试一个授权项目内Bug；本次未替用户初始化任何真实项目。

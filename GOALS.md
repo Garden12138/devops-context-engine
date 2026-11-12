@@ -1,3 +1,9 @@
+# 当前目标：DCE 1.2 用户主动初始化的项目模式
+
+启动只配连接/凭证，用户在工作区对话明确说初始化才开始有界发现；审核后由Host保存关系、DCE激活工作区隔离授权。后续对话只提供Bug ID，按Project/Product归属核验并复用GitLab/Portainer映射。新会话只恢复，不自动初始化/刷新。legacy保留；不写外部平台，不自动部署。
+
+实施依据：docs/PROJECT_MODE_CONTRACT.md、docs/guides/PROJECT_WORKFLOW.md；实际新验收见docs/acceptance/AUTOMATED_ACCEPTANCE.md。以下旧目标按原时间保留。
+
 # 当前交付：本地产品化体验版
 
 2026-11-11：将既有DCE 1.1.1整理为可安装、运行、离线验收、Cursor接入与继续开发的本地产品。统一开发分支feature/upgrade-chatgpt；main与所有现有Tag保持，独立干净候选保留。本轮不发布、不访问真实公司平台。
