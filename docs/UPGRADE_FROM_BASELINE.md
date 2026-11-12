@@ -4,6 +4,8 @@
 
 本节为当前增量，以下编号章节保留1.1.1整顿时点记录。增量起点为 `3be46518b673a20b5e981bd5518ae582528b9dac`；main及独立干净候选仍保持原提交，未导入旧敏感历史。最新被测Commit/实现摘要由[自动验收JSON](acceptance/acceptance-summary.json)记录。
 
+截至被测实现 `19b7a7e`：相对3be4651为44 files changed、3,083 insertions、123 deletions；相对main为239 files changed、30,926 insertions、146 deletions。随后只归档报告/文档，不把归档提交当作执行时HEAD。
+
 | 能力 | 1.1.1原有问题 | 1.2实现与用户价值 | 验证级别 |
 |---|---|---|---|
 | 启动/工作区 | 启动固定业务ID和Catalog，不适合多工作区 | 显式project模式只配连接；Roots选择、每会话绑定、每工作区私有缓存 | 合成STDIO自动化 |

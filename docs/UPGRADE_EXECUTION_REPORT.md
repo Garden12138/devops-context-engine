@@ -2,7 +2,7 @@
 
 最终结论：**READY_WITH_LIMITATIONS**。
 
-当前已实现 **1.2.0 project模式**：启动无业务ID，用户主动初始化，原生/本机页面审核，工作区独立授权与跨会话恢复。实现提交 `d30ac9e`；本机最新468项通过、93.79%，提交后重验及托管CI记录见第11节。原legacy九工具继续兼容，project模式十工具。
+当前已实现 **1.2.0 project模式**：启动无业务ID，用户主动初始化，原生/本机页面审核，工作区独立授权与跨会话恢复。核心实现 `d30ac9e`，最终被测实现 `19b7a7e`；本机最新468项通过、93.79%，提交后重验及托管CI记录见第11节。原legacy九工具继续兼容，project模式十工具。
 
 第1–8节为原1.1.1整顿记录，第9–10节为后续授权推送及CI修复的历史记录；其中数量/版本均按当时时点理解，当前以第11节和最新验收JSON为准。当前开发统一在 `feature/upgrade-chatgpt`。本轮没有访问真实公司服务，Cursor桌面交互、真实Token过期恢复和新环境平台权限仍未验证。
 
@@ -182,6 +182,8 @@ GitHub报告改存独立runner.temp目录，仅上传本轮两份摘要并保留
 
 当前结论：**READY_WITH_LIMITATIONS**。功能实现提交 `d30ac9e`，基于原统一开发分支 `3be4651` 继续开发，无旧分支合并或敏感祖先导入。package版本1.2.0；未创建Tag/Release。main和独立稳定候选、现有Tag均不变。
 
+截至最终被测19b7a7e，相对3be4651为44文件、+3,083/-123行；相对main为239文件、+30,926/-146行。仅对同名feature正常快进推送。保留本地main=078962e、feature/upgrade-chatgpt、release/v1.1.1-public-clean=2748c7b；初始/当前Tag均0。报告归档提交可由git log获取，不能在文件中嵌入自身Commit。
+
 | 用户场景 | 当前行为 |
 |---|---|
 | 启动/新对话/打开工作区 | 只建立STDIO；无业务ID/固定工作区启动参数，无平台探测或初始化 |
@@ -192,9 +194,11 @@ GitHub报告改存独立runner.temp目录，仅上传本轮两份摘要并保留
 | 多工作区/刷新/撤销 | 会话绑定工作区、独立缓存、篡改不扩权、未变审批保留；其他进程下一次请求观察撤销 |
 | Service Logs | 默认关闭；独立精确策略必须落在已审核项目内，原单次/跨进程限制保留 |
 
-新增3个project核心模块及5个合成测试模块。保留原测试、有效fixtures、Prompt、Schema、harness和稳定候选worktree；本增量不删除业务文件或未知用途资料。旧分支已在历史阶段清理，本次无新增可删分支；PR仍使用的远端fix分支保留。实际Cursor配置、凭证、业务项目和原私有资料未读取/改写。
+新增3个project核心模块及5个合成测试模块。保留原测试、有效fixtures、Prompt、Schema、harness和稳定候选worktree；本增量不删除业务文件或未知用途资料。验收后清理18个未跟踪缓存路径、65文件，逐项记录见清理报告，不触及受保护数据。旧分支已在历史阶段清理，本次无新增可删分支；PR仍使用的远端fix分支保留。实际Cursor配置、凭证、业务项目和原私有资料未读取/改写。
 
-干净提交完整验收：2026-11-12 10:45:56→10:47:00 UTC，执行HEAD `43633a980a4201e660b7dd241f069046c3084592`、git_dirty=false，Python3.12.11/macOS arm64；20阶段PASS，**468/468 passed、0failed、0skipped、93.79%**。Ruff、strict mypy58源码、锁一致性/锁定安装、隔离Wheel1.2.0、legacy九工具及project十工具SDK通过。原75%覆盖率硬门槛保持，新增模块计入分母，不能沿用历史97.24%冒充本次覆盖率。随后仅补Wheel报告新证据字段的保留白名单，业务源码未变；补完重验和推送CI将在完成后据实追加，执行Commit/实现摘要以最新JSON为准。
+最终干净提交完整验收：2026-11-12 10:48:30→10:49:34 UTC，执行HEAD `19b7a7e10fa8646f44e688b9ef468eef39ebfbcb`、git_dirty=false，Python3.12.11/macOS arm64；20阶段PASS，**468/468 passed、0failed、0skipped、93.79%**。Ruff、strict mypy58源码、锁一致性/锁定安装、隔离Wheel1.2.0、legacy九工具及project十工具SDK通过。Wheel证据明确包含project_tools=10、project_startup_inert=true。原75%覆盖率硬门槛保持，新增模块计入分母，不能沿用历史97.24%冒充本次覆盖率。实现SHA256 `fe81c5848c22335d6b172cde78f3dc55c1b17c7342fa4c0c1f2da4bf2b4f5b0e`；后续报告归档不改变被测实现，执行Commit/实现摘要以最新JSON为准。
+
+19b7a7e已正常推送origin/feature/upgrade-chatgpt；[GitHub CI43203834300](https://github.com/Garden12138/devops-context-engine/actions/runs/43203834300)实际success（offline job 1m57s），锁定安装、完整离线验收和报告上传均成功。已用gh run watch --exit-status核对实际状态；本段不把本机覆盖率冒充Linux报告复读结果。后续只提交本报告及验收摘要/清理记录，最新HEAD由git rev-parse及同名远端引用核对。
 
 部署仍使用uv sync --locked --dev，切换Cursor入口时增加--mode project，并移除旧业务ID/Stack pair/单catalog参数；不要同时启用重复旧入口。可复制命令、完整mcp.json、主动初始化、分页保存和独立日志授权见[项目模式指南](guides/PROJECT_WORKFLOW.md)；平台连接/凭证模板见[部署手册](guides/LOCAL_DEPLOYMENT.md)，原十五教程见[用户手册](guides/USER_GUIDE.md)，[版本增量](UPGRADE_FROM_BASELINE.md)和[安全边界](SECURITY.md)已同步。
 

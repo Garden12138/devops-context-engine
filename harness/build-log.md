@@ -476,3 +476,7 @@ CI缓存修复已真实托管复核：8a6249047c0d292fc425e322adbe086b834a627c�
 2026-11-12 项目模式提交前验收：10:40:12→10:41:16 UTC，20阶段全部PASS，468 passed、0failed/skip、93.79%。Ruff、strict mypy58源码、锁一致性、Wheel1.2.0隔离安装及两种模式SDK均通过。追加Roots/form不支持的显式回退、原生拒绝不绕行审批、递归提案拒绝；修正后实跑，不伪造外部验收。最终审阅给Wheel机器证据补project_tools=10和无初始化启动字段；待干净提交重验并按既有授权推送同一feature分支、核对托管CI。当前只读ls-remote确认feature仍3be4651、main078962e、fix2748c7b且无Tag，没有新增分支可清理。
 
 实现提交d30ac9e和文档43633a9完成。43633a9干净工作区10:45:56→10:47:00 UTC实跑20阶段PASS，468 passed/93.79%。人工核对发现新Wheel证据字段被旧报告白名单过滤，补允许两项固定非秘密字段，准备最终重验；不是工具功能失败，原两模式隔离Wheel已实跑通过。文档澄清审批回退临时loopback端口和只读产品边界。
+
+最终19b7a7e干净工作区10:48:30→10:49:34 UTC：20阶段PASS，468/468、0failed/skip、93.79%；Wheel1.2.0隔离证据保留legacy9/project10、无初始化启动，源码摘要fe81c5848c22335d6b172cde78f3dc55c1b17c7342fa4c0c1f2da4bf2b4f5b0e。正常推送3be4651..19b7a7e至origin/feature/upgrade-chatgpt成功。随后仅定点清除18个无Git跟踪缓存路径65文件（有symlink/异常文件则拒绝），清理报告逐项记录；真实用户凭证/项目/配置未触及。GitHub CI43203834300已启动，待实际结论。
+
+GitHub CI43203834300实际success，offline job 1m57s，锁定安装/完整runner/报告上传及清理步骤全成功；gh run watch --exit-status退出0。没有下载并复读Linux报告，不把本机468/93.79数字冒充Linux artifact。最终仅归档报告/当前计划/清理记录，核对实现摘要不变后正常推送同一feature；真实Cursor/公司平台/Token过期恢复仍not_verified。

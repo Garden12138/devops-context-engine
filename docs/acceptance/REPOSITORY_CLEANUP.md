@@ -102,3 +102,31 @@
 | `src/dce/ai/__pycache__`（2 文件） | 本轮验证生成、可再生 | 无正式依赖 | 已删除 |
 
 收尾共 18 个生成路径、63 文件；与初始清理有路径重叠，不能相加为唯一文件数。受保护目录未处理。
+
+
+## 2026-11-12 项目模式验收后缓存清理
+
+仅删除本轮生成且Git未跟踪的缓存；检查没有symlink或异常文件类型。没有读取/处理用户.env、.dce、.local或业务配置；本次没有删除正式源码/测试/fixtures/Schema/Prompt。
+
+| 文件/生成目录 | 删除原因 | 是否被引用 | 处理结果 |
+|---|---|---|---|
+| `src/dce/__pycache__`（1文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/connectors/__pycache__`（7文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/parsers/__pycache__`（2文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/app/__pycache__`（5文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/security/__pycache__`（5文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/catalog/__pycache__`（4文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/graph/__pycache__`（3文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/discovery/__pycache__`（5文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/mcp/__pycache__`（5文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/cli/__pycache__`（1文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/project/__pycache__`（7文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/common/__pycache__`（5文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/ai/__pycache__`（2文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/catalog/migrations/__pycache__`（1文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `src/dce/catalog/migrations/versions/__pycache__`（3文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `scripts/__pycache__`（1文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `.ruff_cache`（5文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+| `.mypy_cache`（3文件） | 验证生成、可再生 | 无正式依赖；Git未跟踪 | 已删除 |
+
+本轮18个生成路径、65个文件；和历史清理有路径重叠，不累加为唯一文件数。未发现需要删除但用途不明的新业务文件；原保留清单继续有效。
