@@ -29,6 +29,10 @@ GROUPS = {
         "test_agent_e2e",
         "test_project_context",
         "test_project_v2",
+        "test_project_runtime",
+        "test_project_discovery",
+        "test_project_approval",
+        "test_project_stdio",
         "test_discovery",
         "test_crawler",
         "test_parsers",
@@ -38,6 +42,7 @@ GROUPS = {
         "test_acceptance_chain",
     },
     "mcp": {
+        "test_project_stdio",
         "test_mcp",
         "test_mcp_boundaries",
         "test_mcp_contracts",
@@ -57,6 +62,9 @@ GROUPS = {
         "test_log_grant_stdio",
     },
     "security": {
+        "test_project_runtime",
+        "test_project_approval",
+        "test_project_stdio",
         "test_final_safety_gates",
         "test_connector_boundaries",
         "test_catalog_boundaries",
@@ -72,6 +80,7 @@ GROUPS = {
         "test_zentao_auth",
     },
     "cursor_stdio_simulation": {
+        "test_project_stdio",
         "test_agent_e2e",
         "test_mcp_startup",
         "test_incremental_stdio",
@@ -137,7 +146,21 @@ async def smoke():
                 assert not result.isError and result.structuredContent["status"] == "ok"
             result = await session.call_tool("bug_context", {"bug_id":"outside"})
             assert result.isError
-    print(json.dumps({"version": info.serverInfo.version, "tools": len(tools),
+    p = StdioServerParameters(command=str(Path(sys.prefix)/"bin/dce"),
+        args=["mcp", "serve", "--mode", "project",
+              "--live", "--read-only",
+              "--state-dir", str(Path.cwd()/"project-state")],
+        env=dict(os.environ), cwd=str(Path.cwd()))
+    async with stdio_client(p) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            tools = (await session.list_tools()).tools
+            assert {t.name for t in tools} == expected | {"project_initialize"}
+            context = await session.call_tool("project_context", {})
+            assert not context.isError
+            assert context.structuredContent["data"]["state"] == "workspace_selection_required"
+    print(json.dumps({"version": info.serverInfo.version, "tools": len(expected),
+                      "project_tools": len(tools), "project_startup_inert": True,
                       "wheel_import": True, "repeated_calls": 2, "scope_denied": True}))
 asyncio.run(smoke())
 """

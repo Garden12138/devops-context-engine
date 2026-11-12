@@ -24,7 +24,9 @@ def main() -> int:
     parser.add_argument(
         "--credentials-file", type=Path, required=True, help="Explicit private dotenv input."
     )
-    parser.add_argument("--catalog", type=Path, required=True)
+    parser.add_argument("--catalog", type=Path)
+    parser.add_argument("--mode", choices=("legacy", "project"), default="legacy")
+    parser.add_argument("--state-dir", type=Path, default=Path.home() / ".local/state/dce")
     parser.add_argument("--live", action="store_true")
     parser.add_argument("--read-only", action="store_true")
     parser.add_argument(
@@ -47,14 +49,43 @@ def main() -> int:
         parser.add_argument("--" + flag, action="append", default=[])
     args = parser.parse_args()
     try:
+        if args.mode == "project" and (
+            args.catalog is not None
+            or any(
+                getattr(args, k)
+                for k in (
+                    "gitlab_project",
+                    "zentao_project",
+                    "zentao_product",
+                    "zentao_bug",
+                    "portainer_endpoint",
+                    "portainer_stack",
+                    "portainer_log_scope",
+                )
+            )
+        ):
+            raise DceError(
+                ErrorCode.INVALID_PAYLOAD, "Project mode cannot mix legacy scopes or catalog."
+            )
+        if args.mode == "legacy" and args.catalog is None:
+            raise DceError(ErrorCode.INVALID_PAYLOAD, "Legacy mode requires --catalog.")
         log_scopes = parse_log_scopes(
             args.portainer_log_scope, args.portainer_endpoint, args.portainer_stack
         )
-        log_policy = load_log_policy(args.portainer_log_policy, log_scopes)
+        log_policy = (
+            load_log_policy(args.portainer_log_policy, log_scopes)
+            if args.mode == "legacy"
+            else None
+        )
         settings = local_settings(
             args.config, args.credentials_file, live=args.live, read_only=args.read_only
         )
         require_platforms(settings, args.require_platform)
+        if args.mode == "project":
+            from dce.mcp.startup import serve_project
+
+            serve_project(settings, args.state_dir, args.portainer_log_policy)
+            return 0
         settings.catalog_path = args.catalog
         scope = FactScope(
             gitlab_projects=set(args.gitlab_project),

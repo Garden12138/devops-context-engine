@@ -324,12 +324,41 @@ def mcp_serve(
     portainer_stack: list[str] | None = None,
     portainer_log_scope: list[str] | None = None,
     portainer_log_policy: Path | None = None,
+    mode: str = "legacy",
+    state_dir: Path | None = None,
 ) -> None:
     from dce.app.facts import FactScope
     from dce.mcp.server import serve
     from dce.mcp.startup import load_log_policy, parse_log_scopes
 
     try:
+        if mode not in {"legacy", "project"}:
+            raise DceError(ErrorCode.INVALID_PAYLOAD, "Unknown MCP mode.")
+        if mode == "project":
+            if transport != "stdio" or not live or not read_only:
+                raise DceError(
+                    ErrorCode.INVALID_PAYLOAD, "Project mode requires stdio --live --read-only."
+                )
+            if any(
+                (
+                    zentao_bug,
+                    gitlab_project,
+                    zentao_project,
+                    zentao_product,
+                    portainer_endpoint,
+                    portainer_stack,
+                    portainer_log_scope,
+                )
+            ):
+                raise DceError(
+                    ErrorCode.INVALID_PAYLOAD, "Project mode cannot mix legacy scope grants."
+                )
+            from dce.mcp.startup import serve_project
+
+            serve_project(
+                ctx.obj, state_dir or Path.home() / ".local/state/dce", portainer_log_policy
+            )
+            return
         log_scopes = parse_log_scopes(
             portainer_log_scope or [], portainer_endpoint or [], portainer_stack or []
         )

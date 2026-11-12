@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from pathlib import PurePosixPath
 from typing import Any
 
-from dce.app.services import AppServices, resource_key
+from dce.app.services import AppServices, external_id, resource_key
 from dce.common.errors import DceError, ErrorCode
 from dce.common.service_logs import LogControls
 from dce.connectors.gitlab import GitLab, key
@@ -69,6 +69,7 @@ def service_facts(data: dict[str, Any]) -> dict[str, Any]:
 
 @dataclass
 class FactScope:
+    project_mode: bool = False
     gitlab_projects: set[str] = field(default_factory=set)
     zentao_projects: set[str] = field(default_factory=set)
     zentao_products: set[str] = field(default_factory=set)
@@ -77,6 +78,31 @@ class FactScope:
     portainer_stacks: set[str] = field(default_factory=set)
     portainer_log_scopes: set[tuple[str, str]] = field(default_factory=set)
     portainer_log_policy: ServiceLogGrant | None = None
+
+    def check_bug(self, bug: dict[str, Any], requested: str | None = None) -> None:
+        if not self.project_mode:
+            return
+        identity = external_id(bug.get("id"))
+        if identity is None or requested is not None and str(identity) != requested:
+            deny()
+        if not (self.zentao_projects or self.zentao_products):
+            deny()
+        for field_name, allowed in (
+            ("project", self.zentao_projects),
+            ("product", self.zentao_products),
+        ):
+            if not allowed:
+                continue
+            value = external_id(bug.get(field_name + "_id", bug.get(field_name)))
+            other = external_id(bug.get(field_name))
+            if (
+                value is None
+                or str(value) not in allowed
+                or field_name + "_id" in bug
+                and other is not None
+                and str(other) != str(value)
+            ):
+                deny()
 
 
 class FactQueries:
@@ -252,7 +278,10 @@ class FactQueries:
                 if p.get(key_) is not None:
                     require(p[key_], allowed)
             if op in {"bug", "attachments", "image"}:
-                require(p["bug_id"], scope.zentao_bugs)
+                if not scope.project_mode:
+                    require(p["bug_id"], scope.zentao_bugs)
+                elif not (scope.zentao_projects or scope.zentao_products):
+                    deny()
             if op == "projects" and not scope.zentao_projects:
                 deny()
             if op == "products" and not scope.zentao_products:
@@ -458,6 +487,17 @@ class FactQueries:
             if len(records) > p["limit"]:
                 records = records[: p["limit"]]
                 warnings.append("UPSTREAM_PAGE_LIMIT_EXCEEDED")
+            if self.scope.project_mode:
+                filtered = []
+                for record in records:
+                    try:
+                        self.scope.check_bug(record)
+                        filtered.append(record)
+                    except DceError:
+                        pass
+                if len(filtered) != len(records):
+                    warnings.append("BUGS_OUTSIDE_OR_UNVERIFIABLE_SCOPE_OMITTED")
+                records = filtered
             if op == "modules":
                 records = [
                     {"module": r["module"], "bug_id": r.get("id")}
@@ -467,6 +507,16 @@ class FactQueries:
                 warnings.append("PARTIAL_MODULE_INVENTORY_FROM_BUG_PAGE")
         else:
             bug = a.bug(p["bug_id"])
+            self.scope.check_bug(bug, p["bug_id"])
+            if self.scope.project_mode:
+                bug = {
+                    **bug,
+                    **{
+                        k: external_id(bug.get(k + "_id", bug.get(k)))
+                        for k in ("project", "product", "module")
+                    },
+                    "id": external_id(bug["id"]),
+                }
             text, sources = a.parse_steps(bug)
             if op == "image":
                 if p["asset_index"] >= len(sources):
@@ -525,9 +575,17 @@ class FactQueries:
         elif op == "stacks":
             records = [s for s in a.stacks() if str(s.get("Id")) in self.scope.portainer_stacks]
         elif op == "stack":
-            records = [a.stack(p["stack_id"])]
+            stack = a.stack(p["stack_id"])
+            if self.scope.project_mode and (
+                str(stack.get("Id")) != p["stack_id"]
+                or str(stack.get("EndpointId")) not in self.scope.portainer_endpoints
+            ):
+                deny()
+            records = [stack]
         elif op in {"stack_file", "stack_service"}:
             stack = a.stack(p["stack_id"])
+            if self.scope.project_mode and str(stack.get("Id")) != p["stack_id"]:
+                deny()
             if str(stack.get("EndpointId")) != endpoint:
                 deny()
             text = a.stack_file(p["stack_id"], endpoint)
@@ -557,6 +615,40 @@ class FactQueries:
                     }
                 }
             ]
+        elif op in {"service", "services"} and self.scope.project_mode:
+            cluster = a.docker_info(endpoint)["Swarm"].get("Cluster", {})
+            if not isinstance(cluster, dict) or not cluster.get("ID"):
+                deny()
+            namespaces = set()
+            for stack_id in sorted(self.scope.portainer_stacks):
+                stack = a.stack(stack_id)
+                if str(stack.get("Id")) != stack_id:
+                    deny()
+                if str(stack.get("EndpointId")) == endpoint and stack.get("Type") == 1:
+                    if stack.get("SwarmId") != cluster["ID"]:
+                        raise DceError(ErrorCode.SNAPSHOT_CONFLICT, "Project Stack Swarm is stale.")
+                    namespace = stack.get("Namespace") or stack.get("Name")
+                    if isinstance(namespace, str) and namespace:
+                        namespaces.add(namespace)
+            if not namespaces or p["namespace"] is not None and p["namespace"] not in namespaces:
+                deny()
+            raw = (
+                [a.service(endpoint, p["service_id"])]
+                if op == "service"
+                else a.services(endpoint, p["namespace"])
+            )
+            matching = []
+            for service in raw:
+                labels = (service.get("Spec") or {}).get("Labels") or {}
+                if not isinstance(labels, dict):
+                    deny()
+                if labels.get("com.docker.stack.namespace") in namespaces:
+                    if op == "service" and str(service.get("ID")) != p["service_id"]:
+                        deny()
+                    matching.append(service_facts(service))
+            if op == "service" and not matching:
+                deny()
+            records = matching
         elif op == "service":
             records = [service_facts(a.service(endpoint, p["service_id"]))]
         else:

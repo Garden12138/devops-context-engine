@@ -56,3 +56,22 @@ def configure_stderr_audit() -> None:
         logger.addHandler(handler)
     logger.setLevel(logging.INFO)
     logger.propagate = False
+
+
+def serve_project(settings: Settings, state_dir: Path, log_policy: Path | None = None) -> None:
+    """Startup is inert: a temporary empty Catalog, no roots scan or platform probe."""
+    import tempfile
+
+    from dce.app.services import AppServices
+    from dce.mcp.server import serve
+    from dce.project.runtime import ProjectRuntime
+
+    configure_stderr_audit()
+    runtime = ProjectRuntime(state_dir, log_policy)
+    with tempfile.TemporaryDirectory(prefix="dce-unbound-") as temporary:
+        initial = settings.model_copy(update={"catalog_path": Path(temporary) / "catalog.sqlite3"})
+        try:
+            with AppServices(initial) as services:
+                serve(services, live=True, read_only=True, project=runtime)
+        finally:
+            runtime.close()

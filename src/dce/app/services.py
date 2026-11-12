@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import re
+from collections.abc import Callable
 from contextlib import ExitStack
 from pathlib import Path
 from typing import Any
@@ -134,6 +135,7 @@ class AppServices:
         include_assets: bool = True,
         live: bool = False,
         read_only: bool = False,
+        bug_guard: Callable[[dict[str, Any], str], None] | None = None,
     ) -> dict[str, Any]:
         resource_key(bug_id)
         self.require_live(live, read_only)
@@ -170,6 +172,8 @@ class AppServices:
         with reader:
             adapter = ZenTao(reader)
             bug = adapter.bug(bug_id)
+            if bug_guard is not None:
+                bug_guard(bug, bug_id)
             text, urls = adapter.parse_steps(bug)
             assets, warnings = [], []
             if include_assets:

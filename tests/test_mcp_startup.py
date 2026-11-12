@@ -120,7 +120,7 @@ def test_runtime_identity_connects_schema_and_call_without_private_configuration
         runtime = tools[0].meta["dce"]["runtime"]
         assert all(t.meta["dce"]["runtime"] == runtime for t in tools)
         assert call.meta["dce"]["runtime"] == runtime
-        assert runtime["server_version"] == "1.1.1" and runtime["process_id"] == os.getpid()
+        assert runtime["server_version"] == "1.2.0" and runtime["process_id"] == os.getpid()
         assert runtime["configured_platforms"] == []
         schemas = {t.name: t.inputSchema for t in tools}
         assert (
@@ -200,7 +200,7 @@ def test_cached_instructions_stable_across_processes_and_runtime_is_not_persiste
                     info = await client.initialize()
                     tools = (await client.list_tools()).tools
                     result = await client.call_tool("discovery_status", {})
-                    assert info.serverInfo.version == "1.1.1" and len(tools) == 9
+                    assert info.serverInfo.version == "1.2.0" and len(tools) == 9
                     runtime = result.meta["dce"]["runtime"]
                     assert not result.isError
                     assert all(t.meta["dce"]["runtime"] == runtime for t in tools)

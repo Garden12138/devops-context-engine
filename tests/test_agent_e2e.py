@@ -393,7 +393,7 @@ def test_local_launcher_three_platforms_schema_runtime_and_stderr_audit(tmp_path
                 async with ClientSession(read, write) as client:
                     info = await client.initialize()
                     tools = {t.name: t for t in (await client.list_tools()).tools}
-                    assert info.serverInfo.version == "1.1.1" and len(tools) == 9
+                    assert info.serverInfo.version == "1.2.0" and len(tools) == 9
                     runtime = tools["portainer_query"].meta["dce"]["runtime"]
                     assert set(runtime["configured_platforms"]) == {"zentao", "gitlab", "portainer"}
                     assert f"sha256={runtime['schema_sha256']}" in info.instructions
@@ -439,7 +439,7 @@ def test_local_launcher_three_platforms_schema_runtime_and_stderr_audit(tmp_path
         server.server_close()
         thread.join(timeout=2)
     audit = (tmp_path / "audit.txt").read_text()
-    assert f"mcp_start version=1.1.1 pid={runtime['process_id']}" in audit
+    assert f"mcp_start version=1.2.0 pid={runtime['process_id']}" in audit
     assert f"schema={runtime['schema_sha256']}" in audit
     assert audit.count("mcp_call tool=") == 4
     for secret in [
