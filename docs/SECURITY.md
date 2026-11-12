@@ -15,7 +15,7 @@
 1. `offline-fixture` 默认：合成数据、无外部请求，无 AI 网络调用。
 2. `local-readonly`：用户显式开启并授权相应平台只读 Token，扫描显式项目/Stack Scope。
 3. `shared-readonly`（后续）：内网共享服务，按用户/项目授权，所有工具鉴权审计。
-4. `write-enabled`（V1.2/V2.0）：独立审批和单次执行凭据，不属于 V1。
+4. `write-enabled`（后续独立版本）：独立审批和单次执行凭据，不属于当前只读产品。
 
 ## 2. 凭证
 

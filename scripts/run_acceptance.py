@@ -477,6 +477,8 @@ def run(output: Path) -> int:
                             "wheel_import",
                             "repeated_calls",
                             "scope_denied",
+                            "project_tools",
+                            "project_startup_inert",
                         }
                     }
                 except (ValueError, IndexError):

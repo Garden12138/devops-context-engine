@@ -194,7 +194,7 @@ GitHub报告改存独立runner.temp目录，仅上传本轮两份摘要并保留
 
 新增3个project核心模块及5个合成测试模块。保留原测试、有效fixtures、Prompt、Schema、harness和稳定候选worktree；本增量不删除业务文件或未知用途资料。旧分支已在历史阶段清理，本次无新增可删分支；PR仍使用的远端fix分支保留。实际Cursor配置、凭证、业务项目和原私有资料未读取/改写。
 
-本机提交前最新完整验收：2026-11-12 10:40:12→10:41:16 UTC，Python3.12.11/macOS arm64；20阶段PASS，**468/468 passed、0failed、0skipped、93.79%**。Ruff、strict mypy58源码、锁一致性/锁定安装、隔离Wheel1.2.0、legacy九工具及project十工具SDK通过。原75%覆盖率硬门槛保持，新增模块计入分母，不能沿用历史97.24%冒充本次覆盖率。提交后干净工作区验收和推送CI将在完成后据实追加；执行Commit/实现摘要以最新JSON为准。
+干净提交完整验收：2026-11-12 10:45:56→10:47:00 UTC，执行HEAD `43633a980a4201e660b7dd241f069046c3084592`、git_dirty=false，Python3.12.11/macOS arm64；20阶段PASS，**468/468 passed、0failed、0skipped、93.79%**。Ruff、strict mypy58源码、锁一致性/锁定安装、隔离Wheel1.2.0、legacy九工具及project十工具SDK通过。原75%覆盖率硬门槛保持，新增模块计入分母，不能沿用历史97.24%冒充本次覆盖率。随后仅补Wheel报告新证据字段的保留白名单，业务源码未变；补完重验和推送CI将在完成后据实追加，执行Commit/实现摘要以最新JSON为准。
 
 部署仍使用uv sync --locked --dev，切换Cursor入口时增加--mode project，并移除旧业务ID/Stack pair/单catalog参数；不要同时启用重复旧入口。可复制命令、完整mcp.json、主动初始化、分页保存和独立日志授权见[项目模式指南](guides/PROJECT_WORKFLOW.md)；平台连接/凭证模板见[部署手册](guides/LOCAL_DEPLOYMENT.md)，原十五教程见[用户手册](guides/USER_GUIDE.md)，[版本增量](UPGRADE_FROM_BASELINE.md)和[安全边界](SECURITY.md)已同步。
 

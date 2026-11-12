@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "status": "PASS",
-  "started_at": "2026-11-12T10:40:12.176528+00:00",
-  "finished_at": "2026-11-12T10:41:16.311790+00:00",
-  "git_commit": "3be46518b673a20b5e981bd5518ae582528b9dac",
-  "git_dirty": true,
-  "implementation_sha256": "13e74037b314919a0262bba5093bcca07124b4c267f4bc98d781d98eb4cbb762",
+  "started_at": "2026-11-12T10:45:56.234684+00:00",
+  "finished_at": "2026-11-12T10:47:00.656229+00:00",
+  "git_commit": "43633a980a4201e660b7dd241f069046c3084592",
+  "git_dirty": false,
+  "implementation_sha256": "b718d75306d117c372222c2d092bbe00c50a336313b83df5529bd562bdf7968b",
   "python": "3.12.11",
   "platform": "macOS-26.5.1-arm64-arm-64bit",
   "dependencies": {
@@ -90,14 +90,14 @@
       "command": "uv lock --check --offline",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.012
+      "duration_seconds": 0.013
     },
     {
       "name": "locked_dependency_install",
       "command": "uv sync --locked --offline --dev",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.012
+      "duration_seconds": 0.013
     },
     {
       "name": "ruff",
@@ -111,35 +111,35 @@
       "command": "/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m mypy --strict src/dce",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 4.105
+      "duration_seconds": 4.212
     },
     {
       "name": "pytest",
-      "command": "/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m pytest -q --tb=short -p pytest_cov.plugin -o cache_dir=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/pytest-cache --basetemp=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/pytest-tmp --cov=src/dce --cov-report=term --cov-report=json:/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/coverage.json --junitxml=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/pytest.xml",
+      "command": "/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 -m pytest -q --tb=short -p pytest_cov.plugin -o cache_dir=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/pytest-cache --basetemp=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/pytest-tmp --cov=src/dce --cov-report=term --cov-report=json:/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/coverage.json --junitxml=/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/pytest.xml",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 47.013
+      "duration_seconds": 47.083
     },
     {
       "name": "synthetic_cli_init",
-      "command": "/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/dce --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/synthetic-catalog.sqlite3 init --fixture /Users/cengjiada/Documents/github/devops-context-engine/fixtures/synthetic-discovery.json --no-ai",
+      "command": "/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/dce --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/synthetic-catalog.sqlite3 init --fixture /Users/cengjiada/Documents/github/devops-context-engine/fixtures/synthetic-discovery.json --no-ai",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.486
+      "duration_seconds": 0.5
     },
     {
       "name": "catalog_stdio_checker",
-      "command": "/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 scripts/check_mcp_stdio.py --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/synthetic-catalog.sqlite3",
+      "command": "/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 scripts/check_mcp_stdio.py --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/synthetic-catalog.sqlite3",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.943
+      "duration_seconds": 0.981
     },
     {
       "name": "index_safety",
       "command": "/Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 scripts/check_public_data.py",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 1.496
+      "duration_seconds": 1.48
     },
     {
       "name": "working_tree_safety",
@@ -153,14 +153,14 @@
       "command": "git diff --check",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.013
+      "duration_seconds": 0.008
     },
     {
       "name": "wheel_build",
-      "command": "uv build --wheel --offline --out-dir /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/dist",
+      "command": "uv build --wheel --offline --out-dir /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/dist",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.231,
+      "duration_seconds": 0.227,
       "artifact": {
         "filename": "devops_context_engine-1.2.0-py3-none-any.whl",
         "sha256": "d1429f13049bf7b861f3b4bd010b44b0982b34151311f1a306eee41272d8f3fe",
@@ -169,55 +169,55 @@
     },
     {
       "name": "isolated_venv",
-      "command": "uv venv --offline --python /Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/installed",
+      "command": "uv venv --offline --python /Users/cengjiada/Documents/github/devops-context-engine/.venv/bin/python3 /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/installed",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.012
+      "duration_seconds": 0.011
     },
     {
       "name": "locked_runtime_export",
-      "command": "uv export --frozen --offline --no-dev --no-emit-project --format requirements-txt --output-file /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/runtime-requirements.txt",
+      "command": "uv export --frozen --offline --no-dev --no-emit-project --format requirements-txt --output-file /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/runtime-requirements.txt",
       "status": "PASS",
       "exit_code": 0,
       "duration_seconds": 0.013
     },
     {
       "name": "isolated_locked_dependencies",
-      "command": "uv sync --locked --offline --no-dev --no-install-project --python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/installed/bin/python",
+      "command": "uv sync --locked --offline --no-dev --no-install-project --python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/installed/bin/python",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.084,
+      "duration_seconds": 0.083,
       "environment_overrides": {
-        "UV_PROJECT_ENVIRONMENT": "/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/installed"
+        "UV_PROJECT_ENVIRONMENT": "/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/installed"
       }
     },
     {
       "name": "isolated_wheel_install",
-      "command": "uv pip install --offline --python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/installed/bin/python --no-deps /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/dist/devops_context_engine-1.2.0-py3-none-any.whl",
+      "command": "uv pip install --offline --python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/installed/bin/python --no-deps /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/dist/devops_context_engine-1.2.0-py3-none-any.whl",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.047
+      "duration_seconds": 0.048
     },
     {
       "name": "installed_cli_help",
-      "command": "/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/installed/bin/dce --help",
+      "command": "/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/installed/bin/dce --help",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 5.149
+      "duration_seconds": 5.199
     },
     {
       "name": "installed_cli_doctor",
-      "command": "/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/installed/bin/dce --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/doctor.sqlite3 doctor --mock",
+      "command": "/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/installed/bin/dce --catalog /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/doctor.sqlite3 doctor --mock",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 0.865
+      "duration_seconds": 0.875
     },
     {
       "name": "installed_wheel_mcp",
-      "command": "/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/installed/bin/python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-8d8y8xni/wheel_smoke.py",
+      "command": "/var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/installed/bin/python /var/folders/tc/48w0b8390_q9xhrvc2v_mv580000gn/T/dce-acceptance-dpxxjcf5/wheel_smoke.py",
       "status": "PASS",
       "exit_code": 0,
-      "duration_seconds": 3.287,
+      "duration_seconds": 3.322,
       "evidence": {
         "version": "1.2.0",
         "tools": 9,

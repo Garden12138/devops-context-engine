@@ -1,6 +1,6 @@
 # macOS 本地部署与 Cursor 接入
 
-适用交付：本地 `feature/upgrade-chatgpt`，包版本 **1.2.0**。DCE 运行方式是 Python CLI 和 Cursor 启动的 STDIO 子进程，无需 Docker、开放端口或后台 Web 服务。真实公司连接由用户本地配置；本轮验收完全离线。
+适用交付：本地 `feature/upgrade-chatgpt`，包版本 **1.2.0**。DCE 运行方式是 Python CLI 和 Cursor 启动的 STDIO 子进程，无需Docker、开放公网端口或常驻Web服务；审批回退时临时监听127.0.0.1随机端口。真实公司连接由用户本地配置；本轮验收完全离线。
 
 ## 1.2 项目模式入口
 
