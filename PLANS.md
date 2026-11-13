@@ -1,3 +1,13 @@
+# 2026-11-13 Host Roots 兼容与控制响应修复（当前）
+
+用户现场project_context在绑定前返回通用INVALID_PAYLOAD；未取得真实Host Roots响应，不把具体故障类型写成已确认。先扩展PROJECT_MODE_CONTRACT，再新增8个行为负例，旧实现均FAIL；实现后局部39项及完整20阶段PASS，483 passed、0failed/skip、覆盖率94.04%。源包仍1.2.0，strict mypy58文件和Ruff通过，原覆盖率硬门槛不变。
+
+Roots首次超时/SDK校验失败/不支持时，以固定warning进入显式路径+真实人工确认，既有策略不跳过确认；已按有效Roots绑定后失败仍拒绝。无关删除Root不阻断选定有效路径；缺失路径NOT_FOUND。stderr只记录阶段/异常类型/固定原因码/request_id。会话固定手动工作区，重启重新协商。
+
+真实STDIO回归发现通用URL脱敏破坏本机审批链接，进一步验证canonical文档remote_url也影响Schema/hash往返；只保留本进程有效链接及严格校验、无已知凭证的项目文档，普通平台脱敏保持。新增已知凭证/转义/审批前拒绝、外部URL仍脱敏和已有策略仍须确认的回归。首次STDIO用例默认沙箱禁止loopback绑定，授权合成loopback后真实暴露链接问题，修复后通过；失败均据实保留。
+
+未读取用户业务project.yaml、凭证或公司接口，未改Cursor配置/真实私有授权。准备本地提交后干净工作区复验，报告归档与同名feature推送按既有授权执行；真实Cursor业务初始化仍需重启DCE后现场确认。以下为历史记录。
+
 # 2026-11-12 Project mode 1.2 实施（当前）
 
 按用户已确认的重新设计实现：用户在当前工作区对话明确初始化才发现，连接/新聊天/Bug查询不能触发；全程Host对话确认，原生表单优先、本机页面兜底；平台权限与持久项目范围相交。新增--mode project，无业务ID/固定workspace启动参数；原legacy九工具保持。

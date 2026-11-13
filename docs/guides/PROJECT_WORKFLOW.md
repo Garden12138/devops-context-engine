@@ -33,9 +33,13 @@ STDIO会等待协议输入，Ctrl-C停止。实际使用时由Cursor启动自己
 }
 ```
 
-项目私有状态默认保存在 `~/.local/state/dce/<工作区路径摘要>/`，可用 `--state-dir` 指定独立目录。目录0700，授权文件0600。凭证仍只在显式本机文件/进程中，Token Manager不持久化Token。DCE不自动修改既有Cursor配置、项目文件或旧缓存。
+项目私有状态默认保存在 `~/.local/state/dce/<工作区路径摘要>/`，可用 `--state-dir` 指定独立目录。目录0700，授权文件0600。目录存在不等于已激活，以complete及project_context状态为准。凭证仍只在显式本机文件/进程中，Token Manager不持久化Token。DCE不自动修改既有Cursor配置、项目文件或旧缓存。
 
 同一个启动配置可用于不同工作区；每个Host会话分别运行STDIO子进程。优先使用Host的MCP Roots。多个root时Agent请用户选择；没有Roots时Agent传当前工作区绝对路径，首次通过用户确认后才能读取项目上下文。会话中Root改变时拒绝继续查询，需建立新MCP会话，避免串项目。
+
+Host宣告Roots但超时、返回不兼容数据或方法不支持时，首次绑定前会返回HOST_ROOTS_TIMEOUT / HOST_ROOTS_INVALID_RESPONSE / HOST_ROOTS_UNSUPPORTED警告。无参数时返回workspace_selection_required；Agent随后传明确的绝对workspace路径，交给用户通过原生表单/本机页面确认，不能直接读文件或初始化。即使该路径过去获批，本次兼容回退也须确认。手动绑定后本会话固定该工作区，新MCP会话重新协商Roots。已经用有效Roots绑定的会话不会在失败时静默回退；应重试或重建会话。
+
+显式选择有效Root时，无关的已删除Root不会阻断；选定路径不存在会返回NOT_FOUND。仍有问题时按request_id关联stderr中的stage、exception_type和固定错误码；不需要打印完整异常、凭证或业务文件。
 
 ## 用户主动初始化
 
@@ -76,6 +80,8 @@ GitLab路径应由Git Remote解析为namespace/project，平台主机来自既�
 支持MCP原生表单时，直接在Host界面确认。否则返回 `approval_url`，Agent展示链接，用户在本机页面审核；只监听127.0.0.1随机端口。页面显示完整范围和提案，10分钟有效，POST/Origin/CSRF防护，一次性提交。提案变化会使旧确认链接/receipt失效。
 
 填写真实审核人和原因；“确认关系ID”输入框可填写逗号分隔的关系ID，留空时关系保持候选。确认资源查询范围不等于确认所有业务关系。服务日志和部署不在此确认范围内。
+
+MCP只保留本进程签发的有效本机审核链接；普通平台URL仍脱敏。审核文档通过Schema、凭证模式和已知凭证检查后完整返回，合法无凭证仓库URL保持原值，以便保存后的revision/hash一致；不能自行替换文档字段再complete。包含已配置凭证的项目文档会先拒绝。
 
 Browser fallback不会阻塞一次MCP调用10分钟：工具返回awaiting_user_confirmation和URL；用户确认后，Agent以完全相同参数再次调用。不能用工具参数confirmed=true代替用户确认。若原生表单无法容纳完整提案，也使用本机页面，不截断后偷偷批准隐藏范围。
 

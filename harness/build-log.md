@@ -480,3 +480,10 @@ CI缓存修复已真实托管复核：8a6249047c0d292fc425e322adbe086b834a627c�
 最终19b7a7e干净工作区10:48:30→10:49:34 UTC：20阶段PASS，468/468、0failed/skip、93.79%；Wheel1.2.0隔离证据保留legacy9/project10、无初始化启动，源码摘要fe81c5848c22335d6b172cde78f3dc55c1b17c7342fa4c0c1f2da4bf2b4f5b0e。正常推送3be4651..19b7a7e至origin/feature/upgrade-chatgpt成功。随后仅定点清除18个无Git跟踪缓存路径65文件（有symlink/异常文件则拒绝），清理报告逐项记录；真实用户凭证/项目/配置未触及。GitHub CI43203834300已启动，待实际结论。
 
 GitHub CI43203834300实际success，offline job 1m57s，锁定安装/完整runner/报告上传及清理步骤全成功；gh run watch --exit-status退出0。没有下载并复读Linux报告，不把本机468/93.79数字冒充Linux artifact。最终仅归档报告/当前计划/清理记录，核对实现摘要不变后正常推送同一feature；真实Cursor/公司平台/Token过期恢复仍not_verified。
+
+
+2026-11-13 Host Roots修复：用户反馈project_context两种参数均在绑定前返回通用INVALID_PAYLOAD。只审阅代码/合成数据，不读取业务项目/凭证，不调公司平台。先写失败与授权契约，再补8个行为回归，旧代码8FAIL；修复Roots首次不可用时的人工绑定、已绑定失败不降级、旧策略不能免确认及stale Root解析。错误日志只含固定阶段/异常类型/原因码/request_id，不打印原异常。
+
+真实STDIO malformed roots/list回复回归最初因沙箱loopback绑定失败；授权仅合成本机服务后，发现approval_url被通用脱敏为[URL]。随后补canonical remote_url完整保存/complete，以及已知凭证（含转义/换行）、审批前拒绝、外部URL不放行等回归。修复仅在项目控制响应保留已校验文档和当前Broker有效本机链接，未修改普通平台/日志脱敏器。
+
+局部39PASS，Ruff/strict mypy58源码PASS。首轮完整执行03:53:02→03:54:07 UTC，20阶段PASS，483/483、0failed/skip、94.04%，dirty=true的实现摘要f970cdcfb4a731d7f59c5acb3ef972ca2e6e00e0524c865efcfcb619e007e8d6；报告位于本轮新临时目录。没有把旧468项结果冒充本轮，也未降低75%门槛。准备提交后干净复验与归档；真实Cursor Roots原始故障类型仍待现场复测，完整生产初始化不标记通过。

@@ -556,3 +556,215 @@ def test_recursive_proposal_fails_before_any_platform_access(project_env):
     )
     assert response.isError and response.structuredContent["data"] is None
     assert not requests and runtime.discovery is None
+
+
+def broken_roots_session(app, monkeypatch, failure):
+    from types import SimpleNamespace
+
+    session = SimpleNamespace(
+        check_client_capability=lambda capability: capability.roots is not None,
+        list_roots=AsyncMock(side_effect=failure),
+        client_params=SimpleNamespace(capabilities=SimpleNamespace(elicitation=None)),
+    )
+    if "project_environment" in app.__dict__:
+        monkeypatch.delattr(app, "project_environment")
+    monkeypatch.setattr(
+        type(app.server), "request_context", property(lambda _: SimpleNamespace(session=session))
+    )
+    return session
+
+
+@pytest.mark.parametrize("kind", ["timeout", "invalid_response", "unsupported"])
+def test_broken_roots_requires_manual_consent_before_reading_files(project_env, monkeypatch, kind):
+    from mcp import types
+    from mcp.shared.exceptions import McpError
+    from pydantic import ValidationError
+
+    app, runtime, workspace, _, _, requests = project_env
+    try:
+        types.ListRootsResult.model_validate({"roots": [{"uri": "not-a-file-uri"}]})
+    except ValidationError as invalid:
+        failure = invalid
+    if kind == "timeout":
+        failure = TimeoutError("synthetic-secret")
+    elif kind == "unsupported":
+        failure = McpError(types.ErrorData(code=-32601, message="synthetic-secret"))
+    session = broken_roots_session(app, monkeypatch, failure)
+    approved = {"actor": "synthetic-reviewer", "reason": "explicit bind", "relationships": ""}
+    decision = AsyncMock(return_value=None)
+    monkeypatch.setattr(runtime.broker, "request", decision)
+    monkeypatch.setattr(
+        runtime.broker,
+        "waiting",
+        lambda _: {"state": "awaiting_user_confirmation", "approval_url": "http://127.0.0.1/"},
+    )
+    # A file exists, but no code may read it before explicit workspace consent.
+    (workspace / ".dce").mkdir()
+    project_file = workspace / ".dce/project.yaml"
+    project_file.write_text("synthetic private document, intentionally invalid")
+
+    async def check():
+        first = await app.call_tool("project_context", {})
+        assert not first.isError, first.structuredContent
+        assert first.structuredContent["data"]["state"] == "workspace_selection_required"
+        assert first.structuredContent["warnings"]
+        second = await call(app, "project_context", workspace=str(workspace))
+        assert second["state"] == "awaiting_user_confirmation"
+        assert runtime.workspace is None and runtime.discovery is None
+        project_file.unlink()
+        decision.return_value = approved
+        third = await call(app, "project_context", workspace=str(workspace))
+        assert third["state"] == "uninitialized"
+        assert session.list_roots.await_count == 1
+        assert not requests and runtime.discovery is None
+
+    asyncio.run(check())
+
+
+def test_unselected_deleted_root_does_not_block_explicit_valid_workspace(project_env):
+    app, runtime, workspace, _, _, requests = project_env
+    app.project_environment = AsyncMock(return_value=([workspace / "deleted", workspace], approve))
+    result = asyncio.run(call(app, "project_context", workspace=str(workspace)))
+    assert result["state"] == "uninitialized" and runtime.workspace == workspace
+    assert not requests
+
+
+@pytest.mark.parametrize("explicit", [False, True])
+def test_selected_missing_workspace_has_specific_safe_error(project_env, explicit):
+    app, runtime, workspace, _, _, requests = project_env
+    missing = workspace / "missing-private-path"
+    app.project_environment = AsyncMock(return_value=([missing], approve))
+    args = {"workspace": str(missing)} if explicit else {}
+    response = asyncio.run(app.call_tool("project_context", args))
+    assert response.isError and response.structuredContent["error"]["code"] == "NOT_FOUND"
+    assert str(missing) not in response.structuredContent["error"]["message"]
+    assert runtime.workspace is None and not requests
+
+
+def test_roots_failure_after_host_binding_cannot_downgrade_authorization(project_env, monkeypatch):
+    from mcp import types
+
+    app, runtime, workspace, _, _, requests = project_env
+    session = broken_roots_session(app, monkeypatch, None)
+    session.list_roots.return_value = types.ListRootsResult(
+        roots=[types.Root(uri=workspace.as_uri())]
+    )
+
+    async def check():
+        assert (await call(app, "project_context"))["state"] == "uninitialized"
+        session.list_roots.side_effect = TimeoutError("synthetic-secret")
+        failed = await app.call_tool("project_context", {"workspace": str(workspace)})
+        assert failed.isError
+        assert failed.structuredContent["error"]["code"] == "NETWORK_UNAVAILABLE"
+        assert failed.structuredContent["error"]["retryable"] is True
+        assert runtime.workspace == workspace and not runtime.broker.pending and not requests
+
+    asyncio.run(check())
+
+
+def test_host_roots_denial_is_specific_and_diagnostics_do_not_log_private_data(
+    project_env, monkeypatch, caplog
+):
+    from mcp import types
+    from mcp.shared.exceptions import McpError
+
+    app = project_env[0]
+    secret = "synthetic-private-exception-body"
+    broken_roots_session(app, monkeypatch, McpError(types.ErrorData(code=-32001, message=secret)))
+    response = asyncio.run(app.call_tool("project_context", {}))
+    assert response.isError
+    assert response.structuredContent["error"]["code"] == "API_INCOMPATIBLE"
+    assert "stage=host_roots" in caplog.text
+    assert secret not in caplog.text and secret not in str(response.structuredContent)
+
+
+def test_reviewed_project_remote_survives_mcp_roundtrip_and_activation(project_env):
+    app, runtime, _, document, _, _ = project_env
+    remote = "https://gitlab.example.invalid/demo/api.git"
+    document["workspace"]["roots"][0]["remote_url"] = remote
+
+    async def check():
+        reviewed = await initialize(project_env)
+        assert reviewed["document"]["workspace"]["roots"][0]["remote_url"] == remote
+        context = await call(app, "project_context")
+        assert context["state"] == "ready"
+        assert context["document"]["workspace"]["roots"][0]["remote_url"] == remote
+        assert runtime.receipt is None
+
+    asyncio.run(check())
+
+
+@pytest.mark.parametrize("secret", ["synthetic-token", 'synthetic-"quoted\\value\n'])
+def test_project_control_document_cannot_return_known_credentials(project_env, secret):
+    from pydantic import SecretStr
+
+    app, runtime, workspace, document, _, _ = project_env
+    app.services.settings.gitlab.token = SecretStr(secret)
+    document["workspace"]["name"] = secret
+    (workspace / ".dce").mkdir()
+    (workspace / ".dce/project.yaml").write_text(yaml.safe_dump(document))
+    response = asyncio.run(app.call_tool("project_context", {}))
+    assert response.isError and response.structuredContent["data"] is None
+    assert secret not in str(response.structuredContent)
+    assert runtime.discovery is None
+
+
+def test_project_review_rejects_known_credentials_before_user_prompt(project_env, monkeypatch):
+    app, runtime, _, document, seeds, _ = project_env
+
+    async def check():
+        await call(app, "project_initialize", operation="begin", seeds=seeds)
+        prompt = AsyncMock(
+            side_effect=AssertionError("Must not present a credential-bearing review")
+        )
+        monkeypatch.setattr(runtime.broker, "request", prompt)
+        document["workspace"]["name"] = "synthetic-token"
+        response = await app.call_tool(
+            "project_initialize", {"operation": "review", "proposal": document}
+        )
+        assert response.isError and response.structuredContent["data"] is None
+        prompt.assert_not_awaited()
+
+    asyncio.run(check())
+
+
+def test_unavailable_roots_does_not_silently_resume_an_existing_policy(project_env, monkeypatch):
+    app, runtime, workspace, _, _, requests = project_env
+
+    async def check():
+        await initialize(project_env)
+        previous_calls = len(requests)
+        resumed = ProjectRuntime(runtime.state_dir)
+        resumed_app = McpApplication(app.services, live=True, read_only=True, project=resumed)
+        broken_roots_session(resumed_app, monkeypatch, TimeoutError("synthetic-secret"))
+        decision = AsyncMock(return_value=None)
+        monkeypatch.setattr(resumed.broker, "request", decision)
+        monkeypatch.setattr(
+            resumed.broker, "waiting", lambda _: {"state": "awaiting_user_confirmation"}
+        )
+        try:
+            context = await call(resumed_app, "project_context", workspace=str(workspace))
+            assert context["state"] == "awaiting_user_confirmation"
+            assert resumed.workspace is None and resumed.discovery is None
+            decision.assert_awaited_once()
+            assert len(requests) == previous_calls
+        finally:
+            resumed.close()
+
+    asyncio.run(check())
+
+
+def test_non_broker_control_url_remains_redacted(project_env, monkeypatch):
+    app, runtime, *_ = project_env
+    monkeypatch.setattr(
+        runtime,
+        "context",
+        lambda *args: {
+            "state": "uninitialized",
+            "approval_url": "https://external.example.invalid/?token=synthetic-token",
+        },
+    )
+    response = asyncio.run(app.call_tool("project_context", {}))
+    assert not response.isError
+    assert response.structuredContent["data"]["approval_url"] == "[URL]"
+    assert "synthetic-token" not in str(response.structuredContent)

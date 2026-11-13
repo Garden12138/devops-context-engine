@@ -16,6 +16,112 @@ from mcp.client.stdio import stdio_client
 from dce.project.context import template
 
 
+def test_invalid_roots_wire_response_requires_workspace_consent(tmp_path):
+    """A real malformed roots/list reply must not become generic INVALID_PAYLOAD."""
+    root = Path.cwd()
+    workspace = tmp_path / "business"
+    (workspace / ".dce").mkdir(parents=True)
+    project_file = workspace / ".dce/project.yaml"
+    project_file.write_text("synthetic private document; no consent to read it yet")
+    original = project_file.read_bytes()
+    config, credentials = tmp_path / "connections.toml", tmp_path / "synthetic.env"
+    config.write_text(
+        '[gitlab]\ninstance_id="synthetic"\nbase_url="https://gitlab.example.invalid"\n'
+    )
+    credentials.write_text("GITLAB_TOKEN=synthetic-not-a-real-token\n")
+    credentials.chmod(0o600)
+
+    async def check():
+        env = {k: v for k, v in os.environ.items() if k in {"PATH", "TMPDIR", "LANG", "SYSTEMROOT"}}
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
+        process = await asyncio.create_subprocess_exec(
+            str(root / ".venv/bin/python"),
+            "-B",
+            str(root / "scripts/serve_dce_local.py"),
+            "--mode",
+            "project",
+            "--live",
+            "--read-only",
+            "--config",
+            str(config),
+            "--credentials-file",
+            str(credentials),
+            "--state-dir",
+            str(tmp_path / "private"),
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            env=env,
+        )
+        roots_requests = 0
+
+        async def send(payload):
+            process.stdin.write((json.dumps({"jsonrpc": "2.0", **payload}) + "\n").encode())
+            await process.stdin.drain()
+
+        async def response(request_id):
+            nonlocal roots_requests
+            while True:
+                line = await asyncio.wait_for(process.stdout.readline(), timeout=8)
+                assert line, "MCP server exited before returning a response"
+                payload = json.loads(line)
+                if payload.get("method") == "roots/list":
+                    roots_requests += 1
+                    await send({"id": payload["id"], "result": {"roots": [{"uri": "invalid"}]}})
+                elif payload.get("id") == request_id:
+                    return payload["result"]
+
+        try:
+            await send(
+                {
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": types.LATEST_PROTOCOL_VERSION,
+                        "capabilities": {"roots": {"listChanged": True}},
+                        "clientInfo": {"name": "synthetic-host", "version": "1"},
+                    },
+                }
+            )
+            assert (await response(1))["serverInfo"]["version"] == "1.2.0"
+            await send({"method": "notifications/initialized"})
+            await send(
+                {
+                    "id": 2,
+                    "method": "tools/call",
+                    "params": {"name": "project_context", "arguments": {}},
+                }
+            )
+            first = await response(2)
+            assert not first["isError"], first
+            assert first["structuredContent"]["data"]["state"] == "workspace_selection_required"
+            assert "HOST_ROOTS_INVALID_RESPONSE" in first["structuredContent"]["warnings"]
+            await send(
+                {
+                    "id": 3,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "project_context",
+                        "arguments": {"workspace": str(workspace)},
+                    },
+                }
+            )
+            second = await response(3)
+            assert not second["isError"], second
+            assert second["structuredContent"]["data"]["state"] == "awaiting_user_confirmation"
+            assert second["structuredContent"]["data"]["approval_url"].startswith(
+                "http://127.0.0.1:"
+            )
+            assert roots_requests == 1 and project_file.read_bytes() == original
+            assert not list((tmp_path / "private").rglob("authorization.json"))
+        finally:
+            if process.returncode is None:
+                process.terminate()
+            await asyncio.wait_for(process.wait(), timeout=5)
+
+    asyncio.run(check())
+
+
 @pytest.mark.parametrize("launcher", ["cli", "explicit_file"])
 def test_user_only_initialization_complete_resume_and_scoped_queries(tmp_path, launcher):
     requests = []

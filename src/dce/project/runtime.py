@@ -187,6 +187,7 @@ class ProjectRuntime:
         self.log_policy = log_policy
         self.state_dir = state_dir.expanduser().absolute()
         self.workspace: Path | None = None
+        self.bound_with_host_roots = False
         self.store: PolicyStore | None = None
         self.broker = ApprovalBroker()
         self.discovery: ProjectDiscovery | None = None
@@ -200,11 +201,28 @@ class ProjectRuntime:
         self.review_actor: dict[str, str] = {}
 
     async def bind(
-        self, requested: str | None, roots: list[Path] | None, native: NativeApproval | None
+        self,
+        requested: str | None,
+        roots: list[Path] | None,
+        native: NativeApproval | None,
+        *,
+        require_confirmation: bool = False,
     ) -> dict[str, Any] | None:
         if roots is not None:
-            roots = [p.resolve(strict=True) for p in roots]
+            try:
+                # Only the selected workspace must exist; unrelated Host roots can be stale.
+                roots = [p.resolve(strict=False) for p in roots]
+            except (OSError, RuntimeError, ValueError):
+                raise DceError(
+                    ErrorCode.API_INCOMPATIBLE, "Host workspace paths cannot be resolved."
+                ) from None
         if self.workspace is not None:
+            if self.bound_with_host_roots and roots is None:
+                raise DceError(
+                    ErrorCode.API_INCOMPATIBLE,
+                    "Host workspace roots became unavailable; retry or open a new MCP session.",
+                    retryable=True,
+                )
             if (
                 requested is not None
                 and Path(requested).resolve(strict=True) != self.workspace
@@ -228,7 +246,16 @@ class ProjectRuntime:
                 raise DceError(
                     ErrorCode.PERMISSION_DENIED, "Workspace must be an absolute directory."
                 )
-            workspace = path.resolve(strict=True)
+            try:
+                workspace = path.resolve(strict=True)
+            except FileNotFoundError:
+                raise DceError(ErrorCode.NOT_FOUND, "Selected workspace does not exist.") from None
+            except (OSError, RuntimeError, ValueError):
+                raise DceError(
+                    ErrorCode.PERMISSION_DENIED, "Selected workspace cannot be resolved."
+                ) from None
+        if not workspace.exists():
+            raise DceError(ErrorCode.NOT_FOUND, "Selected Host workspace does not exist.")
         if not workspace.is_dir():
             raise DceError(ErrorCode.INVALID_PAYLOAD, "Workspace must be a directory.")
         if roots is not None and workspace not in roots:
@@ -237,7 +264,7 @@ class ProjectRuntime:
         store = PolicyStore(self.state_dir / fingerprint(str(workspace)))
         existing = store.read()
         # Roots-less Hosts can resume an approved path; a new path requires user consent.
-        if roots is None and existing.get("workspace") != str(workspace):
+        if roots is None and (require_confirmation or existing.get("workspace") != str(workspace)):
             key = "bind:" + fingerprint(str(workspace))
             answer = await self.broker.request(
                 key, review_message("绑定工作区", str(workspace), {}), native
@@ -245,6 +272,7 @@ class ProjectRuntime:
             if answer is None:
                 return self.broker.waiting(key)
         self.workspace, self.store = workspace, store
+        self.bound_with_host_roots = roots is not None
         return None
 
     def bindings(self, services: AppServices) -> str:
@@ -277,6 +305,22 @@ class ProjectRuntime:
 
     def active_scope(self, services: AppServices) -> FactScope:
         return scope_from_project(Scope.model_validate(self.policy(services)["scope"]))
+
+    @staticmethod
+    def check_document_secrets(project: ProjectContext, services: AppServices) -> None:
+        secrets_ = services.settings.secrets()
+        pending: list[Any] = [project.model_dump(mode="json", by_alias=True)]
+        while pending:
+            value = pending.pop()
+            if isinstance(value, str) and any(secret and secret in value for secret in secrets_):
+                raise DceError(
+                    ErrorCode.INVALID_PAYLOAD, "Project document contains a configured credential."
+                )
+            if isinstance(value, dict):
+                pending.extend(value)
+                pending.extend(value.values())
+            elif isinstance(value, list):
+                pending.extend(value)
 
     def query_scope(self, services: AppServices, name: str, params: dict[str, Any]) -> FactScope:
         active: FactScope | None = None
@@ -384,6 +428,7 @@ class ProjectRuntime:
         project: ProjectContext | None = None
         if (self.workspace / ".dce/project.yaml").exists():
             project = load_project(self.workspace)
+            self.check_document_secrets(project, services)
         state = (
             policy.get("state", "ready")
             if policy
@@ -508,6 +553,7 @@ class ProjectRuntime:
             if request.proposal is None:
                 raise DceError(ErrorCode.INVALID_PAYLOAD, "Project proposal is required.")
             project = validate_text(json.dumps(request.proposal))
+            self.check_document_secrets(project, services)
             for root in project.workspace.roots:
                 if not (self.workspace / root.path).resolve().is_relative_to(self.workspace):
                     refuse("Project Git root escapes the selected workspace.")
@@ -573,6 +619,7 @@ class ProjectRuntime:
                 self.reviewed = validate_text(
                     json.dumps(project.model_dump(mode="json", by_alias=True))
                 )
+                self.check_document_secrets(self.reviewed, services)
                 self.receipt, self.review_deadline = (
                     secrets.token_urlsafe(32),
                     time.monotonic() + 600,
