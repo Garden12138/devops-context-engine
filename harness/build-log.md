@@ -487,3 +487,6 @@ GitHub CI43203834300实际success，offline job 1m57s，锁定安装/完整runne
 真实STDIO malformed roots/list回复回归最初因沙箱loopback绑定失败；授权仅合成本机服务后，发现approval_url被通用脱敏为[URL]。随后补canonical remote_url完整保存/complete，以及已知凭证（含转义/换行）、审批前拒绝、外部URL不放行等回归。修复仅在项目控制响应保留已校验文档和当前Broker有效本机链接，未修改普通平台/日志脱敏器。
 
 局部39PASS，Ruff/strict mypy58源码PASS。首轮完整执行03:53:02→03:54:07 UTC，20阶段PASS，483/483、0failed/skip、94.04%，dirty=true的实现摘要f970cdcfb4a731d7f59c5acb3ef972ca2e6e00e0524c865efcfcb619e007e8d6；报告位于本轮新临时目录。没有把旧468项结果冒充本轮，也未降低75%门槛。准备提交后干净复验与归档；真实Cursor Roots原始故障类型仍待现场复测，完整生产初始化不标记通过。
+
+
+f1b8e2c提交后干净工作区最终复验：2026-11-13 03:56:03→03:57:04 UTC，20阶段全部PASS，483/483、0failed/skip、94.04%，实现摘要仍f970cdcfb4a731d7f59c5acb3ef972ca2e6e00e0524c865efcfcb619e007e8d6。报告记录dirty=false及实际执行提交；只归档新报告和升级说明，不再改源码。准备正常快进推送同名feature并核对托管CI，不修改main/Tag/PR。用户还需在Cursor重启DCE后现场重试，未声称真实业务项目已初始化完成。

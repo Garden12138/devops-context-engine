@@ -2,9 +2,9 @@
 
 最终结论：**READY_WITH_LIMITATIONS**。
 
-当前已实现 **1.2.0 project模式**：启动无业务ID，用户主动初始化，原生/本机页面审核，工作区独立授权与跨会话恢复。核心实现 `d30ac9e`，最终被测实现 `19b7a7e`；本机最新468项通过、93.79%，提交后重验及托管CI记录见第11节。原legacy九工具继续兼容，project模式十工具。
+当前已实现 **1.2.0 project模式**：启动无业务ID，用户主动初始化，原生/本机页面审核，工作区独立授权与跨会话恢复。核心实现 `d30ac9e`，最新修复被测提交 `f1b8e2c`；本机最新483项通过、94.04%，本次Roots兼容与控制响应修复见第12节。原legacy九工具继续兼容，project模式十工具。
 
-第1–8节为原1.1.1整顿记录，第9–10节为后续授权推送及CI修复的历史记录；其中数量/版本均按当时时点理解，当前以第11节和最新验收JSON为准。当前开发统一在 `feature/upgrade-chatgpt`。本轮没有访问真实公司服务，Cursor桌面交互、真实Token过期恢复和新环境平台权限仍未验证。
+第1–8节为原1.1.1整顿记录，第9–10节为后续授权推送及CI修复的历史记录；其中数量/版本均按当时时点理解，第11节记录1.2初始实现，当前以第12节和最新验收JSON为准。当前开发统一在 `feature/upgrade-chatgpt`。本轮没有访问真实公司服务，Cursor桌面交互、真实Token过期恢复和新环境平台权限仍未验证。
 
 ## 1. 完成情况与提交
 
@@ -203,3 +203,23 @@ GitHub报告改存独立runner.temp目录，仅上传本轮两份摘要并保留
 部署仍使用uv sync --locked --dev，切换Cursor入口时增加--mode project，并移除旧业务ID/Stack pair/单catalog参数；不要同时启用重复旧入口。可复制命令、完整mcp.json、主动初始化、分页保存和独立日志授权见[项目模式指南](guides/PROJECT_WORKFLOW.md)；平台连接/凭证模板见[部署手册](guides/LOCAL_DEPLOYMENT.md)，原十五教程见[用户手册](guides/USER_GUIDE.md)，[版本增量](UPGRADE_FROM_BASELINE.md)和[安全边界](SECURITY.md)已同步。
 
 未验证项目：真实Cursor桌面Roots/表单/浏览器交互及图片进入模型；真实公司接口兼容和权限；真实ZenTao Token过期恢复；真实人工关系推理质量；其他Python/OS完整矩阵。SDK+合成HTTP测试不能替代这些现场项目。后续由用户手动重载新配置，在业务工作区明确说“初始化当前项目”，核对范围后再试一个授权项目内Bug；本次未替用户初始化任何真实项目。
+
+
+## 12. 2026-11-13：Host Roots兼容与审核响应修复
+
+当前结论仍为**READY_WITH_LIMITATIONS**。现场反馈仅能确认project_context在绑定前返回通用INVALID_PAYLOAD；没有捕获真实Roots原始响应，不把超时或格式不兼容中的某一个当成已确认根因。修复提交f1b8e2ced5cb104c5dc133174bb8e0f8ffd27a5b，11文件、+504/-11行，父基线为cea8175；不改main、稳定候选或Tag。
+
+| 问题 | 本次行为与证据 |
+|---|---|
+| 首次Roots超时/SDK校验失败/方法不支持 | 固定warning；无路径返回选择状态，指定路径后必须由真实用户确认，已有策略也不能跳过 |
+| 已按有效Roots绑定后失败 | 当前请求拒绝，不静默转为手动授权；会话不切换工作区 |
+| Root列表含无关已删除路径 | 显式有效路径仍能绑定；选定路径不存在明确NOT_FOUND |
+| 审批链接被URL脱敏 | 只保留当前Broker签发的有效本机URL，真实STDIO验证能返回完整链接 |
+| canonical文档remote_url被改写 | 严格校验和凭证检查后完整返回；合成文档保存、receipt/hash、complete均通过 |
+| 原异常缺少定位信息 | stderr固定stage/exception_type/原因码/request_id，不输出异常正文或业务数据 |
+
+先扩展契约，再新增8个行为用例验证旧实现8FAIL；修复及进一步安全回归后，局部39PASS。最终完整验收执行时间03:56:03.047078→03:57:04.251276 UTC，Python3.12.11/macOS arm64，执行HEAD f1b8e2c、dirty=false。**20阶段全部PASS，483/483 passed、0failed、0skipped、覆盖率94.04%**。Ruff、strict mypy58源码、隔离Wheel和两模式SDK检查均通过；原75%门槛不变。
+
+实现SHA256为f970cdcfb4a731d7f59c5acb3ef972ca2e6e00e0524c865efcfcb619e007e8d6；后续仅报告/文档归档，不冒充执行时HEAD。原始本轮报告由新临时产物生成，最终归档见最新Markdown/JSON；托管运行可查看[同名分支工作流](https://github.com/Garden12138/devops-context-engine/actions?query=branch%3Afeature%2Fupgrade-chatgpt)。
+
+未读取或改写真实业务project.yaml、凭证、私有授权或Cursor配置，未访问公司接口。没有擅自替用户确认；真实Cursor Roots原始故障类型和业务初始化完成情况仍待现场复测。用户应在Cursor MCP设置重启DCE以加载新实现，再指定当前工作区调用project_context；如返回审核链接，由用户确认后原参数重试，得到状态再继续begin/review/保存/complete。目录创建或Schema有效都不替代激活状态。
