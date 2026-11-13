@@ -1,5 +1,7 @@
 # DevOps Context Engine（DCE）
 
+> **2026-11-13：正在重写为 DCE 2.0「缺陷闭环」**（分支 `feature/v2-bugfix-loop`）。设计与实施计划见 [docs/v2/README.md](docs/v2/README.md)。以下为 1.2 的旧说明，M0 时会被替换。
+
 DCE 把 ZenTao 缺陷、GitLab 代码/CI 和 Portainer/Swarm 部署事实连接到 Cursor 等 Agent，减少每次排查时重复查平台、猜项目关系的工作。当前本地体验版：**1.2.0**；后续开发分支：`feature/upgrade-chatgpt`。
 
 DCE 提供安全只读能力，Host Agent 使用当前业务源码和自己的模型提出关系，经用户审核后维护 `.dce/project.yaml`。关系可跨仓库、模块、镜像和服务；来源实例和各平台 ID 分开，不因同名或同数字自动确认。未知关系保持 proposed/unresolved，环境和部署版本要有证据。

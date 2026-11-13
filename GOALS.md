@@ -1,55 +1,11 @@
-# 当前目标：DCE 1.2 用户主动初始化的项目模式
+# 当前目标：DCE 2.0「缺陷闭环」
 
-启动只配连接/凭证，用户在工作区对话明确说初始化才开始有界发现；审核后由Host保存关系、DCE激活工作区隔离授权。后续对话只提供Bug ID，按Project/Product归属核验并复用GitLab/Portainer映射。新会话只恢复，不自动初始化/刷新。legacy保留；不写外部平台，不自动部署。
+让 Cursor / Codex 中的 Agent 稳定跑完：
 
-实施依据：docs/PROJECT_MODE_CONTRACT.md、docs/guides/PROJECT_WORKFLOW.md；实际新验收见docs/acceptance/AUTOMATED_ACCEPTANCE.md。以下旧目标按原时间保留。
+禅道缺陷 → 修复 → 自审 →（用户确认）合并到测试分支 → GitLab CI 编译构建 → Portainer 拉镜像更新并核对 digest → 浏览器测试 → 写修复记录 → 禅道标记已解决。
 
-# 当前交付：本地产品化体验版
+用户只在两个确认点介入：修复方案（缺陷不清楚或改动大时）、合并前。切换账号、SQL、Nacos 等仍由用户执行。只覆盖测试环境。
 
-2026-11-11：将既有DCE 1.1.1整理为可安装、运行、离线验收、Cursor接入与继续开发的本地产品。统一开发分支feature/upgrade-chatgpt；main与所有现有Tag保持，独立干净候选保留。本轮不发布、不访问真实公司平台。
+完成标准：在真实业务工作区，用一个真实缺陷完整跑通，GitLab、Portainer、禅道三处零手工操作（见 `docs/v2/06-验收标准.md` 的 R5）。
 
-完成依据：docs/UPGRADE_EXECUTION_REPORT.md、docs/acceptance/AUTOMATED_ACCEPTANCE.md、docs/guides/LOCAL_DEPLOYMENT.md、docs/guides/USER_GUIDE.md。以下旧目标与旧结果保留原时间语义；本轮结果只看新报告。真实Token过期恢复、当前Cursor桌面交互与新环境平台权限仍需单列not_verified。
-
-# 当前目标 — Agent-led Project Initialization
-
-本轮以 docs/refactor/agent-led-initialization/dce-agent-led-refactor/CHANGE_PROPOSAL.md 与 specs/01–07 为准。
-
-1. DCE 是模型无关只读能力层，提供三平台连接、范围查询、分页、错误、脱敏、预算与证据/原生图片内容。
-2. Host 在指定业务工作区读取本地上下文，推理多对多候选、解释冲突、取得用户审核并维护 .dce/project.yaml；DCE 不直接写业务仓库。
-3. confirmed 需证据和真实人工审批，环境归属不凭名称；刷新保留审批/备注/拒绝，新关系 proposed，证据变化 stale/conflicted。
-4. 全局 Catalog 先备份再降级为资源缓存/历史；保留旧消费者，不自动把旧 confirmed 导入项目。
-5. 离线单元/契约/E2E、安全、隔离与多对多检查通过；至少一个真实 Host 完成 connect/list/三次真实只读调用和当前项目初始化对话，并确认一条关系或明确 unresolved。
-6. 未验证的版本接口、图片到模型与外部事实保留 not_verified，不能以历史证据/合成数据替代。
-
-当前离线 208 tests passed、总体覆盖率 97.93%，ruff/strict mypy 通过。三平台真实读取、旧库副本迁移、Cursor 九工具/实际调用/初始化与修复后 JSON 文本和原生图片到模型均有证据。用户已批准完整项目文件保存并要求不提交；Host 创建文件后校验/复读通过，22 proposed/1 unresolved/0 confirmed，审批字段为空，Git HEAD/index 未变，文件未跟踪。本轮不 git add/commit/push。核心初始化链路通过；完整模块树仍 403，旧独立 GitLab 样本范围未明确授权，严格全样本验收仍未完成。详见 harness/agent-led-acceptance.md。
-
-## 2026-11-05 增量目标 A–D
-
-已按本轮范围补齐 Job/单服务事实和 Schema v2，九工具保持兼容；226 tests passed/97.63%，当前 Project/Stack 的真实 stdio SDK 验收通过。业务 project.yaml 只读，原 24 proposed/3 unresolved/1 confirmed 与全部审批/证据/备注保持；v2 只在私有目录生成候选，未自动写入。当前回合不暂存/提交/推送；新增 Cursor operation 的实际会话调用未观察，需重载连接后使用，不冒充 Host 证据。见 harness/incremental-v1-acceptance.md。
-
-## 旧 V1 目标（历史兼容依据）
-
-
-## 核心成果
-
-1. 三平台可配置且可测试的 **只读** Adapter：ZenTao v1，GitLab REST v4，Portainer Stack + Docker Swarm API Proxy。
-2. `dce init` 自动发现目标范围，能恢复、分页、缓存与增量更新；支持离线 fixtures 和本地模拟 API。
-3. 针对 GitLab 单仓库多模块、多镜像、多服务、多环境建立关系，显式区分业务功能模块 / 代码 Module / Swarm Service。
-4. 只在有证据时确认技术关系；对语义关联生成 AI 候选、证据与不确定性，由人工审核，结果持久化且可撤销。
-5. `dce bug context <id>` 返回轻量统一摘要、附件的本地安全路径/受控引用、候选仓库与模块、映射状态和证据；MCP 复用核心逻辑。
-6. 离线端到端测试通过，真实内网只读 smoke 检查有清晰步骤、最小权限和不泄密机制。
-
-## 本版不做
-
-- 不自动修复代码、不触发 Pipeline、不推送/合并 MR、不更新禅道状态、不执行 Portainer redeploy。
-- 不替代 GitLab CI/CD、Portainer、禅道或 Coding Agent。
-- 不假设所有模块皆可直接部署，不以名字自动决定生产/测试环境，不按 `latest` 判断镜像版本。
-- 不做 Web 管理大平台、微服务集群、Neo4j、实时全量代码向量化或无限制爬取仓库。
-
-## 核心完成定义
-
-- 详见 `specs/001-dce-v1/acceptance.md` 的验收矩阵，所有 P0 通过。
-- 无 Token/密码在输出、日志、测试快照、git diff 或公共仓库中泄漏。
-- 80+% 核心代码单元测试覆盖率作为推荐目标，硬门槛：关键安全/状态/关系规则 100% 关键分支有测试；整体覆盖率不得低于 75%。
-- 运行 `pytest`、`ruff check`、`mypy`（或 pyright，定下后保持一致）、CLI smoke、MCP 工具契约测试。
-- 完整执行记录写入 `harness/build-log.md`，包含完成阶段、测试命令、结果、遗留问题；不伪称真实内网测试已经完成。
+设计与计划：`docs/v2/README.md`。1.x 目标（只读上下文引擎、项目模式审批）已废弃，历史见 tag `v1.2.0-final`。
