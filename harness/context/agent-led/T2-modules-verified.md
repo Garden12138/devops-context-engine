@@ -1,0 +1,3 @@
+# T2-modules-verified
+
+Goal 接续第二轮完成实际推进：核对官方 apiv1.php、modulesEntry GET 和 getProductStructure/getDataStructure，新增 Product scope 的 module_tree，完整树搜索后本地分页、字段白名单、节点/深度/2MB 限额；禁止以 Project/Execution ID 替代 Product ID，旧 modules 部分清单兼容。先行测试 2 failed/1 passed 证实缺口；实现后 QueryParams 与 dict 的测试断言类型差异导致 1 failed，修正断言后针对性 69 passed（2.71s），stdio/本机合成 HTTP 1 passed（1.39s）。最终全库 191 passed/0 failed/errors/skipped（15.94s），总体覆盖率 98.18%；ZenTao Adapter 与事实输入契约 100%。ruff/strict mypy/最终 wheel 隔离安装/九工具与迁移检查通过。官方主分支源码不代表当前公司版本；真实平台/图片/Host/指定业务 workspace 仍 not_verified，缺配置与工作区的阻塞重复第 2 个 goal turn，未达 blocked 审计门槛且本轮有实际进展，goal 保持 active。

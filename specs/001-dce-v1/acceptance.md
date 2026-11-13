@@ -39,7 +39,7 @@
 uv sync --dev
 uv run ruff check .
 uv run mypy src
-uv run pytest -q --cov=dce --cov-report=term-missing
+uv run pytest -q --cov=src/dce --cov-report=term-missing
 uv run dce doctor --mock
 uv run dce init --fixture fixtures/synthetic-discovery.json --no-ai
 uv run dce catalog anomalies --format json
@@ -47,6 +47,8 @@ uv run dce bug context DEMO-1001 --fixture fixtures/synthetic-discovery.json --f
 ```
 
 > 若选用与上面不同的锁包/命令，须同步更新 README、tasks、acceptance，并在执行日志记录原因；测试输出必须是真实运行结果。
+
+实现约定：coverage 使用源码路径 `--cov=src/dce`，使 Alembic 动态加载的迁移脚本也计入覆盖率。
 
 ## 完成定义
 

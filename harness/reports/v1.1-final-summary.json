@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-09",
+  "dce_version": "1.1.1",
+  "portainer_contract_revision": "2.2",
+  "mcp_tools": 9,
+  "gates": {
+    "agent_led_v1": "PASS_limited_project",
+    "cursor_host_gate_a": "PASS",
+    "service_logs_gate_b": "PASS",
+    "temporary_log_authorization": "REVOKED"
+  },
+  "live_logs": {
+    "scope": "one explicitly authorized test service",
+    "actual_get_dispatches": 1,
+    "remaining_uses": 0,
+    "returned_redacted_events": 6,
+    "in_window_lines": 20,
+    "truncated": true,
+    "truncation_reasons": ["OUTPUT_BYTE_LIMIT", "SERVER_TAIL_LIMIT_POSSIBLE"],
+    "scope_violation_observed": false,
+    "sensitive_disclosure_observed": false,
+    "old_log_process_exited": true,
+    "new_process_has_log_scope_or_policy": false,
+    "limits": {
+      "recent_window_seconds": 300,
+      "max_lines": 20,
+      "max_raw_payload_bytes": 16384,
+      "max_mcp_output_bytes": 8192,
+      "log_http_timeout_seconds": 10,
+      "follow": false,
+      "max_uses": 1
+    },
+    "evidence": "correlated Cursor request/result summary, server fixed audit, persistent quota marker, configuration and process checks",
+    "exact_payload_or_output_byte_counts_recorded": false,
+    "raw_logs_persisted_by_acceptance_audit": false
+  },
+  "tests": {
+    "passed": 426,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 36.08,
+    "coverage_percent": 97.24,
+    "new_temporary_grant_tests": 55,
+    "ruff": "PASS",
+    "strict_mypy": "PASS_55_source_files"
+  },
+  "remaining_not_verified": [
+    "ZenTao automatic recovery after a real token expiry",
+    "other unauthorized services, environments or log drivers",
+    "complete historical retention or untruncated log coverage"
+  ],
+  "security": {
+    "private_configuration_or_policy_in_git": false,
+    "raw_logs_or_business_identity_in_this_summary": false,
+    "business_project_modified": false,
+    "remote_write": false,
+    "repeated_real_log_query_for_finalization": false
+  },
+  "report": "harness/v1.1-final-acceptance.md"
+}

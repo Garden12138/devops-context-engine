@@ -1,3 +1,9 @@
+# 当前 Agent-led 提示词
+
+业务项目初始化与维护入口：prompts/agent-led/initialize.md、refresh.md、review.md、bug-context.md、service-trace.md、pipeline-diagnose.md；完整协议见 docs/AGENT_LED_WORKFLOW.md。DCE 不写业务目录。重构续跑见 prompts/agent-led/resume.md。
+
+## 旧 V1 提示词（历史）
+
 # 提示词索引
 
 - **Codex 长任务**：`prompts/CODEX_LONG_TASK.md`

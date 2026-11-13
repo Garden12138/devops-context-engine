@@ -1,3 +1,4 @@
+# Historical design YAML; current CLI reads TOML. Use connections.example.toml.
 # All IDs and URLs are synthetic. Never paste actual company secrets in repo.
 version: 1
 sources:

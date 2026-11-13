@@ -1,0 +1,52 @@
+{
+  "version": "1.1.0",
+  "portainer_contract_revision": "2.2",
+  "operation": "portainer_query.service_logs",
+  "offline_status": "passed",
+  "tests": {
+    "new_unit_contract_security": 96,
+    "new_stdio_http": 1,
+    "regression_baseline": 226,
+    "total_passed": 323,
+    "coverage_percent": 97.63,
+    "seconds": 27.5
+  },
+  "checks": {
+    "ruff": "passed",
+    "strict_mypy": "passed_52_files",
+    "offline_locked_sync": "passed",
+    "wheel_build_and_isolated_import": "passed",
+    "doctor_mock": "passed",
+    "nine_mcp_tools": "passed"
+  },
+  "live_validation": {
+    "status": "not_verified",
+    "attempted": false,
+    "reason": "No explicit evidence of upstream log-read permission; synthetic validation only."
+  },
+  "security": {
+    "log_grant": "explicit_endpoint_stack_pair",
+    "methods": [
+      "GET"
+    ],
+    "follow": false,
+    "log_retries": 0,
+    "raw_log_persistence": false,
+    "free_text": "omitted",
+    "ai_inference": false,
+    "business_workspace_access": false,
+    "remote_write": false
+  },
+  "limitations": [
+    "no server until or keyword filters",
+    "finite tail may exclude historical window",
+    "retention unknown unless explicitly reported expired",
+    "fixed vocabulary projection omits arbitrary text",
+    "HMAC correlations stable only within process",
+    "metadata uses existing per-request timeout/retries",
+    "transport may prefetch fixed buffers beyond application payload cap"
+  ],
+  "next_action": "Confirm log GET permission, configure authorized log pair, reload Cursor MCP, then run one bounded read-only validation in approved test scope.",
+  "contract": "docs/SCOPED_SERVICE_LOGS.md",
+  "input_schema": "schemas/portainer-query.schema.json"
+}

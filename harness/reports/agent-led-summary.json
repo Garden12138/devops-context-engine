@@ -1,0 +1,384 @@
+{
+  "schema_version": "1.0",
+  "date": "2026-11-04",
+  "resource_summary": {
+    "fact_tools": 3,
+    "legacy_tools_retained": 6,
+    "model_provider_required": false
+  },
+  "relationships": {
+    "authority": "host_workspace_project_yaml",
+    "automatic_confirmed": false,
+    "real_business_workspace": "full_approved_candidate_file_saved_validated_and_reread",
+    "private_draft_statuses": {
+      "proposed": 22,
+      "unresolved": 1,
+      "confirmed": 0
+    },
+    "business_workspace_written": true,
+    "pure_refresh": "passed",
+    "complete_private_draft_lines": 683,
+    "elided_chat_diff_not_used_for_write": true,
+    "file_save_user_approved": true,
+    "relationship_confirmation_user_approved": false,
+    "relationship_human_approval_fields_empty": true,
+    "project_file_git_status": "untracked_not_staged_not_committed"
+  },
+  "evidence": {
+    "pytest": {
+      "passed": 208,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 18.066
+    },
+    "coverage": {
+      "combined_percent": 97.93,
+      "line_percent": 98.45,
+      "branch_percent": 96.31
+    },
+    "ruff": "passed",
+    "strict_mypy": "passed (48 files)",
+    "wheel_build_and_isolated_import_schema_migration": "passed",
+    "stdio_loopback_synthetic_fact_reads_and_image": "passed",
+    "live_doctor": {
+      "exit_code": 2,
+      "platforms": {
+        "zentao": {
+          "code": "AUTH_FAILED",
+          "reason": "configuration_missing",
+          "verification": "not_verified"
+        },
+        "gitlab": {
+          "code": "AUTH_FAILED",
+          "reason": "configuration_missing",
+          "verification": "not_verified"
+        },
+        "portainer": {
+          "code": "AUTH_FAILED",
+          "reason": "configuration_missing",
+          "verification": "not_verified"
+        }
+      },
+      "platform_requests": 0,
+      "historical_only": true
+    },
+    "process_config_presence_checked_without_printing_values": true,
+    "dce_mcp_mounted_in_current_host": false,
+    "zentao_module_tree": {
+      "implementation": "passed_offline",
+      "official_v1_route_verified": true,
+      "live_instance": "PERMISSION_DENIED",
+      "scope": "explicit_product_id",
+      "search_and_local_pagination": true,
+      "no_bug_page_fallback": true,
+      "http_status": 403,
+      "full_tree": "not_verified",
+      "same_token_bug_read_http": 200,
+      "v1_login_http": 201,
+      "safe_error_message": "Access not allowed",
+      "probable_restriction": "tree/browse_method_privilege_or_instance_policy",
+      "inference_from_official_source": true,
+      "current_instance_version": "not_verified",
+      "no_permission_bypass": true
+    },
+    "blocked_audit": {
+      "consecutive_goal_turns": 3,
+      "code_commit": "075212a",
+      "platform_process_configuration_present": false,
+      "dce_tools_mounted_in_current_host": false,
+      "explicit_business_workspace_received": false,
+      "new_platform_requests": 0,
+      "pytest_repeated_this_turn": false,
+      "record": "harness/context/agent-led/blocked-audit.md",
+      "historical_only": true
+    },
+    "resumed_intake": {
+      "business_workspace_received": true,
+      "git_roots": 20,
+      "roots_with_remote": 19,
+      "roots_with_manifests": 18,
+      "roots_with_ci": 17,
+      "roots_with_dockerfile": 17,
+      "local_first_level_module_proposals": 18,
+      "confirmed_relationships": 0,
+      "private_draft_validated": true,
+      "business_workspace_written": true,
+      "credential_source_received": true,
+      "credential_values_exported": false,
+      "zentao_auth": "v1_account_password_login",
+      "user_selected_bug_overrides_proposal_sample": true,
+      "platform_addresses_received": true,
+      "host_selected": "Cursor",
+      "new_platform_requests": "see_real_read_only_sdk",
+      "private_draft_relationships": 23,
+      "private_draft_statuses": {
+        "proposed": 22,
+        "unresolved": 1,
+        "confirmed": 0
+      }
+    },
+    "real_read_only_sdk": {
+      "transport": "stdio",
+      "tools_listed": 9,
+      "successful_tools_call": 27,
+      "failed_tools_call": 1,
+      "successful_by_platform": {
+        "zentao": 4,
+        "gitlab": 4,
+        "portainer": 19
+      },
+      "failed_operation": "module_tree",
+      "failed_code": "PERMISSION_DENIED",
+      "output_schema_validation": "passed",
+      "actual_agent_host_proof": false,
+      "business_writes": 0,
+      "private_logs_requested": false,
+      "raw_compose_or_images_persisted": false
+    },
+    "real_samples": {
+      "selected_bug": {
+        "read": "passed",
+        "project_product_reads": "passed",
+        "module_assigned": false,
+        "attachments": 0,
+        "inline_images": 0,
+        "image_to_model": "not_verified_no_image_sample"
+      },
+      "workspace_gitlab": {
+        "exact_origin_project": "passed",
+        "tree": "passed",
+        "commit": "passed",
+        "ci_file": "passed",
+        "bug_relationship": "unresolved"
+      },
+      "portainer": {
+        "endpoint_swarm_and_scoped_stacks": "passed",
+        "stack_files": "passed",
+        "separate_saved_compose_service_counts": [
+          63,
+          71,
+          78
+        ],
+        "swarm_id_matches": 1,
+        "swarm_id_mismatches": 2,
+        "runtime_namespace": {
+          "source": "observed_service_label",
+          "pages": 8,
+          "unique_service_ids": 78,
+          "complete": true,
+          "health": "unknown",
+          "environment": "unresolved"
+        },
+        "prior_stack_metadata_namespace_query": {
+          "count": 0,
+          "same_source_as_runtime_label": false
+        },
+        "count_equality_establishes_business_relationship": false
+      },
+      "old_independent_gitlab_samples": {
+        "status": "not_verified",
+        "request_executed": false,
+        "reason": "auto_review_rejected_current_scope_not_explicit",
+        "gitlab_compose_revalidated": false
+      }
+    },
+    "cursor_configuration": {
+      "global_dce_updated": true,
+      "private_backup_created": true,
+      "other_servers_preserved": 4,
+      "credentials_embedded": false,
+      "same_launcher_sdk_reads": "passed",
+      "actual_desktop_agent_session": "user_reported_connect_list_three_calls_and_initialization",
+      "cli_authentication": "unauthenticated",
+      "cli_tool_enumeration": "not_found_in_config",
+      "text_compatibility_fix_installed": true,
+      "authorized_image_bug_scope_added": true,
+      "image_output_budget_bytes": 3000000,
+      "actual_model_recheck": "passed_user_reported"
+    },
+    "real_legacy_catalog": {
+      "copied_before_migration": true,
+      "original_preserved": true,
+      "pre_migration_backup_created": true,
+      "role": "resource_cache_and_history",
+      "counts_preserved": {
+        "entities": 191,
+        "edges": 219,
+        "evidence": 219,
+        "snapshots": 11
+      },
+      "original_business_tables_with_counts_preserved": 11,
+      "source_and_copy_quick_check": "ok"
+    },
+    "final_documentation_workflow_validation": {
+      "passed_tests": 2,
+      "seconds": 0.79,
+      "local_link_files_checked": 8,
+      "broken_links": 0,
+      "public_working_tree_files_scanned": 11,
+      "working_tree_private_path_address_scan": "passed",
+      "saved_business_file_json_schema": "passed",
+      "cli_validate_exit_code": 0,
+      "working_tree_diff_check": "passed",
+      "dce_head_unchanged": true,
+      "dce_index_empty": true,
+      "git_add_executed": false,
+      "git_commit_executed": false,
+      "full_suite_repeated_this_turn": false
+    },
+    "cursor_user_session": {
+      "evidence_source": "user_reported_actual_cursor_agent",
+      "dce_tools": 9,
+      "host_extra_mcp_auth": 1,
+      "visible_names_total": 10,
+      "actual_successful_calls": [
+        {
+          "tool": "zentao_query",
+          "operation": "bug",
+          "status": "ok",
+          "error_code": null,
+          "truncated": "not_observable"
+        },
+        {
+          "tool": "gitlab_query",
+          "operation": "project",
+          "status": "ok",
+          "error_code": null,
+          "truncated": "not_observable"
+        },
+        {
+          "tool": "portainer_query",
+          "operation": "swarm_info",
+          "status": "ok",
+          "error_code": null,
+          "truncated": "not_observable"
+        }
+      ],
+      "initialization_dialogue": true,
+      "local_modules_checked": 18,
+      "proposed": 22,
+      "unresolved": 1,
+      "confirmed": 0,
+      "human_approval_metadata_empty": true,
+      "diff_review_presented": true,
+      "business_project_yaml_written": false,
+      "original_visible_text": "DCE result.",
+      "original_structured_envelope_visible": false,
+      "repair_recheck": "passed_user_reported_actual_model_receipt",
+      "host_version": "not_verified",
+      "repair_evidence_source": "user_reported_actual_cursor_agent_recheck",
+      "file_save_user_approved": true,
+      "relationship_human_approval_fields_empty": true,
+      "file_saved_later_by_codex_host": true,
+      "file_write_attribution": "User Cursor recheck did not write; Codex Host subsequently saved after explicit approval."
+    },
+    "text_only_host_compatibility": {
+      "implementation": "passed",
+      "same_json_in_text_and_structured": true,
+      "success_error_truncation_tests": "passed",
+      "both_copies_and_escaping_budgeted": true,
+      "image_budget_opt_in": true,
+      "image_budget_default": null,
+      "image_budget_max_bytes": 3000000,
+      "reader_image_max_bytes_unchanged": 2000000,
+      "installed_wheel_check": "passed",
+      "actual_cursor_recheck": "passed_user_reported"
+    },
+    "authorized_image_sdk": {
+      "evidence_source": "real_stdio_sdk",
+      "status": "ok",
+      "attachments": 1,
+      "native_image_content": true,
+      "mime": "image/png",
+      "image_bytes": 382396,
+      "tool_result_bytes": 512314,
+      "truncated": false,
+      "image_delivery": "delivered",
+      "text_matches_structured": true,
+      "raw_image_persisted": false,
+      "host_model_received_image": "passed_separate_user_reported_cursor_recheck",
+      "initial_64000_budget_result": "not_delivered_truncated",
+      "final_explicit_image_budget_bytes": 3000000,
+      "text_metadata_budget_bytes": 64000
+    },
+    "cursor_recheck": {
+      "source": "user_reported_actual_cursor_agent_recheck",
+      "json_text_visible": true,
+      "bug_read": {
+        "operation": "bug",
+        "status": "ok",
+        "envelope_truncated": false,
+        "data_truncated": false,
+        "source_operation": "bug",
+        "data_evidence_count": 1,
+        "legacy_envelope_evidence_count": 0
+      },
+      "image_read": {
+        "operation": "image",
+        "native_image_visible_to_model": true,
+        "mime": "image/png",
+        "image_delivery": "delivered",
+        "truncated": false,
+        "non_sensitive_visual_verification": "application_interface_screenshot",
+        "image_saved": false,
+        "image_text_transcribed": false
+      },
+      "user_approved_full_draft_save": true,
+      "approval_of_relationships": false,
+      "git_submission_forbidden": true,
+      "new_platform_calls_by_this_host": 0
+    },
+    "approved_project_save": {
+      "actor": "codex_host",
+      "explicit_user_approval": true,
+      "approval_scope": "save_candidate_draft_only_no_git_submission",
+      "source_diff_matched": true,
+      "bytes": 22451,
+      "lines": 683,
+      "relationships": 23,
+      "statuses": {
+        "proposed": 22,
+        "unresolved": 1
+      },
+      "relationship_human_approval_fields_empty": true,
+      "schema_and_workspace_readback": "passed",
+      "cli_validate_exit_code": 0,
+      "business_git_head_unchanged": true,
+      "business_git_index_unchanged": true,
+      "git_commit_executed": false,
+      "git_add_executed": false,
+      "platform_calls": 0,
+      "untracked": true
+    }
+  },
+  "confidence_status": {
+    "offline": "passed",
+    "overall_acceptance": "core_path_passed_remaining_external_sample_gates",
+    "real_platform_reads": "passed_scoped_sdk_partial_coverage",
+    "real_agent_host": "passed_user_reported_connect_list_calls_initialization_and_content_recheck",
+    "real_image_received_by_model": "passed_user_reported_actual_cursor_model_receipt",
+    "goal_status": "blocked_tool_historical_user_resumed",
+    "current_work": "core_initialization_saved_uncommitted_remaining_module_acl_and_old_gitlab_scope",
+    "native_image_protocol": "passed_real_sdk",
+    "core_agent_led_initialization": "passed_with_explicit_unresolved_relationship"
+  },
+  "versions": {
+    "package": "1.0.0",
+    "fact_contract": "2.0",
+    "legacy_contract": "1.1",
+    "project_schema": 1,
+    "catalog_migration": "0003"
+  },
+  "omissions": [
+    "full_zentao_module_tree_access_not_allowed_403",
+    "old_independent_gitlab_scope_not_authorized_and_repository_compose_not_revalidated"
+  ],
+  "next_actions": [
+    "Respect the explicit no-submission instruction: do not git add/commit/push the business file or current DCE record changes.",
+    "No need to repeat Cursor connect/list/three calls, JSON text or native image/model receipt; all recorded.",
+    "Instance administrator may check tree/browse read access and product scope; retain not_verified until permissions change.",
+    "Do not retry old independent GitLab sample reads until their exact scope is explicitly authorized.",
+    "Future Host refresh/review uses the saved project file, preserves approvals/rejections/notes and shows any proposed diff before applying it."
+  ]
+}

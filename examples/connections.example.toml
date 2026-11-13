@@ -1,0 +1,24 @@
+# Synthetic addresses only. Replace with site roots in a private local copy.
+# This TOML is accepted by dce --config when matching process credentials exist.
+# Remove unused platform sections. Never add a token/password field.
+allow_http = false
+ai_enabled = false
+output_budget = 16000
+# Optional native-image ToolResult budget; unset means reuse output_budget.
+# Text/structured metadata still share output_budget; raw image Reader remains bounded to 2MB.
+# image_output_budget = 3000000
+
+[zentao]
+instance_id = "company-zentao"
+base_url = "https://zentao.example.invalid"
+# Credential: DCE_ZENTAO_TOKEN in the protected DCE process environment.
+
+[gitlab]
+instance_id = "company-gitlab"
+base_url = "https://gitlab.example.invalid"
+# Credential: DCE_GITLAB_TOKEN in the protected DCE process environment.
+
+[portainer]
+instance_id = "company-portainer"
+base_url = "https://portainer.example.invalid"
+# Credential: DCE_PORTAINER_TOKEN in the protected DCE process environment.
