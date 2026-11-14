@@ -1,6 +1,6 @@
 # Agent 协作协议（DCE 2.0，Codex / Cursor 通用）
 
-1. 当前目标是 DCE 2.0「缺陷闭环」。先读 `docs/v2/README.md`，按 `docs/v2/05-实施计划.md` 的里程碑顺序实施。1.x 的代码和文档已废弃（本地 tag `v1.2.0-final`），不要参考或恢复。
+1. 当前目标是 DCE 2.0「缺陷闭环」。先读 `docs/v2/README.md`，按 `docs/v2/05-实施计划.md` 的里程碑顺序实施，执行规则见 `docs/v2/CODEX_HANDOFF.md` 第 1 节。1.x 的代码和文档已废弃（本地 tag `v1.2.0-final`），不要参考或恢复。
 2. 范围以 `docs/v2/02-需求规格.md`、`03-架构设计.md`、`04-工具契约.md` 为准，不实现文档以外的功能。文档有矛盾或不清楚时，停下来，写进 `docs/v2/progress.md` 的“待确认”一节，并告诉用户。
 3. 禁止添加：审批 Broker、本机审批网页、receipt、hash 往返校验、MCP Roots 协商、关系状态机（proposed/confirmed 等）、通用平台查询工具、日志授权文件。人工确认靠 Playbook 和宿主自带的工具调用确认。
 4. 平台写操作只允许 03 第 7.1 节的白名单，目标必须通过 `loop/guard.py`。git 永不 force push，合并目标永不匹配 `master`、`main`、`release*`、`prod*`、`uat*`。
