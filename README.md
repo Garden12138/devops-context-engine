@@ -1,60 +1,28 @@
-# DevOps Context Engine（DCE）
+# DCE 2.0
 
-> **2026-11-13：正在重写为 DCE 2.0「缺陷闭环」**（分支 `feature/v2-bugfix-loop`）。设计与实施计划见 [docs/v2/README.md](docs/v2/README.md)。以下为 1.2 的旧说明，M0 时会被替换。
-
-DCE 把 ZenTao 缺陷、GitLab 代码/CI 和 Portainer/Swarm 部署事实连接到 Cursor 等 Agent，减少每次排查时重复查平台、猜项目关系的工作。当前本地体验版：**1.2.0**；后续开发分支：`feature/upgrade-chatgpt`。
-
-DCE 提供安全只读能力，Host Agent 使用当前业务源码和自己的模型提出关系，经用户审核后维护 `.dce/project.yaml`。关系可跨仓库、模块、镜像和服务；来源实例和各平台 ID 分开，不因同名或同数字自动确认。未知关系保持 proposed/unresolved，环境和部署版本要有证据。
+给 Cursor / Codex 的 MCP 工具集，连接禅道、GitLab 和 Portainer，支撑测试环境的缺陷修复闭环。
 
 ```mermaid
 flowchart LR
-  U[用户审批] --> H[业务工作区 Host Agent]
-  H <--> C[本地源码 / project.yaml]
-  H <-->|STDIO MCP| D[DCE 只读事实与证据]
-  D --> Z[ZenTao REST v1]
-  D --> G[GitLab REST v4]
-  D --> P[Portainer / Docker Swarm]
-  D --> S[SQLite 资源缓存与历史]
+  A[读禅道缺陷] --> B[修复与自审]
+  B --> C[部署计划与用户确认]
+  C --> D[合并测试分支]
+  D --> E[CI 构建]
+  E --> F[部署与核验]
+  F --> G[浏览器测试与记录]
+  G --> H[禅道已解决]
 ```
 
-核心能力：
-
-- project模式增加用户主动调用的 `project_initialize` 本地控制工具；原九个查询工具保持：bug_context、project_context、discovery_status、deployment_inspect、pipeline_diagnose、service_trace、zentao_query、gitlab_query、portainer_query。
-- 项目/模块发现、证据、候选与人工审核、跨会话恢复及变化标记；Project Schema v1/v2 校验和迁移预览。
-- Bug、原生图片、固定 ref 的代码、CI Job/Trace、Stack 保存配置与 Swarm 运行事实；分页、输出预算、结构化错误和脱敏。
-- ZenTao 进程内 Token 缓存与有限恢复；Service Logs 默认关闭，可另行限定精确服务、短窗口、单次额度并撤销。
-
-## 快速开始
-
-Python >=3.12、uv、Git。统一使用 `feature/upgrade-chatgpt`；首次获取代码：
+需要 Python 3.12 和 uv。在仓库目录安装：
 
 ```sh
-git clone --single-branch --branch feature/upgrade-chatgpt https://github.com/Garden12138/devops-context-engine.git
-cd devops-context-engine
+uv sync --locked --dev
+uv run dce --version
 ```
 
-已有交付仓库可直接进入目录，然后运行：
+当前完成 M0：平台模块迁移与 CLI 骨架。CLI 版本为 `2.0.0`，闭环命令按 M1–M5 依次实现。
 
-```sh
-git switch feature/upgrade-chatgpt
-uv sync --locked --dev --python 3.12
-uv run --offline dce --help
-uv run --offline dce doctor --mock
-uv run --offline python scripts/run_acceptance.py
-```
+配置合成样例在 `examples/`；凭证放在进程私有的凭证文件中，权限为 0600。
 
-首次依赖准备需要包源；完整验收仅用本机合成 HTTP/STDIO，不读取公司凭证、不访问真实公司服务。每次生成 [自动化报告](docs/acceptance/AUTOMATED_ACCEPTANCE.md) 和 [机器摘要](docs/acceptance/acceptance-summary.json)。
-
-## 连接 Cursor 与开始使用
-
-按 [macOS 本地部署手册](docs/guides/LOCAL_DEPLOYMENT.md) 创建私有配置，使用 `.venv/bin/python scripts/serve_dce_local.py` 的真实启动参数接入 `~/.cursor/mcp.json`。凭证留在 0600 本机文件或受保护进程环境；默认不读 dotenv。新使用场景选择 `--mode project`，只配置平台连接和凭证，启动不填业务ID或固定工作区。重载后验证十工具及版本1.2.0；legacy模式继续保留旧九工具。不要把 Token 写进聊天或 MCP 参数。
-
-打开目录、连接MCP、新建对话或查询Bug均不会初始化。只有用户在**业务工作区**明确要求“初始化当前项目”时，Agent才按 [初始化 Prompt](prompts/agent-led/initialize.md) 发现结构、收集有界事实、展示关系和访问范围，经用户确认后由Host保存项目文件并激活项目授权；之后只需在对话指定Bug ID。新的[项目模式启动、对话初始化和恢复指南](docs/guides/PROJECT_WORKFLOW.md)说明完整流程。原有十五个教程及“Bug→代码→CI→部署服务”示例见 [用户手册](docs/guides/USER_GUIDE.md)。
-
-## 当前边界与证据
-
-DCE 不提供自动修复、触发 CI、MR、redeploy 或禅道回写。日志需独立授权，输出有界事件摘要；Stack Status/副本数不等于业务健康，latest 不证明部署版本。旧六工具中的 Catalog 关系是历史线索，当前项目文件由 Host 管理。
-
-本轮离线验收结果以最新报告为准。历史 Cursor Gate A、限定日志 Gate B 见 [原日期摘要](harness/v1.1-final-acceptance.md)；本轮未重跑桌面 Host 或真实平台。**真实 ZenTao Token 过期恢复仍 not_verified**，Mock 成功不代表生产验收。新环境模块权限、日志保留期和完整 Python 版本矩阵也需另验。
-
-更多说明：[基线升级差异](docs/UPGRADE_FROM_BASELINE.md) · [执行报告](docs/UPGRADE_EXECUTION_REPORT.md) · [清理记录](docs/acceptance/REPOSITORY_CLEANUP.md) · [工具契约](docs/MCP_FACT_TOOLS.md) · [安全边界](docs/SECURITY.md) · [计划](PLANS.md)。
+设计、工具契约、实施计划和验收入口：[DCE 2.0 文档](docs/v2/README.md)。
+进度见 [progress.md](docs/v2/progress.md)。

@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "devops-context-engine"
-version = "1.2.0"
-description = "Read-only DevOps discovery and evidence catalog"
+version = "2.0.0"
+description = "ZenTao→GitLab→Portainer bug-fix loop tools for coding agents"
 requires-python = ">=3.12"
 dependencies = [
-  "typer>=0.16,<1", "rich>=14,<15", "httpx>=0.28,<1",
-  "pydantic>=2.11,<3", "pydantic-settings>=2.9,<3", "python-dotenv>=1.2,<2",
-  "sqlalchemy>=2.0,<3", "alembic>=1.16,<2", "pyyaml>=6,<7",
+  "typer>=0.16,<1", "httpx>=0.28,<1",
+  "pydantic>=2.11,<3", "python-dotenv>=1.2,<2",
+  "pyyaml>=6,<7", "ruamel.yaml>=0.18,<0.19",
   "beautifulsoup4>=4.13,<5", "mcp>=1.30,<2",
 ]
 
@@ -41,9 +41,9 @@ packages = ["dce"]
 mypy_path = "src"
 
 [tool.coverage.run]
-source = ["dce"]
+source = ["src/dce/workspace", "src/dce/loop", "src/dce/platforms"]
 branch = true
 
 [tool.coverage.report]
-fail_under = 75
+fail_under = 80
 show_missing = true

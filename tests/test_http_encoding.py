@@ -131,7 +131,8 @@ def test_corrupt_compression_is_payload_error_without_retry_or_raw_output() -> N
     assert calls == ["GET"]
 
 
-def test_migrated_portainer_logs_keep_stack_and_swarm_checks():
+@pytest.mark.parametrize("by_name", [False, True])
+def test_migrated_portainer_logs_keep_stack_and_swarm_checks(by_name):
     import asyncio
 
     from dce.platforms.docker_logs import LogControls
@@ -174,6 +175,10 @@ def test_migrated_portainer_logs_keep_stack_and_swarm_checks():
         if path.endswith("/logs"):
             assert request.url.params["since"] == "1794787200"
             return httpx.Response(200, content=frame)
+        if path.endswith("/services"):
+            filters = json.loads(request.url.params["filters"])
+            assert filters["name"] == ["demo_test_demo-api"]
+            return httpx.Response(200, json=[service])
         assert path.endswith("/services/demo1")
         return httpx.Response(200, json=service)
 
@@ -183,8 +188,8 @@ def test_migrated_portainer_logs_keep_stack_and_swarm_checks():
             Portainer(http).service_logs(
                 "1",
                 "1",
-                service_id="demo1",
-                service_name=None,
+                service_id=None if by_name else "demo1",
+                service_name="demo-api" if by_name else None,
                 controls=controls,
             )
         )
