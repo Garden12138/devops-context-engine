@@ -1,0 +1,5 @@
+deploy_common_core:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      when: manual
+  script: ["mvn -pl demo-common-core -am deploy"]

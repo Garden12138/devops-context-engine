@@ -1,0 +1,17 @@
+trigger_master:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      changes: ["demo-modules/**/*"]
+  trigger:
+    include: .gitlab-ci-master.yml
+trigger_release:
+  rules:
+    - if: "$CI_COMMIT_REF_NAME == 'release'"
+  trigger:
+    include: .gitlab-ci-release.yml
+trigger_dev:
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^develop$/'
+      changes: ["demo-modules/**/*"]
+  trigger:
+    include: [{local: .gitlab-ci-dev.yml}]
