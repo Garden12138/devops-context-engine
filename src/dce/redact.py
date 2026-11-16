@@ -14,6 +14,9 @@ _ASSIGNMENT = re.compile(
 )
 _IP = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 _PRIVATE_HOST = re.compile(r"\b(?:[a-z0-9-]+\.)+(?:internal|local|corp|lan)\b", re.I)
+_AUTHORIZATION = re.compile(
+    r'(?i)\b((?:proxy-)?authorization)\s*[:=]\s*(?:Bearer|Basic)\s+[^\s,;]+',
+)
 
 
 def redact(value: Any, secrets: tuple[str, ...] = ()) -> Any:
@@ -30,6 +33,7 @@ def redact(value: Any, secrets: tuple[str, ...] = ()) -> Any:
         value = _URL.sub("[URL]", value)
         value = _IP.sub("[ADDRESS]", value)
         value = _PRIVATE_HOST.sub("[HOST]", value)
+        value = _AUTHORIZATION.sub(r'\1=[REDACTED]', value)
         return _ASSIGNMENT.sub(r"\1=[REDACTED]", value)
     return value
 

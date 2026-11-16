@@ -11,6 +11,7 @@
 | 2026-11-16 | T1.4 | 8e5600b | 118 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；2201 行；Maven parent group、依赖闭包及不安全 XML 跳过完成 |
 | 2026-11-16 | T1.5 | f8ea350 | 123 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；2233 行；只读接口和编码测试完成；两处格式问题修正后复跑并并入本地提交 |
 | 2026-11-16 | T1.6 | f940505 | 126 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；2548 行；带来源与 TODO 注释的配置、同 namespace 精确服务匹配、proposed 差异完成 |
+| 2026-11-16 | T1.7 | 37e71e2 | 160 passed / 88.85% | — | pytest、ruff、mypy、公开数据检查通过；2809 行；逐项 pass/fail、两项固定 warn 及 scope 404 warn 完成；例外按已答复第 4 条执行 |
 
 ## 待确认
 

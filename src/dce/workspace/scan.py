@@ -241,7 +241,9 @@ repos: []
         if missing:
             ignore.write_text(text + ('\n' if text and not text.endswith('\n') else '')
                               + '\n'.join(missing) + '\n')
-    return ScanResult(written, proposed, repo_stats, dict(config['environment']), records_file,
+    environment = {key: config['environment'][key] for key in ('stack', 'swarm_id')}
+    environment.update(config['portainer'])
+    return ScanResult(written, proposed, repo_stats, environment, records_file,
                       todos, _diff(previous, config) if proposed else None)
 
 

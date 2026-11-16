@@ -17,9 +17,6 @@ def test_version_works_without_loading_configuration():
 @pytest.mark.parametrize(
     "args",
     [
-        ["setup", "scan"],
-        ["setup", "check"],
-        ["status", "--run", "demo-run"],
         ["bug", "list", "--all", "--status", "active"],
         ["bug", "show", "4336"],
         ["plan", "4336", "--repo", "demo-cloud"],
@@ -30,7 +27,6 @@ def test_version_works_without_loading_configuration():
         ["deploy-status", "--run", "demo-run", "--logs", "100"],
         ["run", "update", "--run", "demo-run"],
         ["resolve", "--run", "demo-run", "--bug", "4336"],
-        ["mcp", "--connections", "/missing/connections.toml", "--workspace", "/missing/demo"],
     ],
 )
 def test_documented_commands_report_pending_implementation(args):

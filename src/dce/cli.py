@@ -8,6 +8,7 @@ import typer
 
 from dce import __version__
 from dce.errors import DceError, ErrorCode
+from dce.mcp_server import Runtime, create_server
 
 app = typer.Typer(no_args_is_help=True)
 setup_app = typer.Typer(no_args_is_help=True)
@@ -30,6 +31,7 @@ def pending(tool: str) -> NoReturn:
 
 @app.callback(invoke_without_command=True)
 def main(
+    ctx: typer.Context,
     version: Annotated[bool, typer.Option("--version", is_eager=True)] = False,
     connections: Annotated[Path | None, typer.Option(envvar="DCE_CONNECTIONS")] = None,
     credentials: Annotated[Path | None, typer.Option(envvar="DCE_CREDENTIALS")] = None,
@@ -39,21 +41,30 @@ def main(
     if version:
         typer.echo(__version__)
         raise typer.Exit()
+    ctx.obj = {'runtime': Runtime(connections, credentials, workspace), 'pretty': pretty}
+
+
+def emit(ctx: typer.Context, tool: str, **arguments: object) -> None:
+    result = ctx.obj['runtime'].call(tool, **arguments)
+    typer.echo(result.get('summary', json.dumps(result, ensure_ascii=False))
+               if ctx.obj['pretty'] else json.dumps(result, ensure_ascii=False))
+    if not result['ok'] or result.get('data', {}).get('passed') is False:
+        raise typer.Exit(1)
 
 
 @setup_app.command("scan")
-def setup_scan() -> None:
-    pending("project_setup(scan)")
+def setup_scan(ctx: typer.Context) -> None:
+    emit(ctx, 'project_setup', action='scan')
 
 
 @setup_app.command("check")
-def setup_check() -> None:
-    pending("project_setup(check)")
+def setup_check(ctx: typer.Context) -> None:
+    emit(ctx, 'project_setup', action='check')
 
 
 @app.command()
-def status(run: Annotated[str | None, typer.Option("--run")] = None) -> None:
-    pending("dce_status")
+def status(ctx: typer.Context, run: Annotated[str | None, typer.Option("--run")] = None) -> None:
+    emit(ctx, 'dce_status', run_id=run)
 
 
 @bug_app.command("list")
@@ -126,8 +137,11 @@ def resolve(
 
 @app.command()
 def mcp(
+    ctx: typer.Context,
     connections: Annotated[Path | None, typer.Option(envvar="DCE_CONNECTIONS")] = None,
     credentials: Annotated[Path | None, typer.Option(envvar="DCE_CREDENTIALS")] = None,
     workspace: Annotated[Path | None, typer.Option(envvar="DCE_WORKSPACE")] = None,
 ) -> None:
-    pending("mcp stdio server")
+    runtime = ctx.obj['runtime']
+    create_server(connections or runtime.connections, credentials or runtime.credentials,
+                  workspace or runtime.workspace).run(transport='stdio')
