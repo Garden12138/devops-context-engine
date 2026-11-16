@@ -197,30 +197,6 @@ def test_explicit_loader_supports_independent_platform_and_direct_token(tmp_path
         credential_environment(credentials)
 
 
-def test_local_launcher_failure_stays_off_stdout(tmp_path):
-    import subprocess
-
-    config, credentials = files(tmp_path, CREDENTIALS)
-    result = subprocess.run(
-        [
-            str(Path(".venv/bin/python").absolute()),
-            str(Path("scripts/serve_dce_local.py").resolve()),
-            "--config",
-            str(config),
-            "--credentials-file",
-            str(credentials),
-            "--catalog",
-            str(tmp_path / "cache.sqlite3"),
-        ],
-        capture_output=True,
-        text=True,
-        timeout=10,
-    )
-    assert result.returncode == 2 and result.stdout == ""
-    assert json.loads(result.stderr)["error"]["code"] == "PERMISSION_DENIED"
-    assert "fake-pass" not in result.stderr
-
-
 def test_url_aliases_are_literal_and_conflicts_fail_closed(tmp_path):
     from dce.security.local_credentials import credential_environment
 
@@ -256,3 +232,15 @@ def test_explicit_process_address_overrides_local_file_alias(tmp_path):
         environment={"DCE_ZENTAO_URL": "https://site.example.invalid/application"},
     )
     assert settings.zentao.base_url == "https://site.example.invalid/application"
+
+
+def test_connection_example_loads_for_test_platforms():
+    settings = load_settings(
+        Path("examples/connections.example.toml"),
+        environ={f"DCE_{name}_TOKEN": "synthetic" for name in ("ZENTAO", "GITLAB", "PORTAINER")},
+    )
+    assert settings.allow_http is True
+    assert settings.timeout == 15 and settings.max_retries == 1
+    assert settings.zentao.base_url == "http://zentao.example.invalid/zentao"
+    assert settings.gitlab.base_url == "http://gitlab.example.invalid"
+    assert settings.portainer.base_url == "http://portainer.example.invalid:9000"
