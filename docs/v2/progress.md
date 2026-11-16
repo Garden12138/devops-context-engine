@@ -6,6 +6,8 @@
 | 2026-11-16 | T0.2 | 82a9fa5 | 54 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；1511 行；按已答复范围清理四个遗留文件；配置错误细分留到 T1.1 |
 | 2026-11-16 | T0.3 | 041437c | 75 passed / 80.80% | — | uv lock、uv sync --locked --dev 完成；pytest、ruff、mypy、公开数据检查通过；dce --version 为 2.0.0；1647 行；M0 完成，用户检查删除范围 diff 后再进入 M1 |
 
+| 2026-11-16 | T1.1 | f4ef9ff | 81 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；1705 行；凭证权限、缺键、URL、HTTP 与内联凭证分别报错 |
+
 ## 待确认
 
 ### 1. M0 清场中未列出的遗留模块（已答复）
