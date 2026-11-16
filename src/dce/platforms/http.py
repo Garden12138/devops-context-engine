@@ -8,15 +8,15 @@ from urllib.parse import urljoin, urlsplit
 import httpx
 from pydantic import SecretStr
 
-from dce.common.config import PlatformConfig, Settings
-from dce.common.errors import DceError, ErrorCode
-from dce.connectors.zentao_auth import auth_expired, response_error
-from dce.security.redact import RedactingFilter
+from dce.errors import DceError, ErrorCode
+from dce.platforms.zentao_auth import auth_expired, response_error
+from dce.redact import RedactingFilter, redact
+from dce.settings import PlatformConfig, Settings
 
 AUTH_HEADERS = {"zentao": "Token", "gitlab": "PRIVATE-TOKEN", "portainer": "X-API-Key"}
 
 
-class Reader:
+class PlatformClient:
     def __init__(
         self,
         config: PlatformConfig,
@@ -27,7 +27,7 @@ class Reader:
         max_bytes: int = 2_000_000,
     ) -> None:
         if config.base_url.startswith("http:") and not settings.allow_http:
-            raise DceError(ErrorCode.UNSAFE_URL, "HTTP requires explicit allow_http.")
+            raise DceError(ErrorCode.CONFIG_INVALID, "HTTP requires explicit allow_http.")
         self.config = config
         self.settings = settings
         self.max_bytes = max_bytes
@@ -49,7 +49,7 @@ class Reader:
         for logger in self.loggers:
             logger.addFilter(self.log_filter)
 
-    def __enter__(self) -> "Reader":
+    def __enter__(self) -> "PlatformClient":
         return self
 
     def __exit__(self, *_: object) -> None:
@@ -76,7 +76,7 @@ class Reader:
             ):
                 raise ValueError
         except ValueError:
-            raise DceError(ErrorCode.UNSAFE_URL, "URL is outside configured origin.") from None
+            raise DceError(ErrorCode.OUT_OF_SCOPE, "URL is outside configured origin.") from None
         return url
 
     def get(
@@ -133,7 +133,11 @@ class Reader:
             defer_status=True,
         )
         if response.status_code >= 400:
-            raise DceError(ErrorCode.AUTH_FAILED, "AUTH_FAILED: ZenTao login rejected.")
+            raise DceError(
+                ErrorCode.AUTH_FAILED,
+                f"ZenTao /api.php/v1/tokens returned HTTP {response.status_code}: login rejected.",
+                "Check the ZenTao account, password and account lock status.",
+            )
         return response
 
     def _request(
@@ -176,17 +180,36 @@ class Reader:
                         self.sleep(max(delay, min(0.1 * 2**attempt, 2)))
                         continue
                     if 300 <= status < 400:
-                        raise DceError(ErrorCode.UNSAFE_URL, "Redirect responses are forbidden.")
+                        raise DceError(ErrorCode.OUT_OF_SCOPE, "Redirect responses are forbidden.")
                     if status >= 400 and not defer_status:
                         code = {
                             401: ErrorCode.AUTH_FAILED,
                             403: ErrorCode.PERMISSION_DENIED,
                             404: ErrorCode.NOT_FOUND,
-                            429: ErrorCode.RATE_LIMITED,
-                        }.get(status, ErrorCode.API_INCOMPATIBLE)
+                            429: ErrorCode.PLATFORM_UNAVAILABLE,
+                        }.get(status, ErrorCode.PLATFORM_ERROR)
+                        reason, hint = {
+                            401: (
+                                "credentials rejected",
+                                "Check the configured platform credential.",
+                            ),
+                            403: (
+                                "access denied",
+                                "Check the token scope and resource permissions.",
+                            ),
+                            404: (
+                                "resource unavailable",
+                                "Check the resource ID and token visibility.",
+                            ),
+                            429: ("rate limit reached", "Wait for Retry-After before retrying."),
+                        }.get(
+                            status, ("upstream error", "Check the platform and its reverse proxy.")
+                        )
+                        resource = redact(urlsplit(url).path, self.secrets())
                         raise DceError(
                             code,
-                            "Platform request failed.",
+                            f"{kind} {resource} returned HTTP {status}: {reason}.",
+                            hint,
                             retryable=status in {429, 502, 503, 504},
                         )
                     content = bytearray()
@@ -200,7 +223,7 @@ class Reader:
                                 content.clear()
                                 break
                             raise DceError(
-                                ErrorCode.INVALID_PAYLOAD, "Response size limit exceeded."
+                                ErrorCode.PLATFORM_ERROR, "Response size limit exceeded."
                             )
                     # iter_bytes() has decoded content/transfer encodings already.
                     # A buffered Response must not apply them again or reuse wire length.
@@ -215,12 +238,16 @@ class Reader:
                     )
             except httpx.DecodingError:
                 raise DceError(
-                    ErrorCode.INVALID_PAYLOAD, "Platform returned invalid content encoding."
+                    ErrorCode.PLATFORM_ERROR, "Platform returned invalid content encoding."
                 ) from None
             except httpx.RequestError:
                 if attempt == retry_count:
                     raise DceError(
-                        ErrorCode.NETWORK_UNAVAILABLE, "Platform connection failed.", retryable=True
+                        ErrorCode.PLATFORM_UNAVAILABLE,
+                        f"{kind} {redact(urlsplit(url).path, self.secrets())}: "
+                        "connection failed before a response.",
+                        "Check the platform URL, network and timeout settings.",
+                        retryable=True,
                     ) from None
                 self.sleep(min(0.1 * 2**attempt, 2))
         raise AssertionError("unreachable")
@@ -240,15 +267,15 @@ class Reader:
         try:
             data: Any = response.json()
         except (ValueError, json.JSONDecodeError):
-            raise DceError(ErrorCode.INVALID_PAYLOAD, "Platform returned invalid JSON.") from None
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Platform returned invalid JSON.") from None
         if not isinstance(data, expected):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected platform response shape.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Unexpected platform response shape.")
         if (
             expected is list
             and isinstance(data, list)
             and not all(isinstance(item, dict) for item in data)
         ):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Expected resource objects.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Expected resource objects.")
         return data
 
     def pages(
@@ -274,7 +301,7 @@ class Reader:
                 if following <= page:
                     raise ValueError
             except ValueError:
-                raise DceError(ErrorCode.INVALID_PAYLOAD, "Invalid pagination cursor.") from None
+                raise DceError(ErrorCode.PLATFORM_ERROR, "Invalid pagination cursor.") from None
             page = following
             self.sleep(0.01)
-        raise DceError(ErrorCode.INVALID_PAYLOAD, "Pagination limit exceeded; narrow scan scope.")
+        raise DceError(ErrorCode.PLATFORM_ERROR, "Pagination limit exceeded; narrow scan scope.")

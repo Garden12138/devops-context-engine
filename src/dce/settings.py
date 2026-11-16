@@ -1,21 +1,124 @@
-"""Explicit local credential loading. Never implicit dotenv, shell evaluation or persistence."""
-
 import io
 import os
 import stat
 import tomllib
 from collections.abc import Mapping
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
+from urllib.parse import urlsplit
 
 import httpx
 from dotenv.parser import parse_stream
-from pydantic import SecretStr
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PrivateAttr,
+    SecretStr,
+    ValidationError,
+    field_validator,
+)
 
-from dce.common.config import Settings, load_settings
-from dce.common.errors import DceError, ErrorCode
-from dce.connectors.http import Reader
-from dce.connectors.zentao import ZenTao
-from dce.connectors.zentao_auth import ZenTaoTokenManager
+from dce.errors import DceError, ErrorCode
+
+if TYPE_CHECKING:
+    from dce.platforms.zentao_auth import ZenTaoTokenManager
+
+
+class PlatformConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    instance_id: str = Field(min_length=1, max_length=100)
+    base_url: str
+    token: SecretStr
+
+    @field_validator("token")
+    @classmethod
+    def nonempty_token(cls, value: SecretStr) -> SecretStr:
+        if not value.get_secret_value().strip():
+            raise ValueError("credential required")
+        return value
+
+    @field_validator("base_url")
+    @classmethod
+    def valid_url(cls, value: str) -> str:
+        parsed = urlsplit(value)
+        if (
+            parsed.scheme not in {"https", "http"}
+            or not parsed.hostname
+            or parsed.username
+            or parsed.password
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError("invalid platform address")
+        return value.rstrip("/")
+
+
+class Settings(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    _zentao_tokens: "ZenTaoTokenManager | None" = PrivateAttr(default=None)
+    allow_http: bool = False
+    timeout: float = Field(default=10, gt=0, le=120)
+    max_retries: int = Field(default=2, ge=0, le=5)
+    request_interval: float = Field(default=0.01, ge=0, le=5)
+    page_size: int = Field(default=100, ge=1, le=100)
+    output_budget: int = Field(default=24000, ge=1024, le=64000)
+    zentao: PlatformConfig | None = None
+    gitlab: PlatformConfig | None = None
+    portainer: PlatformConfig | None = None
+
+    def secrets(self) -> tuple[str, ...]:
+        return tuple(
+            c.token.get_secret_value()
+            for c in (
+                self.gitlab,
+                self.zentao,
+                self.portainer,
+            )
+            if c
+        ) + (self._zentao_tokens.secrets() if self._zentao_tokens else ())
+
+    def platform(self, name: str) -> PlatformConfig:
+        config: PlatformConfig | None = getattr(self, name, None)
+        if config is None:
+            raise DceError(ErrorCode.AUTH_FAILED, "Platform configuration is missing.")
+        if config.base_url.startswith("http:") and not self.allow_http:
+            raise DceError(ErrorCode.CONFIG_INVALID, "HTTP requires explicit allow_http.")
+        return config
+
+
+def load_settings(
+    path: Path | None = None, *, environ: Mapping[str, str] | None = None, **overrides: Any
+) -> Settings:
+    """CLI overrides > process environment > explicit non-secret TOML; no dotenv."""
+    environment = os.environ if environ is None else environ
+    try:
+        data: dict[str, Any] = {}
+        if path is not None:
+            data = tomllib.loads(path.read_text())
+            if any("token" in entry for entry in data.values() if isinstance(entry, dict)):
+                raise DceError(ErrorCode.CONFIG_INVALID, "Credentials must use environment input.")
+        for name in Settings.model_fields:
+            if name in {"zentao", "gitlab", "portainer"}:
+                platform = dict(data.get(name, {}))
+                for field, suffix in (
+                    ("base_url", "URL"),
+                    ("token", "TOKEN"),
+                    ("instance_id", "INSTANCE_ID"),
+                ):
+                    key = f"DCE_{name.upper()}_{suffix}"
+                    if key in environment:
+                        platform[field] = environment[key]
+                if platform:
+                    platform.setdefault("instance_id", name)
+                    data[name] = platform
+            elif f"DCE_{name.upper()}" in environment:
+                data[name] = environment[f"DCE_{name.upper()}"]
+        data.update({key: value for key, value in overrides.items() if value is not None})
+        return Settings.model_validate(data)
+    except (OSError, ValueError, ValidationError):
+        raise DceError(ErrorCode.CONFIG_INVALID, "Invalid DCE configuration.") from None
+
 
 PLATFORMS = ("zentao", "gitlab", "portainer")
 KNOWN_ENV = {f"DCE_{name.upper()}" for name in Settings.model_fields} | {
@@ -49,7 +152,7 @@ def credential_environment(path: Path) -> tuple[dict[str, str], str | None, Secr
         with os.fdopen(descriptor, "rb") as stream:
             info = os.fstat(stream.fileno())
             if not stat.S_ISREG(info.st_mode) or info.st_mode & 0o077:
-                raise DceError(ErrorCode.PERMISSION_DENIED, "Credential file must be private.")
+                raise DceError(ErrorCode.CREDENTIALS_INVALID, "Credential file must be private.")
             payload = stream.read(65537)
         if len(payload) > 65536:
             raise ValueError("size")
@@ -87,7 +190,9 @@ def credential_environment(path: Path) -> tuple[dict[str, str], str | None, Secr
     except DceError:
         raise
     except (OSError, ValueError, UnicodeError):
-        raise DceError(ErrorCode.INVALID_PAYLOAD, "Local credential input is invalid.") from None
+        raise DceError(
+            ErrorCode.CREDENTIALS_INVALID, "Local credential input is invalid."
+        ) from None
 
 
 def local_settings(
@@ -99,6 +204,10 @@ def local_settings(
     environment: Mapping[str, str] | None = None,
     zentao_transport: httpx.BaseTransport | None = None,
 ) -> Settings:
+    from dce.platforms.http import PlatformClient
+    from dce.platforms.zentao import ZenTao
+    from dce.platforms.zentao_auth import ZenTaoTokenManager
+
     if not live or not read_only:
         raise DceError(ErrorCode.PERMISSION_DENIED, "Local credentials require live --read-only.")
     values, account, password = credential_environment(credentials)
@@ -110,14 +219,13 @@ def local_settings(
             if k in KNOWN_ENV
         }
     )
-    env["DCE_AI_ENABLED"] = "false"
     try:
         if config.suffix != ".toml":
             raise ValueError("non-secret TOML required")
         data = tomllib.loads(config.read_text())
     except (OSError, ValueError):
         raise DceError(
-            ErrorCode.INVALID_PAYLOAD, "Invalid non-secret connection configuration."
+            ErrorCode.CONFIG_INVALID, "Invalid non-secret connection configuration."
         ) from None
     active = {name for name in PLATFORMS if data.get(name) or env.get(f"DCE_{name.upper()}_URL")}
     if not active:
@@ -134,7 +242,7 @@ def local_settings(
         assert account is not None and password is not None
 
         def authenticate() -> SecretStr:
-            with Reader(connection, settings, transport=zentao_transport) as reader:
+            with PlatformClient(connection, settings, transport=zentao_transport) as reader:
                 reader.log_filter.secrets += (account, password.get_secret_value())
                 return ZenTao(reader).create_token(account, password)
 

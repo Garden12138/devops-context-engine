@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING, Any
 import httpx
 from pydantic import SecretStr
 
-from dce.common.errors import DceError, ErrorCode
+from dce.errors import DceError, ErrorCode
 
 if TYPE_CHECKING:
-    from dce.common.config import PlatformConfig
+    from dce.settings import PlatformConfig
 
 
 class AuthReason(StrEnum):
@@ -80,18 +80,18 @@ class ZenTaoTokenManager:
                     exc.code
                     if exc.code
                     in {
-                        ErrorCode.NETWORK_UNAVAILABLE,
-                        ErrorCode.UNSAFE_URL,
+                        ErrorCode.PLATFORM_UNAVAILABLE,
+                        ErrorCode.OUT_OF_SCOPE,
                     }
                     else ErrorCode.AUTH_FAILED
                 )
-                if not refreshing and code == ErrorCode.NETWORK_UNAVAILABLE:
+                if not refreshing and code == ErrorCode.PLATFORM_UNAVAILABLE:
                     reason_text = "NETWORK_UNAVAILABLE"
                 else:
                     reason_text = reason.value
                 self._failure = (
                     code,
-                    f"{reason_text}: ZenTao login failed; check settings and restart.",
+                    f"{reason_text}: {exc.message} Check ZenTao settings and restart.",
                 )
                 raise DceError(*self._failure) from None
             self._generation += 1
@@ -138,11 +138,13 @@ def response_error(response: httpx.Response) -> DceError | None:
             401: ErrorCode.AUTH_FAILED,
             403: ErrorCode.PERMISSION_DENIED,
             404: ErrorCode.NOT_FOUND,
-            429: ErrorCode.RATE_LIMITED,
-        }.get(response.status_code, ErrorCode.API_INCOMPATIBLE)
+            429: ErrorCode.PLATFORM_UNAVAILABLE,
+        }.get(response.status_code, ErrorCode.PLATFORM_ERROR)
         return DceError(
             code,
-            "ZenTao API request failed.",
+            f"ZenTao {response.request.url.path} returned HTTP {response.status_code}: "
+            "request rejected.",
+            "Check the bug ID, product access and ZenTao credentials.",
             retryable=response.status_code in {429, 502, 503, 504},
         )
     return None

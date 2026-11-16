@@ -3,12 +3,10 @@ import re
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
-from dce.common.errors import DceError, ErrorCode
-from dce.common.service_logs import LogControls
-from dce.connectors.docker_logs import project_logs, read_logs
-from dce.connectors.gitlab import key
-from dce.connectors.http import Reader
-from dce.security.log_grant import ServiceLogGrant
+from dce.errors import DceError, ErrorCode
+from dce.platforms.docker_logs import LogControls, project_logs, read_logs
+from dce.platforms.gitlab import key
+from dce.platforms.http import PlatformClient
 
 
 def safe_stack(stack: dict[str, Any]) -> dict[str, Any]:
@@ -20,7 +18,7 @@ def safe_stack(stack: dict[str, Any]) -> dict[str, Any]:
     }
     git = stack.get("GitConfig") or {}
     if not isinstance(git, dict):
-        raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected GitConfig structure.")
+        raise DceError(ErrorCode.PLATFORM_ERROR, "Unexpected GitConfig structure.")
     result["GitConfig"] = {
         name: git[name] for name in ("ReferenceName", "ConfigHash", "ConfigFilePath") if name in git
     }
@@ -37,7 +35,7 @@ def safe_stack(stack: dict[str, Any]) -> dict[str, Any]:
 
 
 class Portainer:
-    def __init__(self, reader: Reader) -> None:
+    def __init__(self, reader: PlatformClient) -> None:
         self.reader = reader
 
     def stacks(self) -> list[dict[str, Any]]:
@@ -53,7 +51,7 @@ class Portainer:
             f"/api/stacks/{key(stack)}/file", kind="portainer", params={"endpointId": endpoint}
         )
         if not isinstance(data.get("StackFileContent"), str):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "StackFileContent is missing.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "StackFileContent is missing.")
         return str(data["StackFileContent"])
 
     def endpoints(self) -> list[dict[str, Any]]:
@@ -65,7 +63,7 @@ class Portainer:
     def docker_info(self, endpoint: str) -> dict[str, Any]:
         data = self.reader.json(f"/api/endpoints/{key(endpoint)}/docker/info", kind="portainer")
         if not isinstance(data.get("Swarm"), dict):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Docker Swarm info is missing.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Docker Swarm info is missing.")
         return {"Swarm": data["Swarm"]}
 
     def services(self, endpoint: str, namespace: str | None = None) -> list[dict[str, Any]]:
@@ -75,7 +73,7 @@ class Portainer:
         for service in data:
             spec = service.get("Spec", {})
             if not isinstance(spec, dict) or not isinstance(spec.get("Labels", {}), dict):
-                raise DceError(ErrorCode.API_INCOMPATIBLE, "Unexpected service labels.")
+                raise DceError(ErrorCode.PLATFORM_ERROR, "Unexpected service labels.")
         return [
             service
             for service in data
@@ -108,20 +106,10 @@ class Portainer:
         service_id: str | None,
         service_name: str | None,
         controls: LogControls,
-        grant: ServiceLogGrant | None = None,
     ) -> dict[str, Any]:
         controls.bounds()
         if bool(service_id) == bool(service_name):
-            raise DceError(ErrorCode.INVALID_PAYLOAD, "Exactly one service selector is required.")
-        if grant is not None:
-            grant.authorize(
-                self.reader.config.instance_id,
-                endpoint,
-                stack_id,
-                service_id=service_id,
-                service_name=service_name,
-                controls=controls,
-            )
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Exactly one service selector is required.")
         stack = self.stack(stack_id)
         if (
             str(stack.get("Id")) != stack_id
@@ -138,15 +126,15 @@ class Portainer:
             or not isinstance(cluster["ID"], str)
             or not re.fullmatch(r"[a-z0-9]{1,64}", cluster["ID"])
         ):
-            raise DceError(ErrorCode.SNAPSHOT_CONFLICT, "Stack does not match the current Swarm.")
+            raise DceError(ErrorCode.OUT_OF_SCOPE, "Stack does not match the current Swarm.")
         namespace = stack.get("Namespace") or stack.get("Name")
         if not isinstance(namespace, str) or not re.fullmatch(
             r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", namespace
         ):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Stack namespace is unavailable.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Stack namespace is unavailable.")
         if service_name is not None:
             if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", service_name):
-                raise DceError(ErrorCode.INVALID_PAYLOAD, "Invalid Compose service key.")
+                raise DceError(ErrorCode.PLATFORM_ERROR, "Invalid Compose service key.")
             exact_name = namespace + "_" + service_name
             candidates = self.reader.json(
                 f"/api/endpoints/{key(endpoint)}/docker/services",
@@ -167,15 +155,11 @@ class Portainer:
                 raise DceError(ErrorCode.NOT_FOUND, "Service selector is absent or ambiguous.")
             service_id = selected[0].get("ID")
         if not isinstance(service_id, str) or not re.fullmatch(r"[a-z0-9]{1,64}", service_id):
-            raise DceError(ErrorCode.INVALID_PAYLOAD, "Full Docker service ID is required.")
-        if grant is not None and service_id != grant.spec.service_id:
-            raise DceError(
-                ErrorCode.PERMISSION_DENIED, "Resolved service is outside temporary grant."
-            )
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Full Docker service ID is required.")
         service = self.service(endpoint, service_id)
         spec = service.get("Spec")
         if not isinstance(spec, dict) or not isinstance(spec.get("Labels"), dict):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Service scope labels are unavailable.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Service scope labels are unavailable.")
         name = spec.get("Name")
         if (
             service.get("ID") != service_id
@@ -192,32 +176,26 @@ class Portainer:
             or type(version_info.get("Index")) is not int
             or version_info["Index"] < 0
         ):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Service version is unavailable.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Service version is unavailable.")
         task = spec.get("TaskTemplate")
         if not isinstance(task, dict) or not isinstance(task.get("ContainerSpec"), dict):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Container service metadata is required.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Container service metadata is required.")
         tty = task["ContainerSpec"].get("TTY", False)
         if not isinstance(tty, bool):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Invalid service TTY metadata.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Invalid service TTY metadata.")
         driver = task.get("LogDriver") or {}
         if not isinstance(driver, dict):
-            raise DceError(ErrorCode.API_INCOMPATIBLE, "Invalid log driver metadata.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Invalid log driver metadata.")
         if driver.get("Name") not in (None, "", "json-file", "journald"):
-            raise DceError(ErrorCode.LOG_DRIVER_UNSUPPORTED, "Service log driver is unsupported.")
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Service log driver is unsupported.")
         version = self.reader.json(
             f"/api/endpoints/{key(endpoint)}/docker/version", kind="portainer"
         )
         api = version.get("ApiVersion", "")
         if not isinstance(api, str) or not re.fullmatch(r"1\.\d{1,3}", api) or int(api[2:]) < 30:
-            raise DceError(
-                ErrorCode.LOG_FILTER_UNSUPPORTED, "Service logs require Docker API 1.30+."
-            )
-        if grant is not None:
-            grant.verify_identity(stack.get("Name"), namespace, cluster["ID"], service_id, name)
-            grant.consume(controls)
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Service logs require Docker API 1.30+.")
         start, _ = controls.bounds()
-        # Integer Docker filtering must not widen a temporary grant by rounding down.
-        since = (start + 999_999_999) // 1_000_000_000 if grant else start // 1_000_000_000
+        since = start // 1_000_000_000
         raw = await read_logs(
             self.reader,
             f"/api/endpoints/{key(endpoint)}/docker/v{api}/services/{key(service_id)}/logs",
@@ -240,7 +218,7 @@ class Portainer:
             or current.get("Version") != service.get("Version")
             or current.get("Spec") != spec
         ):
-            raise DceError(ErrorCode.SNAPSHOT_CONFLICT, "Service changed during log retrieval.")
+            raise DceError(ErrorCode.OUT_OF_SCOPE, "Service changed during log retrieval.")
         record["identity"] = {
             "endpoint_id": endpoint,
             "stack_id": stack_id,
