@@ -12,6 +12,7 @@
 | 2026-11-16 | T1.5 | f8ea350 | 123 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；2233 行；只读接口和编码测试完成；两处格式问题修正后复跑并并入本地提交 |
 | 2026-11-16 | T1.6 | f940505 | 126 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；2548 行；带来源与 TODO 注释的配置、同 namespace 精确服务匹配、proposed 差异完成 |
 | 2026-11-16 | T1.7 | 37e71e2 | 160 passed / 88.85% | — | pytest、ruff、mypy、公开数据检查通过；2809 行；逐项 pass/fail、两项固定 warn 及 scope 404 warn 完成；例外按已答复第 4 条执行 |
+| 2026-11-16 | T1.8 | 381b706 | 168 passed / 89.03% | — | pytest、ruff、mypy、公开数据检查通过；3135 行；workspace 94.79%、loop 95.74%、platforms 81.37%；stdio 列出 12 工具并调用 dce_status；text/structuredContent 一致；run 仅本地只读；M1 离线完成，R1 待用户验收，未开始 M2 |
 
 ## 待确认
 
