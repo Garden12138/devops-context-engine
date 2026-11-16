@@ -104,7 +104,7 @@
    - 测试夹具按 05 的 T1.3 写成合成文件，覆盖三种形态（模板加子流水线的 Maven 多模块、直接 job 的前端、只发布 jar 的库）和一个未知表达式反例。可以参考 .local/v2/field-facts.md 里真实 CI 的结构，但名字一律用 demo-*。
    - scan 用 ruamel.yaml 写出带注释的 dce.yaml：不确定处写 “# TODO(确认): 原因”；已有 dce.yaml 时只写 dce.proposed.yaml 和差异，绝不覆盖。
    - workspace 定位按 03 第 3.4 节，不调用 MCP roots/list。
-   - doctor 的检查项 id 与 04 第 1 节一致；每项都有 pass 和 fail 测试。
+   - doctor 的检查项 id 与 04 第 1 节一致；除 portainer.write、zentao.resolve 两项固定 warn 外，每项都有 pass 和 fail 测试；两项固定 warn 各测试状态及首次使用验证提示。
    - mcp_server.py 注册全部 12 个工具，未实现的返回 NOT_IMPLEMENTED；text content 与 structuredContent 内容相同。
 4. 完成标准：全部测试通过；workspace、loop、platforms 覆盖率 ≥ 80%；tests/test_mcp_stdio.py 能列出 12 个工具并调用 dce_status。
 5. 按第 1.2 节汇报。最后把 06 的“共同前置”和 R1 整理成我在 Cursor 里可以直接照做的清单，包括：
