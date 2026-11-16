@@ -57,6 +57,7 @@ class PlatformConfig(BaseModel):
 class Settings(BaseModel):
     model_config = ConfigDict(extra="forbid")
     _zentao_tokens: "ZenTaoTokenManager | None" = PrivateAttr(default=None)
+    _zentao_account: str | None = PrivateAttr(default=None)
     allow_http: bool = False
     timeout: float = Field(default=10, gt=0, le=120)
     max_retries: int = Field(default=2, ge=0, le=5)
@@ -81,23 +82,37 @@ class Settings(BaseModel):
     def platform(self, name: str) -> PlatformConfig:
         config: PlatformConfig | None = getattr(self, name, None)
         if config is None:
-            raise DceError(ErrorCode.AUTH_FAILED, "Platform configuration is missing.")
+            raise DceError(ErrorCode.CREDENTIALS_INVALID, f"{name}: 缺少平台连接或凭证配置。")
         if config.base_url.startswith("http:") and not self.allow_http:
-            raise DceError(ErrorCode.CONFIG_INVALID, "HTTP requires explicit allow_http.")
+            raise DceError(
+                ErrorCode.CONFIG_INVALID,
+                f"{name}.base_url 使用 HTTP，请在 connections.toml 加 allow_http = true。",
+            )
         return config
 
 
 def load_settings(
-    path: Path | None = None, *, environ: Mapping[str, str] | None = None, **overrides: Any
+    connections: Path | None = None,
+    credentials: Path | None = None,
+    *, environ: Mapping[str, str] | None = None, **overrides: Any
 ) -> Settings:
     """CLI overrides > process environment > explicit non-secret TOML; no dotenv."""
+    if credentials is not None:
+        return local_settings(
+            connections or Path.home() / '.config/dce/connections.toml', credentials,
+            live=True, read_only=True, environment=environ,
+        )
     environment = os.environ if environ is None else environ
     try:
         data: dict[str, Any] = {}
-        if path is not None:
-            data = tomllib.loads(path.read_text())
-            if any("token" in entry for entry in data.values() if isinstance(entry, dict)):
-                raise DceError(ErrorCode.CONFIG_INVALID, "Credentials must use environment input.")
+        if connections is not None:
+            data = tomllib.loads(connections.read_text())
+            for name, entry in data.items():
+                if name == 'token' or isinstance(entry, dict) and 'token' in entry:
+                    raise DceError(
+                        ErrorCode.CONFIG_INVALID,
+                        f"connections.toml {name}: 凭证只能放在凭证文件。",
+                    )
         for name in Settings.model_fields:
             if name in {"zentao", "gitlab", "portainer"}:
                 platform = dict(data.get(name, {}))
@@ -110,14 +125,47 @@ def load_settings(
                     if key in environment:
                         platform[field] = environment[key]
                 if platform:
+                    source = f'DCE_{name.upper()}_URL'
+                    alias = next((k for k, v in ALIASES.items() if v == source), source)
+                    address = urlsplit(str(platform.get('base_url', '')))
+                    if (address.scheme not in {'http', 'https'} or not address.hostname
+                            or address.username or address.password or address.query
+                            or address.fragment):
+                        raise DceError(
+                            ErrorCode.CONFIG_INVALID,
+                            f'{name}.base_url（{alias} / {source}）: URL 无效或含用户名密码。',
+                            '填写仅含协议、主机和平台路径的 URL。',
+                        )
+                    if not platform.get('token'):
+                        label = {
+                            'gitlab': '缺少 GitLab 令牌（GITLAB_TOKEN 或 DCE_GITLAB_TOKEN）',
+                            'portainer': ('缺少 Portainer 令牌'
+                                          '（PORTAINER_API_KEY 或 DCE_PORTAINER_TOKEN）'),
+                            'zentao': '缺少禅道凭证（ZEN_USER 与 ZEN_PASSWORD）',
+                        }[name]
+                        raise DceError(ErrorCode.CREDENTIALS_INVALID, label)
                     platform.setdefault("instance_id", name)
                     data[name] = platform
             elif f"DCE_{name.upper()}" in environment:
                 data[name] = environment[f"DCE_{name.upper()}"]
         data.update({key: value for key, value in overrides.items() if value is not None})
-        return Settings.model_validate(data)
-    except (OSError, ValueError, ValidationError):
-        raise DceError(ErrorCode.CONFIG_INVALID, "Invalid DCE configuration.") from None
+        settings = Settings.model_validate(data)
+        for name in PLATFORMS:
+            if getattr(settings, name) is not None:
+                settings.platform(name)
+        return settings
+    except ValidationError as exc:
+        fields = ', '.join('.'.join(map(str, e['loc'])) for e in exc.errors())
+        raise DceError(
+            ErrorCode.CONFIG_INVALID, f'connections.toml {fields}: 配置类型或取值无效。',
+            '按 docs/v2/03 第 3.1 节修改对应字段。',
+        ) from None
+    except (OSError, ValueError) as exc:
+        raise DceError(
+            ErrorCode.CONFIG_INVALID,
+            f'connections.toml: {type(exc).__name__}，无法读取或解析连接配置。',
+            '检查文件路径、读取权限与 TOML 语法。',
+        ) from None
 
 
 PLATFORMS = ("zentao", "gitlab", "portainer")
@@ -151,8 +199,11 @@ def credential_environment(path: Path) -> tuple[dict[str, str], str | None, Secr
         descriptor = os.open(path, flags)
         with os.fdopen(descriptor, "rb") as stream:
             info = os.fstat(stream.fileno())
-            if not stat.S_ISREG(info.st_mode) or info.st_mode & 0o077:
-                raise DceError(ErrorCode.CREDENTIALS_INVALID, "Credential file must be private.")
+            if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600:
+                raise DceError(
+                    ErrorCode.CREDENTIALS_INVALID, "凭证文件必须为普通文件，权限必须为 0600。",
+                    '对凭证文件执行 chmod 600。',
+                )
             payload = stream.read(65537)
         if len(payload) > 65536:
             raise ValueError("size")
@@ -189,9 +240,15 @@ def credential_environment(path: Path) -> tuple[dict[str, str], str | None, Secr
         return values, account, SecretStr(password) if password is not None else None
     except DceError:
         raise
-    except (OSError, ValueError, UnicodeError):
+    except (OSError, ValueError, UnicodeError) as exc:
+        reason = {
+            'size': '超过 64KB', 'format': '字面格式无效',
+            'duplicate': '重复键', 'conflict': '别名冲突',
+        }.get(str(exc), '读取失败或编码无效')
         raise DceError(
-            ErrorCode.CREDENTIALS_INVALID, "Local credential input is invalid."
+            ErrorCode.CREDENTIALS_INVALID,
+            f"凭证文件: {type(exc).__name__}（{reason}）。",
+            '检查文件路径、符号链接、大小上限、字面格式、重复键和别名冲突。',
         ) from None
 
 
@@ -237,6 +294,7 @@ def local_settings(
     if login:
         env["DCE_ZENTAO_TOKEN"] = "authentication-only-placeholder"
     settings = load_settings(config, environ=env)
+    settings._zentao_account = account
     if login:
         connection = settings.platform("zentao")
         assert account is not None and password is not None
