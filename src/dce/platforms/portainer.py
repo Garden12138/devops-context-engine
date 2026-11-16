@@ -43,6 +43,21 @@ class Portainer:
             safe_stack(s) for s in self.reader.json("/api/stacks", kind="portainer", expected=list)
         ]
 
+    def registries(self) -> list[dict[str, Any]]:
+        data = self.reader.json('/api/registries', kind='portainer', expected=list)
+        return [{k: item[k] for k in ('Id', 'Name', 'URL') if k in item} for item in data]
+
+    def swarm_id(self, endpoint: int) -> str:
+        swarm = self.docker_info(str(endpoint))['Swarm']
+        cluster = swarm.get('Cluster')
+        if not isinstance(cluster, dict) or not isinstance(cluster.get('ID'), str):
+            raise DceError(
+                ErrorCode.PLATFORM_ERROR,
+                f'Portainer endpoint {endpoint} HTTP 200: 缺少 Swarm.Cluster.ID。',
+                '选择运行中的 Swarm endpoint，然后重新检查配置。',
+            )
+        return str(cluster['ID'])
+
     def stack(self, stack: str) -> dict[str, Any]:
         return safe_stack(self.reader.json(f"/api/stacks/{key(stack)}", kind="portainer"))
 
