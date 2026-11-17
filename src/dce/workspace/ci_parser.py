@@ -127,7 +127,7 @@ def _job(name: str, data: dict[str, Any], branch: str, result: CiParseResult) ->
     projects: list[str] = []
     deploy = False
     for line in script:
-        for command in re.split(r'[;\n]', str(line)):
+        for command in _script_commands(str(line)):
             tokens = shlex.split(command)
             if tokens[:1] == ['export']:
                 for assignment in tokens[1:]:
@@ -161,6 +161,42 @@ def _job(name: str, data: dict[str, Any], branch: str, result: CiParseResult) ->
         changes, variables, script, include if isinstance(include, str) else None,
         pushes or builds, projects, deploy,
     ), active
+
+
+def _script_commands(line: str) -> list[str]:
+    """按引号外、未转义的分号和换行切命令。find -exec 的转义分号必须留在同一条命令里。"""
+    parts: list[str] = []
+    buf: list[str] = []
+    escaped = False
+    quote = ''
+    for char in line:
+        if escaped:
+            buf.append('\\')
+            buf.append(char)
+            escaped = False
+            continue
+        if char == '\\':
+            escaped = True
+            continue
+        if quote:
+            buf.append(char)
+            if char == quote:
+                quote = ''
+            continue
+        if char in {'"', "'"}:
+            quote = char
+            buf.append(char)
+            continue
+        if char in {';', '\n'}:
+            parts.append(''.join(buf))
+            buf = []
+            continue
+        buf.append(char)
+    if escaped:
+        buf.append('\\')
+    if buf:
+        parts.append(''.join(buf))
+    return [part for part in parts if part.strip()]
 
 
 def _module_path(job: CiJob) -> str | None:

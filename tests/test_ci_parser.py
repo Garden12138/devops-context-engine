@@ -87,6 +87,38 @@ def test_unsafe_or_unresolvable_yaml(text):
     assert error.value.code == 'CONFIG_INVALID'
 
 
+def test_escaped_semicolon_is_kept_inside_find_exec():
+    result = parse_ci(r'''
+compile_demo_web:
+  stage: compile
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
+      when: manual
+  script:
+    - find src -name "*.js" -type f -exec sed -i "s/a '.\/b'/c/g" {} \;
+build_demo_web:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
+      when: on_success
+  script:
+    - docker build -t $REGISTRY_DEV/demo/demo-web:latest .
+    - docker push $REGISTRY_DEV/demo/demo-web:latest
+  needs: [{job: compile_demo_web}]
+build_demo_other_dev:
+  stage: compile
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
+      when: manual
+  script:
+    - docker push $REGISTRY_DEV/demo/demo-other-service:latest
+''', 'develop')
+    web = next(m for m in result.modules if m.image == 'demo/demo-web')
+    assert web.compile_job == 'compile_demo_web'
+    assert web.build_job == 'build_demo_web'
+    assert any(m.image == 'demo/demo-other-service' for m in result.modules)
+
+
 def test_export_sequential_and_push_preferred_over_build():
     result = parse_ci('''
 variables: {A: demo-one, NEXT: "${A}"}
