@@ -6,7 +6,9 @@ from dataclasses import asdict
 from typing import Any
 
 from dce.errors import DceError, ErrorCode
+from dce.loop.runs import Run
 from dce.redact import redact
+from dce.workspace.config import DceConfig
 from dce.workspace.doctor import Check
 from dce.workspace.scan import ScanResult
 
@@ -20,6 +22,27 @@ def success(summary: str, data: Any, next_step: str | None = None) -> dict[str, 
     if next_step:
         result['next'] = next_step
     return result
+
+
+def plan_output(run: Run, cfg: DceConfig) -> dict[str, Any]:
+    plan = run['plan']
+    repos = {r.name: r for r in cfg.repos}
+    rows = ['| 顺序 | 仓库 | 合并 | 编译 job | 构建 job | 镜像 | 服务 | 原因 | 缺陷 |',
+            '|---|---|---|---|---|---|---|---|---|']
+    for index, item in enumerate(plan['items'], 1):
+        name = item['repo']
+        reason = ('改动' if item['reason'] == 'changed' else item['reason'])
+        if not item['required']:
+            reason = f"依赖 {item['reason'].removeprefix('depends_on:')}（建议重编）"
+        cells = [index, name, f"{run['feature_branches'][name]} → {repos[name].test_branch}",
+                 item['compile_job'], item['build_job'], item['image'],
+                 ', '.join(item['services']), reason, ', '.join(map(str, item['bugs']))]
+        rows.append('| ' + ' | '.join(str(c or '—') for c in cells) + ' |')
+    payload = success('\n'.join(rows), {'run_id': run['run_id'], **{
+        key: plan[key] for key in ('items', 'order', 'commits', 'unmapped', 'bugs_without_commits')
+    }}, f"确认后调用 merge_to_test(run_id={run['run_id']}, approved_by_user=true)。")
+    payload['warnings'] = plan['warnings']
+    return payload
 
 
 def scan_output(result: ScanResult) -> dict[str, Any]:
