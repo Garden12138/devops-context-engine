@@ -13,12 +13,15 @@
 | 2026-11-16 | T1.6 | f940505 | 126 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；2548 行；带来源与 TODO 注释的配置、同 namespace 精确服务匹配、proposed 差异完成 |
 | 2026-11-16 | T1.7 | 37e71e2 | 160 passed / 88.85% | — | pytest、ruff、mypy、公开数据检查通过；2809 行；逐项 pass/fail、两项固定 warn 及 scope 404 warn 完成；例外按已答复第 4 条执行 |
 | 2026-11-16 | T1.8 | 381b706 | 168 passed / 89.03% | — | pytest、ruff、mypy、公开数据检查通过；3135 行；workspace 94.79%、loop 95.74%、platforms 81.37%；stdio 列出 12 工具并调用 dce_status；text/structuredContent 一致；run 仅本地只读；M1 离线完成，R1 待用户验收，未开始 M2 |
+| 2026-11-17 | R1.1 自检诊断截断修复 | 82f9b4f | 172 passed / 88.96% | — | pytest、ruff、mypy、公开数据检查通过；当前工作树 3173 行；根据现场验收调整：优先返回 fail/warn、截断 pass，scope 查询 404 沿用既有兼容 warn；显示回归待用户重载 MCP 后 check；保留既有 CI 解析器未提交改动 |
 
-2026-11-17 R1 反馈更新：用户已完成操作清单第 1–6 步及第 7 步负向自检，撤销此前跳过决定，06 恢复原验收标准。第 7 步 PASS：基线为 337 pass / 3 warn / 0 fail（12.3 秒），错误 job 为 336 pass / 3 warn / 1 fail（22.7 秒），恢复后为 337 pass / 3 warn / 0 fail（20.9 秒）；三次合计约 56 秒，错误明确包含仓库、job 与 CI 文件名，配置已原样恢复。用户确认正常操作可在 15 分钟内，首次上手增加了查找配置位置的时间；完整 R1 仅待核对 warn 明细，现场验收栏暂保留 `—`，未开始 M2。真实细节仅记在 `.local/v2/acceptance-notes.md`；本次仅更新验收文档，当前工作树复查 169 tests passed、ruff、mypy 通过，保留既有 CI 解析器及测试的未提交改动。
+2026-11-17 R1 反馈更新：用户已完成操作清单第 1–7 步，第 7 步 PASS：基线为 337 pass / 3 warn / 0 fail（12.3 秒），错误 job 为 336 pass / 3 warn / 1 fail（22.7 秒），恢复后回到基线（20.9 秒），三次合计约 56 秒，配置已原样恢复。用户确认正常操作可在 15 分钟内。3 项 warn 已核对为 scope 查询接口 HTTP 404 的兼容性提示和两项首次写权限提示，均符合既有 T1.7 规则；已统一验收文档。超大返回截掉末尾诊断项的问题已先用合成数据复现，再修复为优先返回 fail/warn；当前仅剩重载 MCP 后核对三项警告完整可见的现场回归，现场验收栏暂保留 `—`，未开始 M2。真实细节仅记在 `.local/v2/acceptance-notes.md`。
+
+2026-11-17 R1 显示修复复查：当前工作树 172 tests passed、覆盖率 88.96%（workspace 94.40%、loop 95.74%、platforms 81.37%），ruff、mypy 通过；3173 行，含既有 CI 解析器及测试的未提交改动，本次保留这些改动。
 
 ## 待确认
 
-### 5. R1 现场 3 项 warn 与初始化全程耗时（耗时已答复，warn 明细待补）
+### 5. R1 现场 3 项 warn 与初始化全程耗时（已答复）
 
 2026-11-17：用户报告负向自检第 7 步 PASS，基线与恢复后的 check 均为 passed=true、337 pass / 3 warn / 0 fail。06 的 R1 要求 warn 仅剩两项首次写权限验证提示；第 3 项 warn 的 id/detail 尚未提供。用户报告的 56 秒为第 7 步三次 check 合计，初始化 scan、人工处理 TODO 与 check 的全程耗时尚未提供。
 
@@ -27,6 +30,18 @@
 用户对耗时的答复（2026-11-17，原文）：第二点全流程很快的，只不过我第一次做，很多东西都没找到，正常是可以在15min以内的
 
 执行决定：耗时按用户反馈记录为正常操作可在 15 分钟内；剩余工作仅需取得 warn 的 id/detail，由实现者判断额外警告的原因。
+
+用户对 warn 的答复（2026-11-17，原文）：
+
+这次 `project_setup(action="check")` 的汇总是 **3 warn**。返回被截断，检查列表里只带出 1 条警告正文。另外 2 条在列表末尾，被截掉了；它们的 `id` 和 `detail` 来自同配置下上一次完整自检。
+
+| id | detail |
+|---|---|
+| `gitlab.token_scope` | GitLab /personal_access_tokens/self HTTP 404: 无法读取 scopes。 |
+| `portainer.write` | 写权限需首次部署时验证 |
+| `zentao.resolve` | 解决权限需首次使用时验证 |
+
+执行决定：3 项 warn 均符合 05 第 T1.7 节及已答复第 4 条的规则；统一 03/04/06 的兼容性提示说明，`api` scope 继续按共同前置要求核对。本次发现超大自检结果会把末尾 warn/fail 截掉，用合成数据复现后修复为优先返回 fail/warn、截断 pass；修复后需重载 MCP 复查警告显示。原 R1 步骤已由用户执行，当前仅剩本次显示修复的现场回归，未开始 M2。
 
 ### 4. T1.7 两项固定 warn 与逐项 pass/fail 测试要求（已答复）
 
