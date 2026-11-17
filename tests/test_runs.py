@@ -111,3 +111,13 @@ def test_load_rejects_bad_snapshot_and_traversal(tmp_path):
     with pytest.raises(DceError) as caught:
         load_run(tmp_path, '../demo')
     assert caught.value.code == ErrorCode.OUT_OF_SCOPE
+
+
+def test_audit_stderr_redacts_target_and_omits_detail(tmp_path, capsys):
+    run = new_run(tmp_path, [4336])
+    append_event(run, 'deploy_plan', 'plan', 'Authorization: Bearer demo-secret',
+                 'ok', 'demo private detail')
+    output = capsys.readouterr().err
+    assert 'demo-secret' not in output and 'demo private detail' not in output
+    audit = json.loads(output)
+    assert set(audit) == {'ts', 'request_id', 'tool', 'action', 'target', 'result', 'error_code'}

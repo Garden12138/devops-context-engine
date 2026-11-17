@@ -124,8 +124,9 @@ def append_event(run: Run, tool: str, action: str, target: str, result: str, det
     event = redact({'at': now(), 'tool': tool, 'action': action, 'target': target,
                     'result': result, 'detail': detail})
     run.setdefault('events', []).append(event)
-    print(json.dumps({'ts': event['at'], 'request_id': uuid4().hex, 'tool': tool,
-                      'action': action, 'target': target, 'result': result, 'error_code': None}),
+    print(json.dumps(redact({'ts': event['at'], 'request_id': uuid4().hex, 'tool': tool,
+                            'action': action, 'target': target, 'result': result,
+                            'error_code': None})),
           file=sys.stderr)
 
 

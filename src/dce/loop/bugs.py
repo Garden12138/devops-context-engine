@@ -6,6 +6,7 @@ from typing import Any
 from urllib.parse import unquote, urlsplit
 
 from dce.errors import DceError, ErrorCode
+from dce.loop.runs import list_runs
 from dce.platforms.zentao import ZenTao
 from dce.workspace.config import DceConfig
 
@@ -39,7 +40,7 @@ def brief(bug: dict[str, Any]) -> dict[str, Any]:
 
 
 def list_bugs(cfg: DceConfig, scope: str = 'mine', status: str = 'active', limit: int = 20,
-              *, client: ZenTao) -> BugView:
+              *, client: ZenTao, ws: Path | None = None) -> BugView:
     account = cfg.zentao.account or client.reader.settings._zentao_account
     if (scope not in {'mine', 'all'} or status not in {'active', 'resolved', 'all'}
             or limit < 1 or cfg.zentao.product is None or (scope == 'mine' and not account)):
@@ -67,11 +68,13 @@ def list_bugs(cfg: DceConfig, scope: str = 'mine', status: str = 'active', limit
     rows = ['| 缺陷 | 标题 | 严重程度 | 优先级 | 状态 | 指派 |', '|---|---|---|---|---|---|']
     rows.extend(f"| {b['id']} | {b['title']} | {b['severity']} | {b['pri']} | "
                 f"{b['status']} | {b['assigned_to']} |" for b in result)
-    return BugView({'bugs': result}, '\n'.join(rows), warnings)
+    result_view = BugView({'bugs': result}, '\n'.join(rows), warnings)
+    link_runs(result_view, ws)
+    return result_view
 
 
 def get_bug(cfg: DceConfig, bug_id: int, images: bool = True, max_images: int = 6,
-            *, client: ZenTao) -> tuple[BugView, list[ImageBytes]]:
+            *, client: ZenTao, ws: Path | None = None) -> tuple[BugView, list[ImageBytes]]:
     if bug_id <= 0 or max_images < 0 or cfg.zentao.product is None:
         raise DceError(ErrorCode.CONFIG_INVALID,
                        'bug_get: bug_id 必须为正数、max_images 至少为 0，且需要 zentao.product。',
@@ -109,4 +112,25 @@ def get_bug(cfg: DceConfig, bug_id: int, images: bool = True, max_images: int = 
     remaining = [i['name'] for i in data['images'] if not i['delivered']]
     if remaining:
         view.summary += '\n未交付图片：' + '、'.join(remaining)
+    link_runs(view, ws)
     return view, delivered
+
+
+def link_runs(view: BugView, ws: Path | None) -> None:
+    links: dict[int, str] = {}
+    for run in list_runs(ws) if ws else []:
+        for bug in run.get('bugs', []):
+            links.setdefault(bug['id'], run['run_id'])
+    for data in view.data.get('bugs', [view.data]):
+        data['run_id'] = links.get(data['id'])
+
+
+def save_image_files(directory: Path, images: list[ImageBytes]) -> None:
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        for index, image in enumerate(images):
+            (directory / f'{index}-{image.name}').write_bytes(image.content)
+    except OSError as exc:
+        raise DceError(ErrorCode.PLATFORM_ERROR,
+                       f'本地图片目录 {directory}: {type(exc).__name__}: {exc}',
+                       '选择可写目录后重试 dce bug show --save-images。') from None

@@ -1,15 +1,20 @@
+import base64
 import os
 from pathlib import Path
 from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
-from mcp.types import CallToolResult, TextContent
+from mcp.types import CallToolResult, ContentBlock, ImageContent, TextContent
 
 from dce.errors import DceError, ErrorCode
+from dce.loop.bugs import ImageBytes, get_bug, list_bugs
+from dce.loop.plan import make_plan
 from dce.loop.runs import status
-from dce.output import check_output, compact, invoke, scan_output, success
+from dce.output import bug_output, check_output, compact, invoke, plan_output, scan_output, success
+from dce.platforms.http import PlatformClient
+from dce.platforms.zentao import ZenTao
 from dce.settings import Settings, load_settings
-from dce.workspace.config import locate_workspace
+from dce.workspace.config import load_config, locate_workspace
 from dce.workspace.doctor import check
 from dce.workspace.scan import scan
 
@@ -27,17 +32,32 @@ class Runtime:
                                        if os.environ.get('DCE_WORKSPACE') else None)
         self.settings: Settings | None = None
 
-    def call(self, tool: str, **arguments: Any) -> dict[str, Any]:
+    def call(self, tool: str, *, image_sink: list[ImageBytes] | None = None,
+             **arguments: Any) -> dict[str, Any]:
         def operation() -> dict[str, Any]:
-            if tool not in {'project_setup', 'dce_status'}:
+            if tool not in {'project_setup', 'dce_status', 'bug_list', 'bug_get', 'deploy_plan'}:
                 raise DceError(ErrorCode.NOT_IMPLEMENTED, f'{tool} 将在后续里程碑实现。',
                                '按 docs/v2/05-实施计划.md 的顺序完成后续里程碑。')
             ws = locate_workspace(arguments.get('workspace'), self.workspace, Path.cwd())
             if tool == 'dce_status':
                 data = status(ws, arguments.get('run_id'))
                 return success(f"{data['config']['name']}：{len(data['runs'])} 个运行记录。", data)
+            if tool == 'deploy_plan':
+                cfg = load_config(ws)
+                params = {k: v for k, v in arguments.items() if k != 'workspace'}
+                return plan_output(make_plan(ws, cfg, **params), cfg)
             if self.settings is None:
                 self.settings = load_settings(self.connections, self.credentials)
+            if tool in {'bug_list', 'bug_get'}:
+                cfg = load_config(ws)
+                params = {k: v for k, v in arguments.items() if k != 'workspace'}
+                with PlatformClient(self.settings.platform('zentao'), self.settings) as http:
+                    if tool == 'bug_list':
+                        return bug_output(list_bugs(cfg, client=ZenTao(http), ws=ws, **params))
+                    view, delivered = get_bug(cfg, client=ZenTao(http), ws=ws, **params)
+                    if image_sink is not None:
+                        image_sink.extend(delivered)
+                    return bug_output(view)
             if arguments['action'] == 'scan':
                 return scan_output(scan(ws, self.settings))
             if arguments['action'] == 'check':
@@ -53,8 +73,14 @@ def create_server(connections: Path | None = None, credentials: Path | None = No
     mcp = FastMCP('DCE 2.0')
 
     def call(tool: str, arguments: dict[str, Any]) -> CallToolResult:
-        payload = runtime.call(tool, **arguments)
-        return CallToolResult(content=[TextContent(type='text', text=compact(payload))],
+        arguments.pop('call', None)  # locals() also includes the tool closure's free variable.
+        images: list[ImageBytes] = []
+        payload = runtime.call(tool, image_sink=images, **arguments)
+        content: list[ContentBlock] = [TextContent(type='text', text=compact(payload))]
+        if payload['ok']:
+            content.extend(ImageContent(type='image', data=base64.b64encode(i.content).decode(),
+                                        mimeType=i.mime) for i in images)
+        return CallToolResult(content=content,
                               structuredContent=payload, isError=not payload['ok'])
 
     @mcp.tool(description='扫描工作区生成配置草稿，或检查配置、仓库与平台连接；初始化时使用。')

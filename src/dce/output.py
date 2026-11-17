@@ -6,6 +6,7 @@ from dataclasses import asdict
 from typing import Any
 
 from dce.errors import DceError, ErrorCode
+from dce.loop.bugs import BugView
 from dce.loop.runs import Run
 from dce.redact import redact
 from dce.workspace.config import DceConfig
@@ -22,6 +23,13 @@ def success(summary: str, data: Any, next_step: str | None = None) -> dict[str, 
     if next_step:
         result['next'] = next_step
     return result
+
+
+def bug_output(view: BugView) -> dict[str, Any]:
+    payload = success(view.summary, view.data)
+    if view.warnings:
+        payload['warnings'] = view.warnings
+    return payload
 
 
 def plan_output(run: Run, cfg: DceConfig) -> dict[str, Any]:
