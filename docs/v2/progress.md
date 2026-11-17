@@ -14,9 +14,15 @@
 | 2026-11-16 | T1.7 | 37e71e2 | 160 passed / 88.85% | — | pytest、ruff、mypy、公开数据检查通过；2809 行；逐项 pass/fail、两项固定 warn 及 scope 404 warn 完成；例外按已答复第 4 条执行 |
 | 2026-11-16 | T1.8 | 381b706 | 168 passed / 89.03% | — | pytest、ruff、mypy、公开数据检查通过；3135 行；workspace 94.79%、loop 95.74%、platforms 81.37%；stdio 列出 12 工具并调用 dce_status；text/structuredContent 一致；run 仅本地只读；M1 离线完成，R1 待用户验收，未开始 M2 |
 
-2026-11-17 R1 反馈：用户报告已执行操作清单第 1–6 步；第 7 步（06 的 R1 第 5 步，故意改错 job 自检）按用户要求跳过，已在 06 记录本次验收例外。第 6 步的具体自检结果与整体耗时待补，暂保留现场验收栏为 `—`；未开始 M2。本次只修改验收文档，当前工作树复查 169 tests passed、ruff、mypy 通过；保留既有 CI 解析器及测试的未提交改动。
+2026-11-17 R1 反馈更新：用户已完成操作清单第 1–6 步及第 7 步负向自检，撤销此前跳过决定，06 恢复原验收标准。第 7 步 PASS：基线为 337 pass / 3 warn / 0 fail（12.3 秒），错误 job 为 336 pass / 3 warn / 1 fail（22.7 秒），恢复后为 337 pass / 3 warn / 0 fail（20.9 秒）；三次合计约 56 秒，错误明确包含仓库、job 与 CI 文件名，配置已原样恢复。完整 R1 仍待确认 warn 明细和初始化全程耗时，现场验收栏暂保留 `—`，未开始 M2。真实细节仅记在 `.local/v2/acceptance-notes.md`；本次仅更新验收文档，当前工作树复查 169 tests passed、ruff、mypy 通过，保留既有 CI 解析器及测试的未提交改动。
 
 ## 待确认
+
+### 5. R1 现场 3 项 warn 与初始化全程耗时（待答复）
+
+2026-11-17：用户报告负向自检第 7 步 PASS，基线与恢复后的 check 均为 passed=true、337 pass / 3 warn / 0 fail。06 的 R1 要求 warn 仅剩两项首次写权限验证提示；第 3 项 warn 的 id/detail 尚未提供。用户报告的 56 秒为第 7 步三次 check 合计，初始化 scan、人工处理 TODO 与 check 的全程耗时尚未提供。
+
+请提供 3 项 warn 的 id/detail，并确认初始化全流程是否在 15 分钟内；据此记录完整 R1 的 PASS/FAIL。当前仅第 7 步标记 PASS，停在 M1。
 
 ### 4. T1.7 两项固定 warn 与逐项 pass/fail 测试要求（已答复）
 
