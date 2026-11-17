@@ -14,6 +14,9 @@
 | 2026-11-16 | T1.7 | 37e71e2 | 160 passed / 88.85% | — | pytest、ruff、mypy、公开数据检查通过；2809 行；逐项 pass/fail、两项固定 warn 及 scope 404 warn 完成；例外按已答复第 4 条执行 |
 | 2026-11-16 | T1.8 | 381b706 | 168 passed / 89.03% | R1 PASS（2026-11-17） | pytest、ruff、mypy、公开数据检查通过；3135 行；workspace 94.79%、loop 95.74%、platforms 81.37%；stdio 列出 12 工具并调用 dce_status；text/structuredContent 一致；run 仅本地只读；M1 离线及现场验收完成，未开始 M2 |
 | 2026-11-17 | R1.1 自检诊断截断修复 | 82f9b4f | 172 passed / 88.96% | PASS（2026-11-17） | pytest、ruff、mypy、公开数据检查通过；当前工作树 3173 行；根据现场验收调整：优先返回 fail/warn、截断 pass，scope 查询 404 沿用既有兼容 warn；用户回归 337 pass / 3 warn / 0 fail，三条警告正文完整；保留既有 CI 解析器未提交改动 |
+| 2026-11-17 | R1.2 CI 脚本解析修复归档 | 77ff7b3 | 172 passed / 88.96% | R1 已通过 | pytest、ruff、mypy、公开数据检查通过；3173 行；根据现场验收调整：保留脚本引号内及转义分号，回归夹具统一为 demo-*；归档此前保留的 CI 改动；按用户本次明确要求提交并普通推送当前功能分支 |
+
+2026-11-17 发布授权：用户明确要求“提交推送”，本次允许将 `feature/v2-bugfix-loop` 普通推送到 origin 同名分支。该要求覆盖本次操作的“只本地提交”限制；仍不 force push、不推标签、不建 MR、不修改其他本地分支，不开始 M2。
 
 2026-11-17 R1 最终结果：PASS。用户已完成操作清单第 1–7 步，第 7 步负向自检 PASS：基线为 337 pass / 3 warn / 0 fail（12.3 秒），错误 job 为 336 pass / 3 warn / 1 fail（22.7 秒），恢复后回到基线（20.9 秒），三次合计约 56 秒，配置已原样恢复。用户确认正常操作可在 15 分钟内。3 项 warn 为 scope 查询接口 HTTP 404 的兼容性提示和两项首次写权限提示，均符合既有 T1.7 规则。显示修复后，用户再次回归为 337 pass / 3 warn / 0 fail，并提供三条警告完整正文。M1 离线与现场验收完成，未开始 M2。真实细节仅记在 `.local/v2/acceptance-notes.md`。
 
