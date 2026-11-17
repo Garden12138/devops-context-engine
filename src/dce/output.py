@@ -35,9 +35,11 @@ def scan_output(result: ScanResult) -> dict[str, Any]:
 def check_output(checks: list[Check]) -> dict[str, Any]:
     failed = sum(c.status == 'fail' for c in checks)
     warned = sum(c.status == 'warn' for c in checks)
+    priority = {'fail': 0, 'warn': 1, 'pass': 2}
+    ordered = sorted(checks, key=lambda item: priority[item.status])
     return success(f'自检：{len(checks) - failed - warned} pass，{warned} warn，{failed} fail。',
                    {'passed': failed == 0, 'checks': [
-                       {k: v for k, v in asdict(c).items() if v is not None} for c in checks
+                       {k: v for k, v in asdict(c).items() if v is not None} for c in ordered
                    ]})
 
 

@@ -15,6 +15,8 @@ from typer.testing import CliRunner
 
 from dce.cli import app
 from dce.mcp_server import Runtime, create_server
+from dce.settings import Settings
+from dce.workspace.doctor import Check
 
 settings = platform_settings
 workspace = scan_workspace
@@ -87,6 +89,36 @@ def test_fastmcp_implemented_tools_keep_matching_content(configured, monkeypatch
     async def exercise():
         result = await create_server(workspace=root).call_tool('project_setup', {'action': 'check'})
         assert json.loads(result.content[0].text) == result.structuredContent
+
+    asyncio.run(exercise())
+
+
+def test_large_check_mcp_retains_all_warn_and_fail_details(tmp_path, monkeypatch):
+    checks = [Check(f'repo.demo-cloud.job.compile_demo_{index}', 'pass',
+                    f'GitLab 仓库 demo-cloud: compile_demo_{index} 在测试分支 CI 中存在')
+              for index in range(337)]
+    checks.extend([
+        Check('gitlab.token_scope', 'warn', 'GitLab scopes 接口 HTTP 404。'),
+        Check('portainer.write', 'warn', '写权限需首次部署时验证'),
+        Check('zentao.resolve', 'warn', '解决权限需首次使用时验证'),
+        Check('repo.demo-cloud.job.demo_missing_job', 'fail',
+              'GitLab 仓库 demo-cloud HTTP 200: .gitlab-ci-dev.yml 找不到 demo_missing_job。',
+              '更正 compile_job。'),
+    ])
+    monkeypatch.setattr('dce.mcp_server.load_settings', lambda *args: Settings())
+    monkeypatch.setattr('dce.mcp_server.check', lambda *args: checks)
+
+    async def exercise():
+        result = await create_server(workspace=tmp_path).call_tool(
+            'project_setup', {'action': 'check'},
+        )
+        payload = result.structuredContent
+        assert json.loads(result.content[0].text) == payload
+        assert len(result.content[0].text.encode()) <= 24000
+        assert payload['data']['passed'] is False
+        retained = {item['id'] for item in payload['data']['checks']}
+        assert {item.id for item in checks if item.status != 'pass'}.issubset(retained)
+        assert payload['warnings'][0]['code'] == 'TRUNCATED'
 
     asyncio.run(exercise())
 
