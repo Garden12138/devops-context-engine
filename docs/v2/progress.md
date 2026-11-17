@@ -12,10 +12,10 @@
 | 2026-11-16 | T1.5 | f8ea350 | 123 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；2233 行；只读接口和编码测试完成；两处格式问题修正后复跑并并入本地提交 |
 | 2026-11-16 | T1.6 | f940505 | 126 passed / 未测覆盖率 | — | pytest、ruff、mypy、公开数据检查通过；2548 行；带来源与 TODO 注释的配置、同 namespace 精确服务匹配、proposed 差异完成 |
 | 2026-11-16 | T1.7 | 37e71e2 | 160 passed / 88.85% | — | pytest、ruff、mypy、公开数据检查通过；2809 行；逐项 pass/fail、两项固定 warn 及 scope 404 warn 完成；例外按已答复第 4 条执行 |
-| 2026-11-16 | T1.8 | 381b706 | 168 passed / 89.03% | — | pytest、ruff、mypy、公开数据检查通过；3135 行；workspace 94.79%、loop 95.74%、platforms 81.37%；stdio 列出 12 工具并调用 dce_status；text/structuredContent 一致；run 仅本地只读；M1 离线完成，R1 待用户验收，未开始 M2 |
-| 2026-11-17 | R1.1 自检诊断截断修复 | 82f9b4f | 172 passed / 88.96% | — | pytest、ruff、mypy、公开数据检查通过；当前工作树 3173 行；根据现场验收调整：优先返回 fail/warn、截断 pass，scope 查询 404 沿用既有兼容 warn；显示回归待用户重载 MCP 后 check；保留既有 CI 解析器未提交改动 |
+| 2026-11-16 | T1.8 | 381b706 | 168 passed / 89.03% | R1 PASS（2026-11-17） | pytest、ruff、mypy、公开数据检查通过；3135 行；workspace 94.79%、loop 95.74%、platforms 81.37%；stdio 列出 12 工具并调用 dce_status；text/structuredContent 一致；run 仅本地只读；M1 离线及现场验收完成，未开始 M2 |
+| 2026-11-17 | R1.1 自检诊断截断修复 | 82f9b4f | 172 passed / 88.96% | PASS（2026-11-17） | pytest、ruff、mypy、公开数据检查通过；当前工作树 3173 行；根据现场验收调整：优先返回 fail/warn、截断 pass，scope 查询 404 沿用既有兼容 warn；用户回归 337 pass / 3 warn / 0 fail，三条警告正文完整；保留既有 CI 解析器未提交改动 |
 
-2026-11-17 R1 反馈更新：用户已完成操作清单第 1–7 步，第 7 步 PASS：基线为 337 pass / 3 warn / 0 fail（12.3 秒），错误 job 为 336 pass / 3 warn / 1 fail（22.7 秒），恢复后回到基线（20.9 秒），三次合计约 56 秒，配置已原样恢复。用户确认正常操作可在 15 分钟内。3 项 warn 已核对为 scope 查询接口 HTTP 404 的兼容性提示和两项首次写权限提示，均符合既有 T1.7 规则；已统一验收文档。超大返回截掉末尾诊断项的问题已先用合成数据复现，再修复为优先返回 fail/warn；当前仅剩重载 MCP 后核对三项警告完整可见的现场回归，现场验收栏暂保留 `—`，未开始 M2。真实细节仅记在 `.local/v2/acceptance-notes.md`。
+2026-11-17 R1 最终结果：PASS。用户已完成操作清单第 1–7 步，第 7 步负向自检 PASS：基线为 337 pass / 3 warn / 0 fail（12.3 秒），错误 job 为 336 pass / 3 warn / 1 fail（22.7 秒），恢复后回到基线（20.9 秒），三次合计约 56 秒，配置已原样恢复。用户确认正常操作可在 15 分钟内。3 项 warn 为 scope 查询接口 HTTP 404 的兼容性提示和两项首次写权限提示，均符合既有 T1.7 规则。显示修复后，用户再次回归为 337 pass / 3 warn / 0 fail，并提供三条警告完整正文。M1 离线与现场验收完成，未开始 M2。真实细节仅记在 `.local/v2/acceptance-notes.md`。
 
 2026-11-17 R1 显示修复复查：当前工作树 172 tests passed、覆盖率 88.96%（workspace 94.40%、loop 95.74%、platforms 81.37%），ruff、mypy 通过；3173 行，含既有 CI 解析器及测试的未提交改动，本次保留这些改动。
 
@@ -42,6 +42,8 @@
 | `zentao.resolve` | 解决权限需首次使用时验证 |
 
 执行决定：3 项 warn 均符合 05 第 T1.7 节及已答复第 4 条的规则；统一 03/04/06 的兼容性提示说明，`api` scope 继续按共同前置要求核对。本次发现超大自检结果会把末尾 warn/fail 截掉，用合成数据复现后修复为优先返回 fail/warn、截断 pass；修复后需重载 MCP 复查警告显示。原 R1 步骤已由用户执行，当前仅剩本次显示修复的现场回归，未开始 M2。
+
+现场回归答复（2026-11-17）：用户报告 `project_setup(action="check")` 为 337 项通过、0 项失败、3 项警告，并逐项提供 `gitlab.token_scope`、`portainer.write`、`zentao.resolve` 的完整 detail。显示修复回归 PASS，完整 R1 标记 PASS；本条已处理完毕，停在 M1。
 
 ### 4. T1.7 两项固定 warn 与逐项 pass/fail 测试要求（已答复）
 
