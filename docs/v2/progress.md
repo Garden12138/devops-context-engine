@@ -14,6 +14,8 @@
 | 2026-11-16 | T1.7 | 37e71e2 | 160 passed / 88.85% | — | pytest、ruff、mypy、公开数据检查通过；2809 行；逐项 pass/fail、两项固定 warn 及 scope 404 warn 完成；例外按已答复第 4 条执行 |
 | 2026-11-16 | T1.8 | 381b706 | 168 passed / 89.03% | — | pytest、ruff、mypy、公开数据检查通过；3135 行；workspace 94.79%、loop 95.74%、platforms 81.37%；stdio 列出 12 工具并调用 dce_status；text/structuredContent 一致；run 仅本地只读；M1 离线完成，R1 待用户验收，未开始 M2 |
 
+2026-11-17 R1 反馈：用户报告已执行操作清单第 1–6 步；第 7 步（06 的 R1 第 5 步，故意改错 job 自检）按用户要求跳过，已在 06 记录本次验收例外。第 6 步的具体自检结果与整体耗时待补，暂保留现场验收栏为 `—`；未开始 M2。本次只修改验收文档，当前工作树复查 169 tests passed、ruff、mypy 通过；保留既有 CI 解析器及测试的未提交改动。
+
 ## 待确认
 
 ### 4. T1.7 两项固定 warn 与逐项 pass/fail 测试要求（已答复）
