@@ -29,6 +29,16 @@ class ZenTao:
             raise DceError(ErrorCode.PLATFORM_ERROR, "Bug ID is missing.")
         return dict(data)
 
+    def bugs_page(self, product: int, page: int, limit: int = 100) -> list[dict[str, Any]]:
+        data = self.reader.json(f"{self.prefix}/products/{product}/bugs", kind="zentao",
+                                params={"page": page, "limit": limit})
+        bugs = data.get("bugs")
+        if not isinstance(bugs, list) or any(not isinstance(b, dict) for b in bugs):
+            raise DceError(ErrorCode.PLATFORM_ERROR,
+                           f"禅道产品 {product} 缺陷列表 HTTP 200: bugs 应为列表。",
+                           "检查该实例 v1 缺陷列表响应格式。")
+        return bugs
+
     @staticmethod
     def parse_steps(bug: dict[str, Any]) -> tuple[str, list[str]]:
         soup = BeautifulSoup(str(bug.get("steps", bug.get("steps_html", ""))), "html.parser")
@@ -58,6 +68,9 @@ class ZenTao:
         }
         if mime not in signatures or not content.startswith(signatures[mime][0]):
             raise DceError(
-                ErrorCode.PLATFORM_ERROR, "Attachment is not a supported verified image."
+                ErrorCode.PLATFORM_ERROR,
+                f"ZenTao attachment {url} HTTP {response.status_code}: "
+                f"MIME {mime!r} or signature is not a supported verified image.",
+                "Check the attachment MIME and image file header in ZenTao.",
             )
         return content, mime
