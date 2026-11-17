@@ -15,14 +15,13 @@
 | 2026-11-16 | T1.8 | 381b706 | 168 passed / 89.03% | R1 PASS（2026-11-17） | pytest、ruff、mypy、公开数据检查通过；3135 行；workspace 94.79%、loop 95.74%、platforms 81.37%；stdio 列出 12 工具并调用 dce_status；text/structuredContent 一致；run 仅本地只读；M1 离线及现场验收完成，未开始 M2 |
 | 2026-11-17 | R1.1 自检诊断截断修复 | 82f9b4f | 172 passed / 88.96% | PASS（2026-11-17） | pytest、ruff、mypy、公开数据检查通过；当前工作树 3173 行；根据现场验收调整：优先返回 fail/warn、截断 pass，scope 查询 404 沿用既有兼容 warn；用户回归 337 pass / 3 warn / 0 fail，三条警告正文完整；保留既有 CI 解析器未提交改动 |
 | 2026-11-17 | R1.2 CI 脚本解析修复归档 | 77ff7b3 | 172 passed / 88.96% | R1 已通过 | pytest、ruff、mypy、公开数据检查通过；3173 行；根据现场验收调整：保留脚本引号内及转义分号，回归夹具统一为 demo-*；归档此前保留的 CI 改动；按用户本次明确要求提交并普通推送当前功能分支 |
-
 | 2026-11-17 | T2.1 | 3045bad | 180 passed / 89.40% | — | pytest、ruff、mypy、公开数据检查通过；3297 行；先校验产品再解析正文和图片，默认 6 张；actions 缺失返回 HISTORY_UNAVAILABLE |
-
 | 2026-11-17 | T2.2 | 6d9a373 | 190 passed / 89.79% | — | pytest、ruff、mypy、公开数据检查通过；3397 行；原子替换、flock、events 追加及并发更新完成 |
-
 | 2026-11-17 | T2.3 | da1a29e | 195 passed / 90.04% | — | pytest、ruff、mypy、公开数据检查通过；3477 行；git 列表参数、shell=False、禁提示、60 秒超时；本地 bare 夹具覆盖全部读函数 |
-
 | 2026-11-17 | T2.4 | fe1d0fe | 213 passed / 90.47% | — | pytest、ruff、mypy、公开数据检查通过；3667 行；9 步部署计划、模块/依赖排序、六类约定警告与 9 列顺序表完成；仅本地 git 夹具 |
+| 2026-11-17 | T2.5 | 8e14072 | 216 passed / 90.65% | — | pytest、ruff、mypy、公开数据检查通过；3744 行；workspace 94.40%、loop 98.16%、platforms 81.43%；MCP 原生图片、CLI 图片保存、stdio 本地 bare 计划创建/刷新完成；补充审计输出脱敏回归 |
+
+2026-11-17 M2 离线结果：T2.1–T2.5 各一个本地提交，全部 216 tests passed，覆盖率 90.65%；ruff、mypy、公开数据检查通过，stdio 仅用本地 bare git 夹具调用 deploy_plan。非测试代码 3744 行，未超预算。无新增待确认；R2 现场验收待用户执行，未开始 M3。各任务 SHA 在后续提交归档，本行和 T2.5 结果另作进度归档提交。
 
 2026-11-17 发布授权：用户明确要求“提交推送”，本次允许将 `feature/v2-bugfix-loop` 普通推送到 origin 同名分支。该要求覆盖本次操作的“只本地提交”限制；仍不 force push、不推标签、不建 MR、不修改其他本地分支，不开始 M2。
 
