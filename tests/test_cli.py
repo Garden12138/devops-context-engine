@@ -17,8 +17,6 @@ def test_version_works_without_loading_configuration():
 @pytest.mark.parametrize(
     "args",
     [
-        ["deploy", "--run", "demo-run"],
-        ["deploy-status", "--run", "demo-run", "--logs", "100"],
         ["run", "update", "--run", "demo-run"],
         ["resolve", "--run", "demo-run", "--bug", "4336"],
     ],

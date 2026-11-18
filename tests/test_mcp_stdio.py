@@ -14,7 +14,6 @@ TOOLS = {
     'ci_build', 'ci_status', 'service_deploy', 'service_status', 'run_update', 'bug_resolve',
 }
 PENDING = {
-    'service_deploy': {'run_id': 'demo-run'}, 'service_status': {'service': 'demo_test_demo-web'},
     'run_update': {'run_id': 'demo-run', 'note': 'demo'}, 'bug_resolve': {'run_id': 'demo-run'},
 }
 
@@ -54,6 +53,16 @@ def test_stdio_lists_twelve_tools_and_reads_status_offline(tmp_path):
                     pending = await session.call_tool(name, arguments)
                     assert json.loads(pending.content[0].text) == pending.structuredContent
                     assert pending.structuredContent['error']['code'] == 'NOT_IMPLEMENTED'
+                invalid = await session.call_tool('service_status', {})
+                assert json.loads(invalid.content[0].text) == invalid.structuredContent
+                assert invalid.structuredContent['error']['code'] == 'CONFIG_INVALID'
+                for name, arguments in [
+                    ('service_deploy', {'run_id': 'demo-run'}),
+                    ('service_status', {'service': 'demo_test_demo-web', 'wait_seconds': 0}),
+                ]:
+                    unavailable = await session.call_tool(name, arguments)
+                    assert json.loads(unavailable.content[0].text) == unavailable.structuredContent
+                    assert unavailable.structuredContent['error']['code'] == 'CREDENTIALS_INVALID'
 
     asyncio.run(asyncio.wait_for(exercise(), timeout=20))
 

@@ -141,15 +141,28 @@ def build_status(ctx: typer.Context, run: Annotated[str, typer.Option("--run")],
 
 
 @app.command()
-def deploy(run: Annotated[str, typer.Option("--run")]) -> None:
-    pending("service_deploy")
+def deploy(ctx: typer.Context, run: Annotated[str, typer.Option("--run")]) -> None:
+    emit(ctx, 'service_deploy', run_id=run)
 
 
 @app.command("deploy-status")
 def deploy_status(
-    run: Annotated[str, typer.Option("--run")], wait: int = 0, logs: int = 0
+    ctx: typer.Context, run: Annotated[str, typer.Option("--run")],
+    wait: Annotated[int, typer.Option(min=0)] = 0,
+    logs: Annotated[int, typer.Option(min=0, max=300)] = 0,
 ) -> None:
-    pending("service_status")
+    deadline = time.monotonic() + wait
+    while True:
+        remaining = max(0, math.ceil(deadline - time.monotonic()))
+        result = ctx.obj['runtime'].call('service_status', run_id=run,
+                                        wait_seconds=min(45, remaining), logs_tail=logs)
+        if not result['ok'] or time.monotonic() >= deadline:
+            break
+        services = result['data']['services']
+        if (any(s['verdict'] == 'failed' for s in services)
+                or not any(s['verdict'] == 'updating' for s in services)):
+            break
+    render(ctx, result)
 
 
 @run_app.command("update")

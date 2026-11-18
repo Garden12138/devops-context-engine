@@ -9,12 +9,15 @@ from mcp.types import CallToolResult, ContentBlock, ImageContent, TextContent
 from dce.errors import DceError, ErrorCode
 from dce.loop.bugs import ImageBytes, get_bug, list_bugs
 from dce.loop.build import poll_builds, start_builds
+from dce.loop.deploy import deploy
+from dce.loop.deploy import status as service_status
 from dce.loop.gitops import merge_repositories
 from dce.loop.plan import make_plan
 from dce.loop.runs import load_run, status
 from dce.output import bug_output, check_output, compact, invoke, plan_output, scan_output, success
 from dce.platforms.gitlab import GitLab
 from dce.platforms.http import PlatformClient
+from dce.platforms.portainer import Portainer
 from dce.platforms.zentao import ZenTao
 from dce.settings import Settings, load_settings
 from dce.workspace.config import load_config, locate_workspace
@@ -39,10 +42,16 @@ class Runtime:
              **arguments: Any) -> dict[str, Any]:
         def operation() -> dict[str, Any]:
             if tool not in {'project_setup', 'dce_status', 'bug_list', 'bug_get', 'deploy_plan',
-                            'merge_to_test', 'ci_build', 'ci_status'}:
+                            'merge_to_test', 'ci_build', 'ci_status',
+                            'service_deploy', 'service_status'}:
                 raise DceError(ErrorCode.NOT_IMPLEMENTED, f'{tool} 将在后续里程碑实现。',
                                '按 docs/v2/05-实施计划.md 的顺序完成后续里程碑。')
             ws = locate_workspace(arguments.get('workspace'), self.workspace, Path.cwd())
+            if tool == 'service_status' and ((arguments.get('run_id') is None)
+                                             == (arguments.get('service') is None)):
+                raise DceError(ErrorCode.CONFIG_INVALID,
+                               'service_status: run_id 与 service 必须且只能提供一个。',
+                               '部署后按 run_id 核验，或按配置中的 service 名称查询。')
             if tool == 'dce_status':
                 data = status(ws, arguments.get('run_id'))
                 return success(f"{data['config']['name']}：{len(data['runs'])} 个运行记录。", data)
@@ -56,6 +65,17 @@ class Runtime:
                     arguments.get('repos'), arguments.get('approved_by_user', False))
             if self.settings is None:
                 self.settings = load_settings(self.connections, self.credentials)
+            if tool in {'service_deploy', 'service_status'}:
+                cfg = load_config(ws)
+                run = load_run(ws, arguments['run_id']) if arguments.get('run_id') else None
+                with PlatformClient(self.settings.platform('portainer'), self.settings) as http:
+                    if tool == 'service_deploy':
+                        assert run is not None
+                        return deploy(ws, cfg, run, arguments.get('items'), client=Portainer(http))
+                    return service_status(
+                        ws, cfg, run if run is not None else arguments['service'],
+                        arguments.get('wait_seconds', 30), arguments.get('logs_tail', 0),
+                        client=Portainer(http))
             if tool in {'ci_build', 'ci_status'}:
                 cfg, run = load_config(ws), load_run(ws, arguments['run_id'])
                 with PlatformClient(self.settings.platform('gitlab'), self.settings) as http:
