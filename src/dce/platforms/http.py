@@ -321,7 +321,8 @@ class PlatformClient:
         page = start_page
         for _ in range(max_pages):
             response = self.get(
-                path, params={**(params or {}), "page": page, "per_page": self.settings.page_size}
+                path, params={**(params or {}), "page": page,
+                              "per_page": (params or {}).get("per_page", self.settings.page_size)}
             )
             data = self.decode(response, list)
             yield from data
