@@ -14,8 +14,6 @@ TOOLS = {
     'ci_build', 'ci_status', 'service_deploy', 'service_status', 'run_update', 'bug_resolve',
 }
 PENDING = {
-    'merge_to_test': {'run_id': 'demo-run', 'approved_by_user': True},
-    'ci_build': {'run_id': 'demo-run'}, 'ci_status': {'run_id': 'demo-run'},
     'service_deploy': {'run_id': 'demo-run'}, 'service_status': {'service': 'demo_test_demo-web'},
     'run_update': {'run_id': 'demo-run', 'note': 'demo'}, 'bug_resolve': {'run_id': 'demo-run'},
 }
@@ -68,6 +66,10 @@ def test_stdio_deploy_plan_with_local_bare_origin_only(tmp_path):
     cfg['repos'] = [repo]
     write_config(tmp_path, cfg)
     fixture.commit('src/demo.js', 'demo fix', 'fix: demo bug#4336')
+    for key, value in [('user.name', 'demo-dev'), ('user.email', 'demo@example.invalid'),
+                       ('commit.gpgsign', 'false'), ('core.hooksPath', '/dev/null')]:
+        fixture.git(fixture.work, 'config', key, value)
+    head = fixture.git(fixture.work, 'rev-parse', 'HEAD')
     root = Path.cwd()
 
     async def exercise():
@@ -93,5 +95,14 @@ def test_stdio_deploy_plan_with_local_bare_origin_only(tmp_path):
                 assert refreshed.structuredContent['data']['run_id'] == data['data']['run_id']
                 status = await session.call_tool('dce_status', {'run_id': data['data']['run_id']})
                 assert len(status.structuredContent['data']['run']['events']) == 2
+                rejected = await session.call_tool('merge_to_test', {
+                    'run_id': data['data']['run_id'], 'approved_by_user': False})
+                assert rejected.structuredContent['data']['results'][0]['status'] == 'rejected'
+                merged = await session.call_tool('merge_to_test', {
+                    'run_id': data['data']['run_id'], 'approved_by_user': True})
+                assert json.loads(merged.content[0].text) == merged.structuredContent
+                assert merged.structuredContent['data']['results'][0]['status'] == 'merged'
+                assert fixture.git(fixture.work, 'rev-parse', 'HEAD') == head
+
 
     asyncio.run(asyncio.wait_for(exercise(), timeout=20))

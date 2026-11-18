@@ -217,3 +217,30 @@ def merge_repo(ws: Path, cfg: DceConfig, run: Run, repo: Repo,
                      error_code=exc.code.value)
     save_run(ws, run)
     return result
+
+
+def merge_repositories(ws: Path, cfg: DceConfig, run: Run, repos: list[str] | None = None,
+                       approved_by_user: bool = False) -> dict[str, Any]:
+    names = list(dict.fromkeys(repos if repos is not None else
+                              [i['repo'] for i in run.get('plan', {}).get('items', [])]))
+    if not names:
+        raise DceError(ErrorCode.PRECONDITION_FAILED,
+                       f'GitLab run {run["run_id"]}: 计划没有可合并的仓库。',
+                       '先调用 deploy_plan 生成包含仓库条目的计划。')
+    results = []
+    configured = {r.name: r for r in cfg.repos}
+    for name in names:
+        try:
+            if name not in configured:
+                raise DceError(ErrorCode.OUT_OF_SCOPE, f'GitLab repo {name}: 不在配置中。',
+                               '使用配置和部署计划中的仓库名。')
+            results.append(merge_repo(ws, cfg, run, configured[name], approved_by_user))
+        except DceError as exc:
+            results.append({'repo': name, 'status': 'rejected', 'error': exc.as_dict()})
+            append_event(run, 'merge_to_test', 'merge', name, 'error', exc.message,
+                         error_code=exc.code.value)
+            save_run(ws, run)
+    blocked = [r['repo'] for r in results if r['status'] not in {'merged', 'already_merged'}]
+    return {'ok': True, 'summary': '；'.join(f"{r['repo']}: {r['status']}" for r in results),
+            'data': {'results': results},
+            'next': f'先处理这些仓库：{", ".join(blocked)}。' if blocked else '调用 ci_build。'}

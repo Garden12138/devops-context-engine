@@ -1,6 +1,8 @@
 """CLI entry points; milestones M1–M5 supply their implementations."""
 
 import json
+import math
+import time
 from pathlib import Path
 from typing import Annotated, Any, NoReturn
 
@@ -109,23 +111,33 @@ def plan(
 
 @app.command()
 def merge(
+    ctx: typer.Context,
     run: Annotated[str, typer.Option("--run")],
     yes: Annotated[bool, typer.Option("--yes")] = False,
 ) -> None:
-    pending("merge_to_test")
+    emit(ctx, 'merge_to_test', run_id=run, approved_by_user=yes)
 
 
 @app.command()
 def build(
+    ctx: typer.Context,
     run: Annotated[str, typer.Option("--run")],
     retry_failed: Annotated[bool, typer.Option("--retry-failed")] = False,
 ) -> None:
-    pending("ci_build")
+    emit(ctx, 'ci_build', run_id=run, retry_failed=retry_failed)
 
 
 @app.command("build-status")
-def build_status(run: Annotated[str, typer.Option("--run")], wait: int = 0) -> None:
-    pending("ci_status")
+def build_status(ctx: typer.Context, run: Annotated[str, typer.Option("--run")],
+                 wait: Annotated[int, typer.Option(min=0)] = 0) -> None:
+    deadline = time.monotonic() + wait
+    while True:
+        remaining = max(0, math.ceil(deadline - time.monotonic()))
+        result = ctx.obj['runtime'].call('ci_status', run_id=run, wait_seconds=min(45, remaining))
+        if (not result['ok'] or result['data']['overall'] != 'building'
+                or time.monotonic() >= deadline):
+            break
+    render(ctx, result)
 
 
 @app.command()

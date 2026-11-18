@@ -8,9 +8,12 @@ from mcp.types import CallToolResult, ContentBlock, ImageContent, TextContent
 
 from dce.errors import DceError, ErrorCode
 from dce.loop.bugs import ImageBytes, get_bug, list_bugs
+from dce.loop.build import poll_builds, start_builds
+from dce.loop.gitops import merge_repositories
 from dce.loop.plan import make_plan
-from dce.loop.runs import status
+from dce.loop.runs import load_run, status
 from dce.output import bug_output, check_output, compact, invoke, plan_output, scan_output, success
+from dce.platforms.gitlab import GitLab
 from dce.platforms.http import PlatformClient
 from dce.platforms.zentao import ZenTao
 from dce.settings import Settings, load_settings
@@ -35,7 +38,8 @@ class Runtime:
     def call(self, tool: str, *, image_sink: list[ImageBytes] | None = None,
              **arguments: Any) -> dict[str, Any]:
         def operation() -> dict[str, Any]:
-            if tool not in {'project_setup', 'dce_status', 'bug_list', 'bug_get', 'deploy_plan'}:
+            if tool not in {'project_setup', 'dce_status', 'bug_list', 'bug_get', 'deploy_plan',
+                            'merge_to_test', 'ci_build', 'ci_status'}:
                 raise DceError(ErrorCode.NOT_IMPLEMENTED, f'{tool} 将在后续里程碑实现。',
                                '按 docs/v2/05-实施计划.md 的顺序完成后续里程碑。')
             ws = locate_workspace(arguments.get('workspace'), self.workspace, Path.cwd())
@@ -46,8 +50,21 @@ class Runtime:
                 cfg = load_config(ws)
                 params = {k: v for k, v in arguments.items() if k != 'workspace'}
                 return plan_output(make_plan(ws, cfg, **params), cfg)
+            if tool == 'merge_to_test':
+                return merge_repositories(
+                    ws, load_config(ws), load_run(ws, arguments['run_id']),
+                    arguments.get('repos'), arguments.get('approved_by_user', False))
             if self.settings is None:
                 self.settings = load_settings(self.connections, self.credentials)
+            if tool in {'ci_build', 'ci_status'}:
+                cfg, run = load_config(ws), load_run(ws, arguments['run_id'])
+                with PlatformClient(self.settings.platform('gitlab'), self.settings) as http:
+                    if tool == 'ci_build':
+                        return start_builds(
+                            ws, cfg, run, arguments.get('items'),
+                            arguments.get('retry_failed', False), client=GitLab(http))
+                    return poll_builds(ws, cfg, run, arguments.get('wait_seconds', 30),
+                                       client=GitLab(http))
             if tool in {'bug_list', 'bug_get'}:
                 cfg = load_config(ws)
                 params = {k: v for k, v in arguments.items() if k != 'workspace'}
