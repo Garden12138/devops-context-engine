@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import time
 from collections.abc import Callable, Iterator
 from typing import Any
@@ -14,6 +15,17 @@ from dce.redact import RedactingFilter, redact
 from dce.settings import PlatformConfig, Settings
 
 AUTH_HEADERS = {"zentao": "Token", "gitlab": "PRIVATE-TOKEN", "portainer": "X-API-Key"}
+
+# Exact method, platform and route set from architecture §7.1.
+WRITE_ROUTES = (
+    ('zentao', 'POST', r'/api\.php/v1/tokens'),
+    ('zentao', 'POST', r'/api\.php/v1/bugs/[0-9]+/resolve'),
+    ('gitlab', 'POST', r'/api/v4/projects/[0-9]+/jobs/[0-9]+/play'),
+    ('gitlab', 'POST', r'/api/v4/projects/[0-9]+/jobs/[0-9]+/retry'),
+    ('gitlab', 'POST', r'/api/v4/projects/[0-9]+/pipeline'),
+    ('portainer', 'PUT', r'/api/endpoints/[0-9]+/forceupdateservice'),
+    ('portainer', 'POST', r'/api/endpoints/[0-9]+/docker/services/[A-Za-z0-9_-]+/update'),
+)
 
 
 class PlatformClient:
@@ -123,7 +135,6 @@ class PlatformClient:
         return self.log_filter.secrets + self.settings.secrets()
 
     def zentao_token(self, username: str, password: str) -> httpx.Response:
-        # Only authentication POST exists; no arbitrary method/path surface.
         self.log_filter.opaque = True
         response = self._request(
             "POST",
@@ -140,6 +151,16 @@ class PlatformClient:
             )
         return response
 
+    def post(self, path: str, json: dict[str, Any] | None = None,
+             headers: dict[str, str] | None = None, *, kind: str = "gitlab",
+             params: dict[str, Any] | None = None) -> httpx.Response:
+        return self._request("POST", path, kind=kind, body=json, headers=headers, params=params)
+
+    def put(self, path: str, json: dict[str, Any] | None = None,
+            headers: dict[str, str] | None = None, *, kind: str = "portainer",
+            params: dict[str, Any] | None = None) -> httpx.Response:
+        return self._request("PUT", path, kind=kind, body=json, headers=headers, params=params)
+
     def _request(
         self,
         method: str,
@@ -147,20 +168,31 @@ class PlatformClient:
         *,
         kind: str,
         params: dict[str, Any] | None = None,
-        body: dict[str, str] | None = None,
+        body: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
         token: SecretStr | None = None,
         defer_status: bool = False,
     ) -> httpx.Response:
-        if method != "GET" and not (
-            method == "POST" and kind == "zentao" and path == "/api.php/v1/tokens"
+        if method != "GET" and not any(
+            kind == platform and method == verb and re.fullmatch(pattern, path)
+            for platform, verb, pattern in WRITE_ROUTES
         ):
-            raise DceError(ErrorCode.PERMISSION_DENIED, "Platform mutation is forbidden.")
+            raise DceError(
+                ErrorCode.PERMISSION_DENIED,
+                f"{kind} {method} {redact(path, self.secrets())}: 路由不在写接口白名单中。",
+                "使用工具契约中对应的闭环工具和配置内的资源。",
+            )
         url = self.safe_url(path)
-        headers = (
-            {AUTH_HEADERS[kind]: (token or self.config.token).get_secret_value()}
-            if method == "GET"
-            else {}
-        )
+        login = kind == "zentao" and path == "/api.php/v1/tokens" and method == "POST"
+        if kind == "zentao" and method != "GET" and not login:
+            manager = self.settings._zentao_tokens
+            if manager is not None:
+                manager.require_connection(self.config)
+                token = manager.lease().token
+        headers = {**(headers or {})}
+        if not login:
+            headers[AUTH_HEADERS[kind]] = (token or self.config.token).get_secret_value()
+        self.log_filter.secrets += self.settings.secrets()
         retry_count = self.settings.max_retries if method == "GET" else 0
         for attempt in range(retry_count + 1):
             self.sleep(self.settings.request_interval)
@@ -210,7 +242,7 @@ class PlatformClient:
                             code,
                             f"{kind} {resource} returned HTTP {status}: {reason}.",
                             hint,
-                            retryable=status in {429, 502, 503, 504},
+                            retryable=method == "GET" and status in {429, 502, 503, 504},
                         )
                     content = bytearray()
                     for chunk in response.iter_bytes():
@@ -247,7 +279,7 @@ class PlatformClient:
                         f"{kind} {redact(urlsplit(url).path, self.secrets())}: "
                         "connection failed before a response.",
                         "Check the platform URL, network and timeout settings.",
-                        retryable=True,
+                        retryable=method == "GET",
                     ) from None
                 self.sleep(min(0.1 * 2**attempt, 2))
         raise AssertionError("unreachable")
