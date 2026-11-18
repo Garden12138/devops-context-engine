@@ -120,13 +120,14 @@ def save_run(ws: Path, run: Run) -> None:
             os.unlink(temporary)
 
 
-def append_event(run: Run, tool: str, action: str, target: str, result: str, detail: str) -> None:
+def append_event(run: Run, tool: str, action: str, target: str, result: str, detail: str,
+                 *, error_code: str | None = None) -> None:
     event = redact({'at': now(), 'tool': tool, 'action': action, 'target': target,
                     'result': result, 'detail': detail})
     run.setdefault('events', []).append(event)
     print(json.dumps(redact({'ts': event['at'], 'request_id': uuid4().hex, 'tool': tool,
                             'action': action, 'target': target, 'result': result,
-                            'error_code': None})),
+                            'error_code': error_code})),
           file=sys.stderr)
 
 
