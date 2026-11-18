@@ -253,6 +253,57 @@ def test_converged_checks_task_digest_persists_verdict_and_only_reads_platform(s
     assert saved['verdict'] == 'converged' and saved['running_digest'] == NEW
 
 
+@pytest.mark.parametrize('timestamp_source', ['status', 'updated_at'])
+def test_failed_tasks_from_before_request_do_not_block_current_deployment(setup, timestamp_source):
+    do_deploy(setup)
+    run, server = setup[2], setup[4]
+    run['deploys']['demo_test_demo-web']['requested_at'] = '2026-11-19T02:00:00Z'
+    server.value['UpdateStatus'] = {'State': 'completed'}
+    old_task = server.task('failed', digest=OLD, Err='demo old failure')
+    old_task.pop('DesiredState')
+    before = '2026-11-19T09:59:59.999999999+08:00'
+    if timestamp_source == 'status':
+        old_task['Status']['Timestamp'] = before
+        old_task['UpdatedAt'] = '2026-11-19T02:01:00Z'
+    else:
+        old_task['UpdatedAt'] = before
+    server.tasks.append(old_task)
+    server.calls.clear()
+    row, = do_status(setup)['data']['services']
+    assert row['verdict'] == 'converged' and row['task_errors'] == []
+    assert not any(r.url.path.endswith('/logs') for r in server.calls)
+
+
+def test_task_created_before_request_but_failing_during_deploy_is_reported(setup):
+    do_deploy(setup)
+    run, server = setup[2], setup[4]
+    run['deploys']['demo_test_demo-web']['requested_at'] = '2026-11-19T02:00:00Z'
+    server.value['UpdateStatus'] = {'State': 'completed'}
+    failed = server.task('rejected', Timestamp='2026-11-19T02:00:00Z', Err='demo rejection')
+    failed.update(DesiredState='shutdown', CreatedAt='2026-11-19T01:00:00Z')
+    server.tasks.append(failed)
+    row, = do_status(setup)['data']['services']
+    assert row['verdict'] == 'failed'
+    assert row['task_errors'] == ['demotask1: demo rejection']
+    assert row['logs']
+
+
+def test_completed_rollout_with_only_tag_is_digest_unverified(setup):
+    do_deploy(setup)
+    server = setup[4]
+    server.value['UpdateStatus'] = {'State': 'completed'}
+    server.value['Spec']['TaskTemplate']['ContainerSpec']['Image'] = 'demo/demo-web:dev@' + NEW
+    server.tasks[0]['Spec']['ContainerSpec']['Image'] = 'demo/demo-web:dev'
+    result = do_status(setup, wait_seconds=45)
+    row, = result['data']['services']
+    assert row['verdict'] == 'digest_unverified' and row['task_errors'] == []
+    assert row['running_digest'] is None and row['expected_digest'] == NEW
+    assert '运行' in result['next'] and '构建 digest 未知' not in result['next']
+    assert setup[3].sleeps == [] and setup[2]['stage'] == 'deploying'
+    saved = load_run(setup[0], setup[2]['run_id'])['deploys']['demo_test_demo-web']
+    assert saved['verdict'] == 'digest_unverified'
+
+
 @pytest.mark.parametrize('mode', ['empty', 'pending', 'old_digest', 'missing_digest',
                                  'mixed_digest', 'missing_replica', 'rolling'])
 def test_updating_until_all_expected_tasks_match_digest(setup, mode):
