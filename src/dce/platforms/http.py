@@ -236,6 +236,18 @@ class PlatformClient:
                                 "resource unavailable",
                                 "Check the resource ID and token visibility.",
                             ),
+                            409: (
+                                "resource version conflict",
+                                "Read the current service version and retry the deployment.",
+                            ),
+                            500: (
+                                "platform internal error",
+                                "Check the platform server logs for this request.",
+                            ),
+                            502: (
+                                "invalid upstream response",
+                                "Check the reverse proxy and its connection to the platform.",
+                            ),
                             429: ("rate limit reached", "Wait for Retry-After before retrying."),
                         }.get(
                             status, ("upstream error", "Check the platform and its reverse proxy.")
