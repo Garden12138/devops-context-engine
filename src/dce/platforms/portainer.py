@@ -1,12 +1,21 @@
+import base64
 import json
 import re
+from copy import deepcopy
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 from dce.errors import DceError, ErrorCode
-from dce.platforms.docker_logs import LogControls, project_logs, read_logs
+from dce.platforms.docker_logs import (
+    DockerLogDecoder,
+    LogControls,
+    project_logs,
+    read_logs,
+    timestamp_ns,
+)
 from dce.platforms.gitlab import key
 from dce.platforms.http import PlatformClient
+from dce.redact import redact
 
 
 def safe_stack(stack: dict[str, Any]) -> dict[str, Any]:
@@ -112,6 +121,62 @@ class Portainer:
                 f"/api/endpoints/{key(endpoint)}/docker/services/{key(service)}", kind="portainer"
             )
         )
+
+    @staticmethod
+    def _registry_auth(registry_id: int | None) -> dict[str, str]:
+        if registry_id is None:
+            return {}
+        value = base64.b64encode(json.dumps({'registryId': registry_id}).encode()).decode()
+        return {'X-Registry-Auth': value}
+
+    def force_update(self, endpoint: int, service_id: str, registry_id: int | None) -> int:
+        return self.reader.put(
+            f'/api/endpoints/{endpoint}/forceupdateservice',
+            {'ServiceID': service_id, 'PullImage': True}, self._registry_auth(registry_id),
+            accepted_statuses=(404, 405),
+        ).status_code
+
+    def docker_update(self, endpoint: int, service_id: str, version: int,
+                      spec: dict[str, Any], registry_id: int | None) -> None:
+        updated = deepcopy(spec)
+        task = updated['TaskTemplate']
+        task['ForceUpdate'] = task.get('ForceUpdate', 0) + 1
+        task['ContainerSpec']['Image'] = task['ContainerSpec']['Image'].split('@sha256:', 1)[0]
+        self.reader.post(f'/api/endpoints/{endpoint}/docker/services/{key(service_id)}/update',
+                         updated, self._registry_auth(registry_id), kind='portainer',
+                         params={'version': version})
+
+    def tasks(self, endpoint: int, service_id: str) -> list[dict[str, Any]]:
+        return list(self.reader.json(
+            f'/api/endpoints/{endpoint}/docker/tasks', kind='portainer', expected=list,
+            params={'filters': json.dumps({'service': [service_id]})},
+        ))
+
+    def service_logs_since(self, endpoint: int, service_id: str, since: str | None,
+                           tail: int) -> list[str]:
+        if not 1 <= tail <= 300:
+            raise DceError(ErrorCode.CONFIG_INVALID, 'service_status.logs_tail 必须在 0–300 之间。',
+                           '使用 0 跳过日志，或选择 1–300 行。')
+        start = timestamp_ns(since) // 1_000_000_000 if since else 0
+        service = self.service(str(endpoint), service_id)
+        tty = service.get('Spec', {}).get('TaskTemplate', {}).get('ContainerSpec', {}).get(
+            'TTY', False)
+        response = self.reader.get(
+            f'/api/endpoints/{endpoint}/docker/services/{key(service_id)}/logs', kind='portainer',
+            params={'since': str(start), 'tail': str(tail), 'stdout': '1', 'stderr': '1',
+                    'timestamps': '1'},
+        )
+        try:
+            decoder = DockerLogDecoder(tty=tty, cap=self.reader.max_bytes)
+            decoder.feed(response.content)
+            entries = decoder.finish(partial=False)
+            if decoder.error:
+                raise DceError(decoder.error, 'Docker 日志流返回错误帧。')
+        except DceError as exc:
+            raise DceError(exc.code, f'Portainer service {service_id} 日志 HTTP 200: {exc.message}',
+                           '检查服务日志驱动及 Docker 日志响应格式后重试。') from None
+        return [redact(line.decode('utf-8', errors='replace'), self.reader.secrets())
+                for _, line in entries[-tail:]]
 
     async def service_logs(
         self,

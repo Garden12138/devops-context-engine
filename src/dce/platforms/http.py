@@ -158,8 +158,10 @@ class PlatformClient:
 
     def put(self, path: str, json: dict[str, Any] | None = None,
             headers: dict[str, str] | None = None, *, kind: str = "portainer",
-            params: dict[str, Any] | None = None) -> httpx.Response:
-        return self._request("PUT", path, kind=kind, body=json, headers=headers, params=params)
+            params: dict[str, Any] | None = None,
+            accepted_statuses: tuple[int, ...] = ()) -> httpx.Response:
+        return self._request("PUT", path, kind=kind, body=json, headers=headers, params=params,
+                             accepted_statuses=accepted_statuses)
 
     def _request(
         self,
@@ -172,6 +174,7 @@ class PlatformClient:
         headers: dict[str, str] | None = None,
         token: SecretStr | None = None,
         defer_status: bool = False,
+        accepted_statuses: tuple[int, ...] = (),
     ) -> httpx.Response:
         if method != "GET" and not any(
             kind == platform and method == verb and re.fullmatch(pattern, path)
@@ -213,7 +216,7 @@ class PlatformClient:
                         continue
                     if 300 <= status < 400:
                         raise DceError(ErrorCode.OUT_OF_SCOPE, "Redirect responses are forbidden.")
-                    if status >= 400 and not defer_status:
+                    if status >= 400 and not defer_status and status not in accepted_statuses:
                         code = {
                             401: ErrorCode.AUTH_FAILED,
                             403: ErrorCode.PERMISSION_DENIED,
