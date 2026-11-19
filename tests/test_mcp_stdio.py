@@ -9,12 +9,14 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from test_config import write_config
 
+from dce.loop.runs import new_run, save_run
+
 TOOLS = {
     'project_setup', 'dce_status', 'bug_list', 'bug_get', 'deploy_plan', 'merge_to_test',
     'ci_build', 'ci_status', 'service_deploy', 'service_status', 'run_update', 'bug_resolve',
 }
 PENDING = {
-    'run_update': {'run_id': 'demo-run', 'note': 'demo'}, 'bug_resolve': {'run_id': 'demo-run'},
+    'bug_resolve': {'run_id': 'demo-run'},
 }
 
 
@@ -45,6 +47,13 @@ def test_stdio_lists_twelve_tools_and_reads_status_offline(tmp_path):
                 assert data == result.structuredContent
                 assert data['ok'] and data['data']['config']['repos'] == 4
                 assert data['data']['runs'] == []
+                run = new_run(tmp_path, [4336])
+                save_run(tmp_path, run)
+                updated = await session.call_tool(
+                    'run_update', {'run_id': run['run_id'], 'note': 'demo'},
+                )
+                assert json.loads(updated.content[0].text) == updated.structuredContent
+                assert updated.structuredContent['ok']
                 mismatch = await session.call_tool(
                     'dce_status', {'workspace': str(tmp_path.parent)},
                 )

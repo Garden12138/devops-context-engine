@@ -1,6 +1,5 @@
 import json
 
-import pytest
 from typer.testing import CliRunner
 
 from dce.cli import app
@@ -14,15 +13,8 @@ def test_version_works_without_loading_configuration():
     assert result.stdout == "2.0.0\n"
 
 
-@pytest.mark.parametrize(
-    "args",
-    [
-        ["run", "update", "--run", "demo-run"],
-        ["resolve", "--run", "demo-run", "--bug", "4336"],
-    ],
-)
-def test_documented_commands_report_pending_implementation(args):
-    result = runner.invoke(app, args)
+def test_resolve_reports_pending_implementation():
+    result = runner.invoke(app, ["resolve", "--run", "demo-run", "--bug", "4336"])
     assert result.exit_code == 1, result.output
     payload = json.loads(result.stdout)
     assert payload["ok"] is False

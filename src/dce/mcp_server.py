@@ -13,7 +13,7 @@ from dce.loop.deploy import deploy
 from dce.loop.deploy import status as service_status
 from dce.loop.gitops import merge_repositories
 from dce.loop.plan import make_plan
-from dce.loop.runs import load_run, status
+from dce.loop.runs import load_run, status, update_run
 from dce.output import bug_output, check_output, compact, invoke, plan_output, scan_output, success
 from dce.platforms.gitlab import GitLab
 from dce.platforms.http import PlatformClient
@@ -43,7 +43,7 @@ class Runtime:
         def operation() -> dict[str, Any]:
             if tool not in {'project_setup', 'dce_status', 'bug_list', 'bug_get', 'deploy_plan',
                             'merge_to_test', 'ci_build', 'ci_status',
-                            'service_deploy', 'service_status'}:
+                            'service_deploy', 'service_status', 'run_update'}:
                 raise DceError(ErrorCode.NOT_IMPLEMENTED, f'{tool} 将在后续里程碑实现。',
                                '按 docs/v2/05-实施计划.md 的顺序完成后续里程碑。')
             ws = locate_workspace(arguments.get('workspace'), self.workspace, Path.cwd())
@@ -55,6 +55,12 @@ class Runtime:
             if tool == 'dce_status':
                 data = status(ws, arguments.get('run_id'))
                 return success(f"{data['config']['name']}：{len(data['runs'])} 个运行记录。", data)
+            if tool == 'run_update':
+                updated = update_run(ws, load_config(ws), arguments['run_id'],
+                                     arguments.get('verification'), arguments.get('record'),
+                                     arguments.get('note'))
+                return success(f"运行记录 {updated['run_id']} 已更新，阶段 {updated['stage']}。",
+                               {'run_id': updated['run_id'], 'stage': updated['stage']})
             if tool == 'deploy_plan':
                 cfg = load_config(ws)
                 params = {k: v for k, v in arguments.items() if k != 'workspace'}

@@ -9,12 +9,14 @@ import tempfile
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from uuid import uuid4
+
+from pydantic import ValidationError
 
 from dce.errors import DceError, ErrorCode
 from dce.redact import redact
-from dce.workspace.config import load_config
+from dce.workspace.config import DceConfig, Model, load_config
 
 
 class Run(dict[str, Any]):
@@ -82,7 +84,7 @@ def merge_changes(current: dict[str, Any], baseline: dict[str, Any],
     return result
 
 
-def save_run(ws: Path, run: Run) -> None:
+def save_run(ws: Path, run: Run, *, update_stage: bool = False) -> None:
     path = run_path(ws, run['run_id'])
     temporary: str | None = None
     try:
@@ -98,6 +100,8 @@ def save_run(ws: Path, run: Run) -> None:
                                f"run {run['run_id']}: events 历史被修改或删除。",
                                '重新读取 run 并只通过 append_event 追加事件。')
             data = merge_changes(current, run.baseline, run)
+            if update_stage:
+                data['stage'] = verification_stage(data)
             data['events'] = deepcopy(current.get('events', [])) + events[len(previous):]
             data['updated_at'] = now()
             data = redact(data)
@@ -134,6 +138,99 @@ def append_event(run: Run, tool: str, action: str, target: str, result: str, det
 def list_runs(ws: Path) -> list[Run]:
     return sorted((load_run(ws, p.stem) for p in (ws / '.dce/runs').glob('*.json')),
                   key=lambda r: str(r.get('updated_at', '')), reverse=True)
+
+
+class Verification(Model):
+    bug_id: int
+    result: Literal['passed', 'failed']
+    notes: str
+    evidence: list[str]
+
+
+class Record(Model):
+    file: str
+    commit: str
+
+
+def verification_stage(run: dict[str, Any]) -> str:
+    outcomes = [run.get('verifications', {}).get(str(b['id']), {}).get('result')
+                for b in run.get('bugs', [])]
+    if 'failed' in outcomes:
+        return 'fixing'
+    if outcomes and all(result == 'passed' for result in outcomes):
+        if run.get('stage') == 'resolved':
+            return 'resolved'
+        return 'recorded' if run.get('record', {}).get('commit') else 'verified'
+    return 'verifying' if 'passed' in outcomes else str(run['stage'])
+
+
+def check_evidence(ws: Path, value: str) -> None:
+    try:
+        path = (ws / value).resolve()
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise DceError(ErrorCode.CONFIG_INVALID, f'验证截图 {value!r}: {type(exc).__name__}。',
+                       '检查路径格式、符号链接和读取权限。') from None
+    if not path.is_relative_to(ws.resolve()):
+        raise DceError(ErrorCode.OUT_OF_SCOPE, f'验证截图 {value!r} 位于工作区外。',
+                       '把截图保存到工作区内再提交 evidence 路径。')
+    if not path.is_file():
+        raise DceError(ErrorCode.PRECONDITION_FAILED, f'验证截图 {value!r} 不存在或不是文件。',
+                       '保存截图后核对 evidence 路径。')
+
+
+def check_record_commit(ws: Path, cfg: DceConfig, record: Record) -> None:
+    from dce.loop.gitops import reference, run_git
+
+    repo = next((repo for repo in cfg.repos if repo.name == cfg.records.repo), None)
+    if repo is None or not (ws / repo.path / '.git').exists():
+        raise DceError(ErrorCode.CONFIG_INVALID,
+                       f'修复记录仓库 {cfg.records.repo!r}: 找不到已配置的 Git 工作副本。',
+                       '检查 .dce/dce.yaml 中 records.repo 和对应的 repos[].path。')
+    result = run_git(ws / repo.path, 'cat-file', '-e', '--',
+                     f'{reference(record.commit)}^{{commit}}', allowed=(0, 1, 128))
+    if result.returncode:
+        raise DceError(ErrorCode.PRECONDITION_FAILED,
+                       f'Git {repo.name}: 找不到修复记录提交 {record.commit}，'
+                       f'git cat-file 退出码 {result.returncode}。{result.stderr.strip()}',
+                       '在 records 仓库提交修复记录，核对提交 SHA 后重试。')
+
+
+def update_run(ws: Path, cfg: DceConfig, run_id: str,
+               verification: dict[str, Any] | None = None,
+               record: dict[str, str] | None = None, note: str | None = None) -> Run:
+    if verification is None and record is None and note is None:
+        raise DceError(ErrorCode.CONFIG_INVALID,
+                       'run_update 至少需要 verification、record 或 note。',
+                       '提供验证结论、记录提交或说明。')
+    try:
+        change = None if verification is None else Verification.model_validate(verification)
+        document = None if record is None else Record.model_validate(record)
+    except ValidationError as exc:
+        error = exc.errors()[0]
+        raise DceError(ErrorCode.CONFIG_INVALID,
+                       f"run_update {exc.title}.{'.'.join(map(str, error['loc']))}: "
+                       f"{error['msg']}", '参照 run_update 工具契约修正该参数。') from None
+    run = load_run(ws, run_id)
+    if change is not None:
+        if not any(bug['id'] == change.bug_id for bug in run['bugs']):
+            raise DceError(ErrorCode.OUT_OF_SCOPE, f'缺陷 {change.bug_id} 不属于 run {run_id}。',
+                           '通过 dce_status 查看包含该缺陷的 run。')
+        for value in change.evidence:
+            check_evidence(ws, value)
+    if document is not None:
+        check_record_commit(ws, cfg, document)
+    if change is not None:
+        run.setdefault('verifications', {})[str(change.bug_id)] = {
+            **change.model_dump(exclude={'bug_id'}), 'at': now(),
+        }
+        append_event(run, 'run_update', 'verification', str(change.bug_id), 'ok', change.result)
+    if document is not None:
+        run['record'] = {**document.model_dump(), 'at': now()}
+        append_event(run, 'run_update', 'record', document.file, 'ok', document.commit)
+    if note is not None:
+        append_event(run, 'run_update', 'note', run_id, 'ok', note)
+    save_run(ws, run, update_stage=change is not None or document is not None)
+    return run
 
 
 def status(ws: Path, run_id: str | None = None) -> dict[str, Any]:

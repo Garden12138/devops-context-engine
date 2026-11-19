@@ -166,8 +166,23 @@ def deploy_status(
 
 
 @run_app.command("update")
-def run_update(run: Annotated[str, typer.Option("--run")]) -> None:
-    pending("run_update")
+def run_update(
+    ctx: typer.Context,
+    run: Annotated[str, typer.Option("--run")],
+    bug: Annotated[int | None, typer.Option("--bug")] = None,
+    result: Annotated[str | None, typer.Option("--result")] = None,
+    notes: Annotated[str | None, typer.Option("--notes")] = None,
+    evidence: Annotated[list[str] | None, typer.Option("--evidence")] = None,
+    file: Annotated[str | None, typer.Option("--file")] = None,
+    commit: Annotated[str | None, typer.Option("--commit")] = None,
+    note: Annotated[str | None, typer.Option("--note")] = None,
+) -> None:
+    verification = None
+    if any(value is not None for value in (bug, result, notes, evidence)):
+        verification = {'bug_id': bug, 'result': result, 'notes': notes or '',
+                        'evidence': evidence or []}
+    record = None if file is None and commit is None else {'file': file, 'commit': commit}
+    emit(ctx, 'run_update', run_id=run, verification=verification, record=record, note=note)
 
 
 @app.command()
