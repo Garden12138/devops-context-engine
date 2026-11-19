@@ -3,6 +3,8 @@
 import json
 import math
 import time
+from difflib import unified_diff
+from importlib.resources import files
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -182,6 +184,50 @@ def resolve(
     comment: Annotated[str | None, typer.Option("--comment")] = None,
 ) -> None:
     emit(ctx, 'bug_resolve', run_id=run, bug_ids=bug, comment=comment)
+
+
+@app.command("install-skill")
+def install_skill(
+    dest: Annotated[Path, typer.Option("--dest", file_okay=False)],
+    force: Annotated[bool, typer.Option("--force")] = False,
+) -> None:
+    name = 'dce-bugfix-loop'
+    source = files('dce').joinpath('_skills', name)
+    if not source.is_dir():
+        source = Path(__file__).resolve().parents[2] / 'skills' / name
+    target = dest / name
+    changes: dict[Path, bytes] = {}
+    try:
+        if target.is_symlink() or (target.exists() and not target.is_dir()):
+            raise OSError(f'{target} 必须是普通目录。')
+        exists = target.is_dir()
+        for filename in ('SKILL.md', 'record-template.md'):
+            path = target / filename
+            if path.is_symlink() or (path.exists() and not path.is_file()):
+                raise OSError(f'{path} 必须是普通文件。')
+            previous = path.read_bytes() if path.is_file() else b''
+            content = source.joinpath(filename).read_bytes()
+            if previous == content:
+                continue
+            changes[path] = content
+            if exists:
+                before = previous.decode('utf-8', errors='replace').splitlines(keepends=True)
+                after = content.decode('utf-8').splitlines(keepends=True)
+                typer.echo(''.join(unified_diff(before, after, f'现有/{filename}',
+                                                f'随附/{filename}')), nl=False)
+        if not changes:
+            typer.echo(f'Skill 已是当前版本：{target}')
+            return
+        if exists and not force:
+            typer.echo('核对以上差异后，加 --force 安装随附版本。', err=True)
+            raise typer.Exit(1)
+        target.mkdir(parents=True, exist_ok=True)
+        for path, content in changes.items():
+            path.write_bytes(content)
+    except OSError as exc:
+        typer.echo(f'Skill 安装到 {target} 失败：{exc} 请核对源文件及目标权限。', err=True)
+        raise typer.Exit(1) from None
+    typer.echo(f'Skill 已安装：{target}')
 
 
 @app.command()
