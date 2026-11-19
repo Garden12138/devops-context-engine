@@ -20,9 +20,7 @@ uv sync --locked --dev
 uv run dce --version
 ```
 
-当前完成 M0：平台模块迁移与 CLI 骨架。CLI 版本为 `2.0.0`，闭环命令按 M1–M5 依次实现。
-
 配置合成样例在 `examples/`；凭证放在进程私有的凭证文件中，权限为 0600。
 
-设计、工具契约、实施计划和验收入口：[DCE 2.0 文档](docs/v2/README.md)。
-进度见 [progress.md](docs/v2/progress.md)。
+从 [使用指南](docs/v2/08-使用指南.md) 开始配置 Cursor 或 Codex。
+设计、工具契约和验收入口见 [DCE 2.0 文档](docs/v2/README.md)，当前进度见 [progress.md](docs/v2/progress.md)。

@@ -13,9 +13,10 @@ DCE 2.0 是给 Cursor / Codex 用的 MCP 工具集，支撑“禅道缺陷 → �
 | [05-实施计划](05-实施计划.md) | M0–M5 里程碑、任务、测试场景、给 Codex 的启动提示 | 实现者 |
 | [06-验收标准](06-验收标准.md) | 离线验收、R1–R5 现场验收、旧痛点回归清单 | 用户、实现者 |
 | [07-Playbook](07-Playbook.md) | Agent 标准操作（SKILL.md 正文）与修复记录模板 | 用户、Agent |
+| [08-使用指南](08-使用指南.md) | 安装、宿主连接、初始化和日常操作 | 用户 |
 | [CODEX_HANDOFF](CODEX_HANDOFF.md) | 交给 Codex 的执行规则，以及每个里程碑可直接粘贴的提示 | 用户、Codex |
 
-实施进度记录在 `progress.md`（M0 时创建）。M5 时新增 `08-使用指南.md`。
+实施进度记录在 [progress.md](progress.md)。
 
 ## 一页纸摘要
 
