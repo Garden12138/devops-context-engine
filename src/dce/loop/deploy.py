@@ -73,7 +73,8 @@ def _service(cfg: DceConfig, client: Portainer, name: str, swarm: str,
 
 
 def _write(ws: Path, cfg: DceConfig, run: Run, client: Portainer,
-           service: dict[str, Any], swarm: str, endpoint: int, method: str) -> int:
+           service: dict[str, Any], swarm: str, endpoint: int, method: str,
+           *, digest: str | None = None) -> int:
     check_service(cfg, service, swarm, endpoint)
     name, sid = service['Spec']['Name'], service['ID']
     try:
@@ -81,7 +82,7 @@ def _write(ws: Path, cfg: DceConfig, run: Run, client: Portainer,
             code = client.force_update(endpoint, sid, cfg.portainer.registry_id)
         else:
             client.docker_update(endpoint, sid, service['Version']['Index'], service['Spec'],
-                                 cfg.portainer.registry_id)
+                                 cfg.portainer.registry_id, digest=digest)
             code = 200
     except DceError as exc:
         detail = redact(f'Portainer service {name} ({sid}): {exc.message}',
@@ -132,7 +133,8 @@ def deploy(ws: Path, cfg: DceConfig, run: Run, items: list[str] | None = None,
             method = 'forceupdateservice'
             if _write(ws, cfg, run, client, service, swarm, endpoint, method) in {404, 405}:
                 method = 'docker_update'
-                _write(ws, cfg, run, client, service, swarm, endpoint, method)
+                _write(ws, cfg, run, client, service, swarm, endpoint, method,
+                       digest=job.get('digest'))
             rows.append({'service': name, 'service_id': service['ID'],
                          'status': 'update_requested', 'before_digest': before['digest'],
                          'expected_digest': job.get('digest'), 'method': method})
@@ -221,12 +223,8 @@ def _snapshot(ws: Path, cfg: DceConfig, run: Run | str, logs_tail: int,
         save_run(ws, run)
     failed = any(r['verdict'] == 'failed' for r in rows)
     unverified = any(r['verdict'] == 'digest_unverified' for r in rows)
-    missing_running_digest = any(r['verdict'] == 'digest_unverified' and r['running_digest'] is None
-                                 for r in rows)
     next_step = ('部署任务失败，先向用户报告任务错误和日志，处理后再部署。' if failed else
-                 '运行任务缺少镜像 digest，请在 Portainer 核对运行容器镜像的 RepoDigests。'
-                 if missing_running_digest else
-                 '构建 digest 未知，请核对镜像推送日志和运行 digest。' if unverified else
+                 '继续浏览器验证，并在汇报中说明镜像 digest 未能自动核对' if unverified else
                  '服务已收敛，开始浏览器验证。' if all(r['verdict'] == 'converged' for r in rows)
                  else '继续调用 service_status 跟踪滚动更新；跳过的服务先完成构建再部署。')
     return success(f"测试服务：{', '.join(r['service'] + ' ' + r['verdict'] for r in rows)}。",

@@ -137,11 +137,16 @@ class Portainer:
         ).status_code
 
     def docker_update(self, endpoint: int, service_id: str, version: int,
-                      spec: dict[str, Any], registry_id: int | None) -> None:
+                      spec: dict[str, Any], registry_id: int | None,
+                      digest: str | None = None) -> None:
         updated = deepcopy(spec)
         task = updated['TaskTemplate']
         task['ForceUpdate'] = task.get('ForceUpdate', 0) + 1
-        task['ContainerSpec']['Image'] = task['ContainerSpec']['Image'].split('@sha256:', 1)[0]
+        container = task['ContainerSpec']
+        image = container['Image'].split('@sha256:', 1)[0]
+        if isinstance(digest, str) and re.fullmatch(r'sha256:[0-9a-f]{64}', digest):
+            image = f'{image}@{digest}'
+        container['Image'] = image
         self.reader.post(f'/api/endpoints/{endpoint}/docker/services/{key(service_id)}/update',
                          updated, self._registry_auth(registry_id), kind='portainer',
                          params={'version': version})

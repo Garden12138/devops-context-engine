@@ -157,19 +157,25 @@ def test_deploy_forceupdate_records_before_and_audits(setup, capsys):
 
 
 @pytest.mark.parametrize('http_status', [404, 405])
-def test_fallback_only_on_404_405_increments_force_unpins_and_audits(setup, http_status):
-    setup[4].force_status = http_status
+def test_fallback_on_404_405_pins_build_digest_and_converges(setup, http_status):
+    server = setup[4]
+    server.force_status = http_status
     row, = do_deploy(setup)['data']['services']
     assert row['method'] == 'docker_update'
-    put, post = setup[4].writes()
+    put, post = server.writes()
     assert put.method == 'PUT' and post.method == 'POST'
     body = json.loads(post.content)
     assert body['TaskTemplate']['ForceUpdate'] == 8
-    assert body['TaskTemplate']['ContainerSpec']['Image'] == (
-        'registry.example.invalid:5000/demo/demo-web:dev')
+    image = body['TaskTemplate']['ContainerSpec']['Image']
+    assert image == 'registry.example.invalid:5000/demo/demo-web:dev@' + NEW
     assert post.url.params['version'] == '120'
     assert json.loads(base64.b64decode(post.headers['X-Registry-Auth'])) == {'registryId': 2}
     assert [e['action'] for e in setup[2]['events']] == ['forceupdateservice', 'docker_update']
+    server.value['UpdateStatus'] = {'State': 'completed'}
+    server.tasks[0]['Spec']['ContainerSpec']['Image'] = image
+    checked, = do_status(setup)['data']['services']
+    assert checked['verdict'] == 'converged'
+    assert checked['running_digest'] == checked['expected_digest'] == NEW
 
 
 @pytest.mark.parametrize('http_status', [403, 409, 500, 502])
@@ -298,7 +304,7 @@ def test_completed_rollout_with_only_tag_is_digest_unverified(setup):
     row, = result['data']['services']
     assert row['verdict'] == 'digest_unverified' and row['task_errors'] == []
     assert row['running_digest'] is None and row['expected_digest'] == NEW
-    assert '运行' in result['next'] and '构建 digest 未知' not in result['next']
+    assert result['next'] == '继续浏览器验证，并在汇报中说明镜像 digest 未能自动核对'
     assert setup[3].sleeps == [] and setup[2]['stage'] == 'deploying'
     saved = load_run(setup[0], setup[2]['run_id'])['deploys']['demo_test_demo-web']
     assert saved['verdict'] == 'digest_unverified'
@@ -345,8 +351,11 @@ def test_unknown_build_digest_requires_actual_digest_change(setup, digest, expec
     setup[2]['builds']['demo-web:.']['build']['digest'] = None
     do_deploy(setup)
     setup[4].tasks = [setup[4].task(digest=digest)]
-    row, = do_status(setup)['data']['services']
+    result = do_status(setup)
+    row, = result['data']['services']
     assert row['verdict'] == expected and row['expected_digest'] is None
+    if expected == 'digest_unverified':
+        assert result['next'] == '继续浏览器验证，并在汇报中说明镜像 digest 未能自动核对'
     assert setup[2]['stage'] == 'deploying'
 
 

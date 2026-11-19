@@ -158,7 +158,7 @@
 3. 本里程碑要点：
    - 部署前置条件：build 成功且不是旧构建；不满足的服务标 skipped 且不发写请求，全部跳过时返回 PRECONDITION_FAILED（03 第 6.4 节）。
    - 守卫：集群 ID、stack namespace、镜像仓库路径、endpoint 都必须与配置一致。
-   - 首选 PUT /api/endpoints/{id}/forceupdateservice（PullImage=true，X-Registry-Auth 为 base64 的 {"registryId": N}）；返回 404/405 时回退到 docker service update（ForceUpdate+1、去掉 @sha256、带 version）。两条路径都要测试。
+   - 首选 PUT /api/endpoints/{id}/forceupdateservice（PullImage=true，X-Registry-Auth 为 base64 的 {"registryId": N}）。返回 404/405 时回退到 docker service update（ForceUpdate+1、保留 tag 并用合法构建 digest 固定镜像、带 version）。两条路径都要测试。
    - 判定 converged/updating/failed/digest_unverified 按 03 第 6.4 节；日志复用 docker_logs.py 并脱敏，不需要日志授权文件。
 4. 完成标准：全部测试通过；覆盖率 ≥ 80%。
 5. 按第 1.2 节汇报。最后把 06 的 R4 整理成我可以直接照做的清单（含“构建未完成时部署应被跳过”的负向验证，以及在 Portainer 页面核对什么）。然后停止，不要开始 M5。

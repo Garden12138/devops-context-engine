@@ -54,7 +54,15 @@ def test_force_update_other_errors_are_specific_and_not_retried(status, code):
 
 
 @pytest.mark.parametrize('force', [None, 7])
-def test_docker_update_copies_spec_increments_force_and_unpins_digest(force):
+@pytest.mark.parametrize(('digest_args', 'suffix'), [
+    ({}, ''),
+    ({'digest': None}, ''),
+    ({'digest': 'sha256:' + 'b' * 64}, '@sha256:' + 'b' * 64),
+    ({'digest': 'sha256:' + 'B' * 64}, ''),
+    ({'digest': 'sha256:' + 'b' * 63}, ''),
+    ({'digest': 'sha256:' + 'b' * 64 + '\n'}, ''),
+])
+def test_docker_update_copies_spec_increments_force_and_sets_image(force, digest_args, suffix):
     spec = {'Name': 'demo_test_demo-web', 'TaskTemplate': {'ContainerSpec': {
         'Image': 'registry.example.invalid:5000/demo/demo-web:dev@sha256:' + 'a' * 64,
         'Env': ['DEMO_MODE=test']}}}
@@ -69,13 +77,13 @@ def test_docker_update_copies_spec_increments_force_and_unpins_digest(force):
         body = json.loads(req.content)
         assert body['TaskTemplate']['ForceUpdate'] == (force or 0) + 1
         assert body['TaskTemplate']['ContainerSpec']['Image'] == (
-            'registry.example.invalid:5000/demo/demo-web:dev')
+            'registry.example.invalid:5000/demo/demo-web:dev' + suffix)
         assert body['TaskTemplate']['ContainerSpec']['Env'] == ['DEMO_MODE=test']
         assert json.loads(base64.b64decode(req.headers['X-Registry-Auth'])) == {'registryId': 2}
         return httpx.Response(200, json={})
 
     with client(handle) as http:
-        Portainer(http).docker_update(1, 'demo1', 120, spec, 2)
+        Portainer(http).docker_update(1, 'demo1', 120, spec, 2, **digest_args)
     assert spec == original
 
 
