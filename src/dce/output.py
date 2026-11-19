@@ -7,7 +7,7 @@ from typing import Any
 
 from dce.errors import DceError, ErrorCode
 from dce.loop.bugs import BugView
-from dce.loop.runs import Run
+from dce.loop.runs import RECORD_BUG_FIELDS, Run
 from dce.redact import redact
 from dce.workspace.config import DceConfig
 from dce.workspace.doctor import Check
@@ -29,6 +29,19 @@ def bug_output(view: BugView) -> dict[str, Any]:
     payload = success(view.summary, view.data)
     if view.warnings:
         payload['warnings'] = view.warnings
+    return payload
+
+
+def status_output(data: dict[str, Any]) -> dict[str, Any]:
+    payload = success(f"{data['config']['name']}：{len(data['runs'])} 个运行记录。", data)
+    missing = [str(fact['bug']) for fact in data['record_facts'] or ()
+               if any(fact[field] is None for field in RECORD_BUG_FIELDS)]
+    if missing:
+        payload['warnings'] = [{
+            'code': 'BUG_METADATA_MISSING',
+            'message': f"缺陷 {', '.join(missing)} 的本地快照缺少记录所需字段。",
+            'hint': '调用 bug_get(bug_id, images=false) 获取标题、严重程度、优先级和提出时间。',
+        }]
     return payload
 
 

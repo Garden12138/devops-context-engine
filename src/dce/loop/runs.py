@@ -18,6 +18,8 @@ from dce.errors import DceError, ErrorCode
 from dce.redact import redact
 from dce.workspace.config import DceConfig, Model, load_config
 
+RECORD_BUG_FIELDS = ('title', 'severity', 'pri', 'opened_at')
+
 
 class Run(dict[str, Any]):
     def __init__(self, data: dict[str, Any]) -> None:
@@ -233,6 +235,17 @@ def update_run(ws: Path, cfg: DceConfig, run_id: str,
     return run
 
 
+def latest_merge_time(times: list[str | None]) -> str | None:
+    parsed = []
+    for time in times:
+        if time:
+            try:
+                parsed.append((datetime.fromisoformat(time).astimezone(), time))
+            except ValueError:
+                continue
+    return max(parsed)[1] if parsed else None
+
+
 def status(ws: Path, run_id: str | None = None) -> dict[str, Any]:
     config = load_config(ws)
     snapshots = list_runs(ws)
@@ -248,11 +261,10 @@ def status(ws: Path, run_id: str | None = None) -> dict[str, Any]:
             times = [run.get('merges', {}).get(repo, {}).get('merged_at') for repo in repos]
             verification = run.get('verifications', {}).get(str(bug_id), {})
             facts.append({
-                'bug': bug_id, 'title': bug.get('title'), 'severity': bug.get('severity'),
-                'pri': bug.get('pri'), 'opened_at': bug.get('opened_at'),
-                'fixed_at': max((t for t in times if t), default=None),
+                'bug': bug_id, **{field: bug.get(field) for field in RECORD_BUG_FIELDS},
+                'fixed_at': latest_merge_time(times),
                 'verified_at': verification.get('at'), 'repos': repos,
-                'commits': [f"{c['sha']} {c['subject']}" for entries in commits.values()
+                'commits': [f"{c['sha'][:7]} {c['subject']}" for entries in commits.values()
                             for c in entries], 'evidence': verification.get('evidence', []),
             })
     return {

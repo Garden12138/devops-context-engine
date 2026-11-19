@@ -25,9 +25,16 @@ class ZenTao:
         return SecretStr(data["token"])
 
     def bug(self, bug: str) -> dict[str, Any]:
-        data = self.reader.json(f"{self.prefix}/bugs/{key(bug)}", kind="zentao")
-        if "id" not in data:
-            raise DceError(ErrorCode.PLATFORM_ERROR, "Bug ID is missing.")
+        response = self.reader.get(f"{self.prefix}/bugs/{key(bug)}", kind="zentao")
+        try:
+            data = self.reader.decode(response, dict)
+            if "id" not in data:
+                raise DceError(ErrorCode.PLATFORM_ERROR, "响应缺少 id 字段。")
+        except DceError as exc:
+            raise DceError(
+                exc.code, f"禅道缺陷 {bug} HTTP {response.status_code}: {exc.message}",
+                "核对该实例 v1 缺陷接口的响应结构。",
+            ) from None
         return dict(data)
 
     def resolve(self, bug_id: int, body: dict[str, Any]) -> None:

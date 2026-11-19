@@ -131,7 +131,10 @@ def auth_expired(response: httpx.Response) -> bool:
 def response_error(response: httpx.Response) -> DceError | None:
     if auth_expired(response):
         return DceError(
-            ErrorCode.AUTH_FAILED, "AUTH_EXPIRED: ZenTao session is invalid or expired."
+            ErrorCode.AUTH_FAILED,
+            f"AUTH_EXPIRED: ZenTao {response.request.url.path} returned HTTP "
+            f"{response.status_code}: session is invalid or expired.",
+            "Check the ZenTao connection and credentials.",
         )
     if response.status_code >= 400:
         code = {

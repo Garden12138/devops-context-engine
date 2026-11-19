@@ -1,19 +1,25 @@
 """Map branch changes to configured modules and persist a deployment plan."""
 
 import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 from dce.errors import DceError, ErrorCode
 from dce.loop import gitops as git
-from dce.loop.runs import Run, append_event, load_run, new_run, save_run
+from dce.loop.bugs import brief
+from dce.loop.guard import check_bug
+from dce.loop.runs import RECORD_BUG_FIELDS, Run, append_event, load_run, new_run, save_run
+from dce.platforms.zentao import ZenTao
+from dce.redact import redact
 from dce.workspace.config import DceConfig, Module, Repo, validate_config
 
 
 def make_plan(ws: Path, cfg: DceConfig, bug_ids: list[int], repos: list[str] | None = None,
               feature_branches: dict[str, str] | None = None, run_id: str | None = None,
               add_items: list[dict[str, Any]] | None = None,
-              drop_items: list[str] | None = None) -> Run:
+              drop_items: list[str] | None = None, *,
+              bug_client: Callable[[], ZenTao] | None = None) -> Run:
     validate_config(cfg, ws)
     if not bug_ids or any(b <= 0 for b in bug_ids):
         raise DceError(ErrorCode.CONFIG_INVALID, 'deploy_plan.bug_ids 需要至少一个正数缺陷 ID。')
@@ -133,6 +139,7 @@ def make_plan(ws: Path, cfg: DceConfig, bug_ids: list[int], repos: list[str] | N
              f'缺陷 {missing} 没有匹配 bug#ID 的提交；核对提交信息。')
     old_bugs = {b['id']: b for b in run['bugs']}
     run['bugs'] = [old_bugs.get(b, {'id': b}) for b in dict.fromkeys(bug_ids)]
+    _populate_bug_metadata(cfg, run, warnings, bug_client)
     run['feature_branches'] = {name: features[name] for name in
                                dict.fromkeys([*commits, *(i['repo'] for i in items.values())])}
     run['plan'] = {'items': [items[i] for i in order], 'order': order, 'commits': commits,
@@ -141,6 +148,35 @@ def make_plan(ws: Path, cfg: DceConfig, bug_ids: list[int], repos: list[str] | N
     append_event(run, 'deploy_plan', 'plan', run['run_id'], 'ok', f'{len(items)} 个模块')
     save_run(ws, run)
     return run
+
+
+def _populate_bug_metadata(cfg: DceConfig, run: Run, warnings: list[dict[str, str]],
+                           bug_client: Callable[[], ZenTao] | None) -> None:
+    client = None
+    for snapshot in run['bugs']:
+        if snapshot.get('title'):
+            continue
+        bug_id = snapshot['id']
+        try:
+            if cfg.zentao.product is None:
+                raise DceError(ErrorCode.CONFIG_INVALID, '缺少 .dce/dce.yaml 的 zentao.product。')
+            if client is None:
+                if bug_client is None:
+                    raise DceError(ErrorCode.CREDENTIALS_INVALID, '缺少禅道连接或凭证配置。')
+                client = bug_client()
+            live = client.bug(str(bug_id))
+        except DceError as exc:
+            reason = redact(exc.message, client.reader.secrets() if client else ())
+            warnings.append({'code': 'BUG_METADATA_UNAVAILABLE',
+                             'message': f'禅道缺陷 {bug_id} 元数据读取失败：{reason}'})
+            snapshot.clear()
+            snapshot['id'] = bug_id
+            continue
+        check_bug(cfg, live)
+        fields = brief(live)
+        snapshot.update(redact({field: fields[field] for field in (
+            *RECORD_BUG_FIELDS, 'opened_by', 'status',
+        )}, client.reader.secrets()))
 
 
 def order_items(items: dict[str, dict[str, Any]], modules: dict[str, tuple[Repo, Module]],

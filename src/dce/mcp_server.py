@@ -1,5 +1,7 @@
 import base64
 import os
+from collections.abc import Iterator
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import Any, Literal
 
@@ -14,7 +16,16 @@ from dce.loop.deploy import status as service_status
 from dce.loop.gitops import merge_repositories
 from dce.loop.plan import make_plan
 from dce.loop.runs import load_run, status, update_run
-from dce.output import bug_output, check_output, compact, invoke, plan_output, scan_output, success
+from dce.output import (
+    bug_output,
+    check_output,
+    compact,
+    invoke,
+    plan_output,
+    scan_output,
+    status_output,
+    success,
+)
 from dce.platforms.gitlab import GitLab
 from dce.platforms.http import PlatformClient
 from dce.platforms.portainer import Portainer
@@ -38,6 +49,13 @@ class Runtime:
                                        if os.environ.get('DCE_WORKSPACE') else None)
         self.settings: Settings | None = None
 
+    @contextmanager
+    def zentao(self) -> Iterator[ZenTao]:
+        if self.settings is None:
+            self.settings = load_settings(self.connections, self.credentials)
+        with PlatformClient(self.settings.platform('zentao'), self.settings) as http:
+            yield ZenTao(http)
+
     def call(self, tool: str, *, image_sink: list[ImageBytes] | None = None,
              **arguments: Any) -> dict[str, Any]:
         def operation() -> dict[str, Any]:
@@ -48,8 +66,7 @@ class Runtime:
                                'service_status: run_id 与 service 必须且只能提供一个。',
                                '部署后按 run_id 核验，或按配置中的 service 名称查询。')
             if tool == 'dce_status':
-                data = status(ws, arguments.get('run_id'))
-                return success(f"{data['config']['name']}：{len(data['runs'])} 个运行记录。", data)
+                return status_output(status(ws, arguments.get('run_id')))
             if tool == 'run_update':
                 updated = update_run(ws, load_config(ws), arguments['run_id'],
                                      arguments.get('verification'), arguments.get('record'),
@@ -59,7 +76,10 @@ class Runtime:
             if tool == 'deploy_plan':
                 cfg = load_config(ws)
                 params = {k: v for k, v in arguments.items() if k != 'workspace'}
-                return plan_output(make_plan(ws, cfg, **params), cfg)
+                with ExitStack() as stack:
+                    plan = make_plan(ws, cfg, **params,
+                                     bug_client=lambda: stack.enter_context(self.zentao()))
+                return plan_output(plan, cfg)
             if tool == 'merge_to_test':
                 return merge_repositories(
                     ws, load_config(ws), load_run(ws, arguments['run_id']),
@@ -67,11 +87,9 @@ class Runtime:
             if tool == 'bug_resolve':
                 cfg = load_config(ws)
                 resolve_run = load_run(ws, arguments['run_id'])
-                if self.settings is None:
-                    self.settings = load_settings(self.connections, self.credentials)
-                with PlatformClient(self.settings.platform('zentao'), self.settings) as http:
+                with self.zentao() as client:
                     results = resolve_bugs(ws, cfg, resolve_run, arguments.get('bug_ids'),
-                                           arguments.get('comment'), client=ZenTao(http))
+                                           arguments.get('comment'), client=client)
                 count = sum(result['status'] == 'resolved' for result in results)
                 return success(f'禅道已解决 {count}/{len(results)} 个缺陷。', {'results': results})
             if self.settings is None:
@@ -99,10 +117,10 @@ class Runtime:
             if tool in {'bug_list', 'bug_get'}:
                 cfg = load_config(ws)
                 params = {k: v for k, v in arguments.items() if k != 'workspace'}
-                with PlatformClient(self.settings.platform('zentao'), self.settings) as http:
+                with self.zentao() as client:
                     if tool == 'bug_list':
-                        return bug_output(list_bugs(cfg, client=ZenTao(http), ws=ws, **params))
-                    view, delivered = get_bug(cfg, client=ZenTao(http), ws=ws, **params)
+                        return bug_output(list_bugs(cfg, client=client, ws=ws, **params))
+                    view, delivered = get_bug(cfg, client=client, ws=ws, **params)
                     if image_sink is not None:
                         image_sink.extend(delivered)
                     return bug_output(view)
