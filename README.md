@@ -13,7 +13,23 @@ flowchart LR
   G --> H[禅道已解决]
 ```
 
-需要 Python 3.12 和 uv。在仓库目录安装：
+## 安装
+
+需要 Python 3.12 和 uv。以下命令在 DCE 仓库目录运行。
+
+### 使用
+
+构建并安装固定版本的 wheel。
+
+```sh
+uv build --wheel
+uv tool install --python 3.12 --force dist/devops_context_engine-2.0.0-py3-none-any.whl
+dce --version
+```
+
+### 开发
+
+同步锁定的开发依赖并检查版本。
 
 ```sh
 uv sync --locked --dev
