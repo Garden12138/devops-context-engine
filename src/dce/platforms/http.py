@@ -153,8 +153,9 @@ class PlatformClient:
 
     def post(self, path: str, json: dict[str, Any] | None = None,
              headers: dict[str, str] | None = None, *, kind: str = "gitlab",
-             params: dict[str, Any] | None = None) -> httpx.Response:
-        return self._request("POST", path, kind=kind, body=json, headers=headers, params=params)
+             params: dict[str, Any] | None = None, defer_status: bool = False) -> httpx.Response:
+        return self._request("POST", path, kind=kind, body=json, headers=headers, params=params,
+                             defer_status=defer_status)
 
     def put(self, path: str, json: dict[str, Any] | None = None,
             headers: dict[str, str] | None = None, *, kind: str = "portainer",

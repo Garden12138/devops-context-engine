@@ -1,15 +1,14 @@
-"""CLI entry points; milestones M1–M5 supply their implementations."""
+"""Command-line entry points for DCE workflows."""
 
 import json
 import math
 import time
 from pathlib import Path
-from typing import Annotated, Any, NoReturn
+from typing import Annotated, Any
 
 import typer
 
 from dce import __version__
-from dce.errors import DceError, ErrorCode
 from dce.loop.bugs import ImageBytes, save_image_files
 from dce.mcp_server import Runtime, create_server
 from dce.output import invoke
@@ -21,16 +20,6 @@ run_app = typer.Typer(no_args_is_help=True)
 app.add_typer(setup_app, name="setup")
 app.add_typer(bug_app, name="bug")
 app.add_typer(run_app, name="run")
-
-
-def pending(tool: str) -> NoReturn:
-    error = DceError(
-        ErrorCode.NOT_IMPLEMENTED,
-        f"{tool} is scheduled for a later milestone.",
-        "See docs/v2/05-实施计划.md for implementation order.",
-    )
-    typer.echo(json.dumps({"ok": False, "error": error.as_dict()}, ensure_ascii=False))
-    raise typer.Exit(1)
 
 
 @app.callback(invoke_without_command=True)
@@ -187,10 +176,12 @@ def run_update(
 
 @app.command()
 def resolve(
+    ctx: typer.Context,
     run: Annotated[str, typer.Option("--run")],
     bug: Annotated[list[int] | None, typer.Option("--bug")] = None,
+    comment: Annotated[str | None, typer.Option("--comment")] = None,
 ) -> None:
-    pending("bug_resolve")
+    emit(ctx, 'bug_resolve', run_id=run, bug_ids=bug, comment=comment)
 
 
 @app.command()

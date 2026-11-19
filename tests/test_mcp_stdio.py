@@ -15,11 +15,6 @@ TOOLS = {
     'project_setup', 'dce_status', 'bug_list', 'bug_get', 'deploy_plan', 'merge_to_test',
     'ci_build', 'ci_status', 'service_deploy', 'service_status', 'run_update', 'bug_resolve',
 }
-PENDING = {
-    'bug_resolve': {'run_id': 'demo-run'},
-}
-
-
 def test_stdio_lists_twelve_tools_and_reads_status_offline(tmp_path):
     import yaml
 
@@ -58,10 +53,9 @@ def test_stdio_lists_twelve_tools_and_reads_status_offline(tmp_path):
                     'dce_status', {'workspace': str(tmp_path.parent)},
                 )
                 assert mismatch.structuredContent['error']['code'] == 'WORKSPACE_MISMATCH'
-                for name, arguments in PENDING.items():
-                    pending = await session.call_tool(name, arguments)
-                    assert json.loads(pending.content[0].text) == pending.structuredContent
-                    assert pending.structuredContent['error']['code'] == 'NOT_IMPLEMENTED'
+                missing = await session.call_tool('bug_resolve', {'run_id': 'demo-missing'})
+                assert json.loads(missing.content[0].text) == missing.structuredContent
+                assert missing.structuredContent['error']['code'] == 'NOT_FOUND'
                 invalid = await session.call_tool('service_status', {})
                 assert json.loads(invalid.content[0].text) == invalid.structuredContent
                 assert invalid.structuredContent['error']['code'] == 'CONFIG_INVALID'

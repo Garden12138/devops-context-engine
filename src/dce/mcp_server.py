@@ -7,7 +7,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import CallToolResult, ContentBlock, ImageContent, TextContent
 
 from dce.errors import DceError, ErrorCode
-from dce.loop.bugs import ImageBytes, get_bug, list_bugs
+from dce.loop.bugs import ImageBytes, get_bug, list_bugs, resolve_bugs
 from dce.loop.build import poll_builds, start_builds
 from dce.loop.deploy import deploy
 from dce.loop.deploy import status as service_status
@@ -41,11 +41,6 @@ class Runtime:
     def call(self, tool: str, *, image_sink: list[ImageBytes] | None = None,
              **arguments: Any) -> dict[str, Any]:
         def operation() -> dict[str, Any]:
-            if tool not in {'project_setup', 'dce_status', 'bug_list', 'bug_get', 'deploy_plan',
-                            'merge_to_test', 'ci_build', 'ci_status',
-                            'service_deploy', 'service_status', 'run_update'}:
-                raise DceError(ErrorCode.NOT_IMPLEMENTED, f'{tool} 将在后续里程碑实现。',
-                               '按 docs/v2/05-实施计划.md 的顺序完成后续里程碑。')
             ws = locate_workspace(arguments.get('workspace'), self.workspace, Path.cwd())
             if tool == 'service_status' and ((arguments.get('run_id') is None)
                                              == (arguments.get('service') is None)):
@@ -69,6 +64,16 @@ class Runtime:
                 return merge_repositories(
                     ws, load_config(ws), load_run(ws, arguments['run_id']),
                     arguments.get('repos'), arguments.get('approved_by_user', False))
+            if tool == 'bug_resolve':
+                cfg = load_config(ws)
+                resolve_run = load_run(ws, arguments['run_id'])
+                if self.settings is None:
+                    self.settings = load_settings(self.connections, self.credentials)
+                with PlatformClient(self.settings.platform('zentao'), self.settings) as http:
+                    results = resolve_bugs(ws, cfg, resolve_run, arguments.get('bug_ids'),
+                                           arguments.get('comment'), client=ZenTao(http))
+                count = sum(result['status'] == 'resolved' for result in results)
+                return success(f'禅道已解决 {count}/{len(results)} 个缺陷。', {'results': results})
             if self.settings is None:
                 self.settings = load_settings(self.connections, self.credentials)
             if tool in {'service_deploy', 'service_status'}:
@@ -101,11 +106,14 @@ class Runtime:
                     if image_sink is not None:
                         image_sink.extend(delivered)
                     return bug_output(view)
-            if arguments['action'] == 'scan':
-                return scan_output(scan(ws, self.settings))
-            if arguments['action'] == 'check':
-                return check_output(check(ws, self.settings))
-            raise DceError(ErrorCode.CONFIG_INVALID, 'project_setup.action 必须为 scan 或 check。')
+            if tool == 'project_setup':
+                if arguments.get('action') == 'scan':
+                    return scan_output(scan(ws, self.settings))
+                if arguments.get('action') == 'check':
+                    return check_output(check(ws, self.settings))
+                raise DceError(ErrorCode.CONFIG_INVALID,
+                               'project_setup.action 必须为 scan 或 check。')
+            raise DceError(ErrorCode.CONFIG_INVALID, f'未知 DCE 工具 {tool!r}。')
 
         return invoke(operation, lambda: self.settings.secrets() if self.settings else ())
 
@@ -186,7 +194,7 @@ def create_server(connections: Path | None = None, credentials: Path | None = No
                    workspace: str | None = None) -> CallToolResult:
         return call('run_update', locals())
 
-    @mcp.tool(description='把运行中的缺陷标记为已解决并指派回提测人；要求验证通过且修复记录已提交。')
+    @mcp.tool(description='把运行中的缺陷标记为已解决并按配置指派；要求验证通过且修复记录已提交。')
     def bug_resolve(run_id: str, bug_ids: list[int] | None = None, comment: str | None = None,
                     workspace: str | None = None) -> CallToolResult:
         return call('bug_resolve', locals())

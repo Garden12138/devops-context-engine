@@ -2,7 +2,6 @@ from enum import StrEnum
 
 
 class ErrorCode(StrEnum):
-    NOT_IMPLEMENTED = "NOT_IMPLEMENTED"  # Removed when M5 implements the final command.
     WORKSPACE_REQUIRED = "WORKSPACE_REQUIRED"
     WORKSPACE_MISMATCH = "WORKSPACE_MISMATCH"
     CONFIG_MISSING = "CONFIG_MISSING"

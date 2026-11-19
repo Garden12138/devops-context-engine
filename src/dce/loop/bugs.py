@@ -1,12 +1,14 @@
 """Read product-scoped defects; platform content remains data."""
 
 from dataclasses import dataclass, field
+from html import escape
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
 from dce.errors import DceError, ErrorCode
-from dce.loop.runs import list_runs
+from dce.loop.guard import check_bug
+from dce.loop.runs import Run, append_event, list_runs, now, save_run
 from dce.platforms.zentao import ZenTao
 from dce.workspace.config import DceConfig
 
@@ -134,3 +136,109 @@ def save_image_files(directory: Path, images: list[ImageBytes]) -> None:
         raise DceError(ErrorCode.PLATFORM_ERROR,
                        f'本地图片目录 {directory}: {type(exc).__name__}: {exc}',
                        '选择可写目录后重试 dce bug show --save-images。') from None
+
+
+def resolve_comment(run: Run, bug_id: int, extra: str | None) -> str:
+    lines = ['已修复，测试环境验证通过。']
+    for repo, commits in run.get('plan', {}).get('commits', {}).items():
+        matching = [commit for commit in commits if bug_id in commit.get('bugs', [])]
+        if not matching:
+            continue
+        branch = run.get('feature_branches', {}).get(repo, '')
+        for commit in matching:
+            lines.append(f"修复提交：{repo} {branch} {commit['sha'][:7]}（{commit['subject']}）")
+        merge = run.get('merges', {}).get(repo)
+        if merge:
+            merged_at = merge['merged_at'].replace('T', ' ')[:16]
+            lines.append(f"合入测试分支：{merge['test_branch']} {merge['merge_sha'][:7]}，"
+                         f"{merged_at}")
+    deployments = run.get('deploys', {})
+    builds = run.get('builds', {})
+    related_services = {service: item['id'] for item in run.get('plan', {}).get('items', [])
+                        if bug_id in item.get('bugs', []) for service in item.get('services', [])}
+    for service, item_id in related_services.items():
+        deployment = deployments.get(service)
+        if deployment is None:
+            continue
+        running = deployment.get('running_digest')
+        digest = running or builds.get(item_id, {}).get('build', {}).get('digest')
+        display = '运行 digest 待核对'
+        if digest:
+            display = digest[:19] + ('…' if len(digest) > 19 else '')
+            if not running:
+                display += '（构建 digest，运行待核对）'
+        lines.append(f'部署：{service} {display}')
+    lines.append(f"验证：{run['verifications'][str(bug_id)].get('notes', '')}")
+    record = run['record']
+    lines.append(f"记录：{record.get('file', '')}（commit {record['commit'][:7]}）")
+    if extra:
+        lines.append(extra)
+    text = '\n'.join(lines).replace('\r\n', '\n').replace('\r', '\n')
+    return escape(text, quote=False).replace('\n', '<br>')
+
+
+def _save_resolution(ws: Path, run: Run, bug_id: int, status: str) -> None:
+    resolved = run.setdefault('zentao', {})
+    resolved[str(bug_id)] = {'action': status, 'at': now()}
+    if all(str(bug['id']) in resolved for bug in run['bugs']):
+        run['stage'] = 'resolved'
+    save_run(ws, run)
+
+
+def resolve_bugs(ws: Path, cfg: DceConfig, run: Run, bug_ids: list[int] | None = None,
+                 comment: str | None = None, *, client: ZenTao) -> list[dict[str, Any]]:
+    members = {bug['id']: bug for bug in run['bugs']}
+    selected = list(dict.fromkeys(bug_ids if bug_ids is not None else members))
+    outside = [bug_id for bug_id in selected if bug_id not in members]
+    if outside:
+        raise DceError(ErrorCode.OUT_OF_SCOPE,
+                       f"禅道缺陷 {outside} 不属于 run {run['run_id']}。",
+                       '使用 dce_status 核对这个 run 包含的缺陷。')
+    results: list[dict[str, Any]] = []
+    for bug_id in selected:
+        row: dict[str, Any] = {'bug': bug_id, 'status': 'blocked'}
+        results.append(row)
+        verification = run.get('verifications', {}).get(str(bug_id), {})
+        if verification.get('result') != 'passed':
+            row['reason'] = 'verification 未通过，请通过 run_update 记录通过的验证。'
+            continue
+        if not run.get('record', {}).get('commit'):
+            row['reason'] = '缺少修复记录提交，请通过 run_update 保存记录。'
+            continue
+        live = client.bug(str(bug_id))
+        check_bug(cfg, live)
+        status = live.get('status')
+        if status in ('resolved', 'closed'):
+            row.update(status='skipped', reason=f'已是 {status}')
+            if str(bug_id) not in run.get('zentao', {}):
+                _save_resolution(ws, run, bug_id, 'skipped')
+            continue
+        if status != 'active':
+            row['reason'] = f'禅道缺陷 {bug_id} HTTP 200: 当前状态 {status!r}，请核对为 active。'
+            continue
+        config = cfg.zentao.resolve
+        assigned = (identity(live.get('openedBy'), 'account') if config.assign_to == 'opener'
+                    else config.assign_to)
+        if not isinstance(assigned, str) or not assigned.strip():
+            raise DceError(ErrorCode.PLATFORM_ERROR,
+                           f'禅道缺陷 {bug_id} HTTP 200: openedBy 缺少提测人账号。',
+                           '核对禅道响应或配置 zentao.resolve.assign_to 的具体账号。')
+        body = {'resolution': config.resolution, 'resolvedBuild': config.resolved_build,
+                'assignedTo': assigned, 'comment': resolve_comment(run, bug_id, comment)}
+        try:
+            client.resolve(bug_id, body)
+            confirmed = client.bug(str(bug_id))
+            if confirmed.get('status') != 'resolved':
+                raise DceError(ErrorCode.PLATFORM_ERROR,
+                               f"禅道缺陷 {bug_id} 复读 HTTP 200: 状态为 "
+                               f"{confirmed.get('status')!r}，预期为 resolved。",
+                               '核对禅道解决返回和缺陷历史后再重试。')
+        except DceError as exc:
+            append_event(run, 'bug_resolve', 'resolve', str(bug_id), 'error',
+                         '禅道解决请求或复读失败', error_code=exc.code.value)
+            save_run(ws, run)
+            raise
+        row.update(status='resolved', assigned_to=assigned)
+        append_event(run, 'bug_resolve', 'resolve', str(bug_id), 'ok', '复读已确认 resolved')
+        _save_resolution(ws, run, bug_id, 'resolved')
+    return results

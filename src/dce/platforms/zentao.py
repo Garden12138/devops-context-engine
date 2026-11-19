@@ -7,6 +7,7 @@ from pydantic import SecretStr
 from dce.errors import DceError, ErrorCode
 from dce.platforms.gitlab import key
 from dce.platforms.http import PlatformClient
+from dce.redact import redact
 
 
 class ZenTao:
@@ -28,6 +29,30 @@ class ZenTao:
         if "id" not in data:
             raise DceError(ErrorCode.PLATFORM_ERROR, "Bug ID is missing.")
         return dict(data)
+
+    def resolve(self, bug_id: int, body: dict[str, Any]) -> None:
+        path = f"{self.prefix}/bugs/{bug_id}/resolve"
+        response = self.reader.post(path, json=body, kind="zentao", defer_status=True)
+        status = response.status_code
+        if 400 <= status < 500:
+            detail = response.text.strip()
+            try:
+                data = response.json()
+            except ValueError:
+                data = None
+            if isinstance(data, dict):
+                detail = str(data.get("message") or data.get("error") or detail)
+            detail = redact(detail, self.reader.secrets())[:500] or "上游未提供错误文字"
+            raise DceError(
+                ErrorCode.PLATFORM_ERROR, f"禅道缺陷 {bug_id} resolve HTTP {status}: {detail}",
+                "检查 zentao.resolve.assign_to 和 zentao.resolve.resolved_build，"
+                "以及当前凭证对此缺陷的解决权限。",
+            )
+        if status >= 500:
+            raise DceError(
+                ErrorCode.PLATFORM_ERROR, f"禅道缺陷 {bug_id} resolve HTTP {status}: 服务端错误。",
+                "核对禅道服务日志和缺陷当前状态，再决定是否重试。",
+            )
 
     def bugs_page(self, product: int, page: int, limit: int = 100) -> list[dict[str, Any]]:
         data = self.reader.json(f"{self.prefix}/products/{product}/bugs", kind="zentao",

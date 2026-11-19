@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from ruamel.yaml import YAML
 
 from dce.errors import DceError, ErrorCode
@@ -20,6 +20,13 @@ class Resolve(Model):
     resolution: Literal['fixed'] = 'fixed'
     resolved_build: str = 'trunk'
     assign_to: str = 'opener'
+
+    @field_validator('resolved_build', 'assign_to')
+    @classmethod
+    def no_whitespace(cls, value: str) -> str:
+        if not value or any(char.isspace() for char in value):
+            raise ValueError('必须非空且不含空白。')
+        return value
 
 
 class Zentao(Model):
@@ -163,7 +170,9 @@ def load_config(workspace: Path) -> DceConfig:
     except ValidationError as exc:
         error = exc.errors()[0]
         field = ''.join(f'[{k}]' if isinstance(k, int) else f'.{k}' for k in error['loc'])
-        invalid(field.lstrip('.'), f"配置不符合类型要求（{error['type']}）。")
+        reason = (error['msg'] if error['type'] == 'value_error'
+                  else f"配置不符合类型要求（{error['type']}）。")
+        invalid(field.lstrip('.'), reason)
         raise AssertionError('unreachable') from None
     except (OSError, UnicodeError, yaml.YAMLError) as exc:
         invalid('.dce/dce.yaml', f'{type(exc).__name__}，检查读取权限、编码和 YAML 语法。')

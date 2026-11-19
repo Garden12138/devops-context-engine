@@ -20,7 +20,7 @@ def check_bug(cfg: DceConfig, bug: dict[str, Any]) -> None:
     if isinstance(product, dict):
         product = product.get('id')
     require(cfg.zentao.product is not None and str(product) == str(cfg.zentao.product),
-            f"禅道 bug {bug.get('id')}", 'product', product, cfg.zentao.product)
+            f"禅道缺陷 {bug.get('id')} HTTP 200", 'product', product, cfg.zentao.product)
 
 
 def check_branch(cfg: DceConfig, repo: Repo, branch: str | None) -> None:
