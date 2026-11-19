@@ -121,7 +121,7 @@ G1 要给出：你对缺陷的理解、根因（附代码位置）、修改方�
 
 ## S10 修复记录
 
-1. `dce_status(run_id)`，取 `record_facts`。
+1. `dce_status(run_id)`，取 `record_facts`。有 `BUG_METADATA_MISSING` 警告时，对这些缺陷调用 `bug_get(bug_id, images=false)`，补上标题、严重程度、优先级和提出时间。
 2. 按 `record-template.md` 更新 `dce.yaml` 中 `records.file` 指向的文件：
    - 汇总表按编号顺序新增一行；已有该缺陷时更新“修复”和“验证”两列；
    - 新增该缺陷的小节；重新激活后再次修复的，在原小节里补一段“重新激活后”的说明，并更新修复时间；
