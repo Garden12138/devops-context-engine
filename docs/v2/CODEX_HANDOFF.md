@@ -2,7 +2,7 @@
 
 ## 怎么用（给 andy）
 
-1. 在 Codex 中打开本仓库目录，切到 `feature/v2-bugfix-loop` 分支。权限选“工作区可写 + 需要时询问”（CLI 为 `codex --sandbox workspace-write --ask-for-approval on-request`）。只有 M0 的 `uv lock` / `uv sync` 需要联网，Codex 会来问。
+1. 在 Codex 中打开本仓库目录，切到 `feature/v2.0.0` 分支。权限选“工作区可写 + 需要时询问”（CLI 为 `codex --sandbox workspace-write --ask-for-approval on-request`）。只有 M0 的 `uv lock` / `uv sync` 需要联网，Codex 会来问。
 2. **每个里程碑新开一个 Codex 会话**，把第 2 节中对应里程碑的代码块整块复制粘贴进去。不要一次让它做多个里程碑。
 3. 里程碑完成后，按 Codex 最后给出的清单，在 Cursor 里做 `06-验收标准.md` 中对应的现场验收（M0 不需要）。通过后再开下一个里程碑。
 4. 中途中断、验收失败、回答它的“待确认”问题、发现它跑偏时，用第 3 节的提示。
@@ -76,7 +76,7 @@
 ### M0 清场与骨架
 
 ```text
-你在 devops-context-engine 仓库（当前工作目录）的 feature/v2-bugfix-loop 分支上工作，执行 DCE 2.0 的里程碑 M0（清场与骨架）。
+你在 devops-context-engine 仓库（当前工作目录）的 feature/v2.0.0 分支上工作，执行 DCE 2.0 的里程碑 M0（清场与骨架）。
 
 1. 先按 docs/v2/CODEX_HANDOFF.md 第 1.1 节的顺序阅读文档，并遵守第 1 节全部规则。
 2. 按 docs/v2/05-实施计划.md 的 T0.1 → T0.2 → T0.3 执行，每个任务一个提交。
@@ -95,7 +95,7 @@
 ### M1 配置、扫描、自检
 
 ```text
-你在 devops-context-engine 仓库（当前工作目录）的 feature/v2-bugfix-loop 分支上工作，执行 DCE 2.0 的里程碑 M1（配置、扫描、自检）。
+你在 devops-context-engine 仓库（当前工作目录）的 feature/v2.0.0 分支上工作，执行 DCE 2.0 的里程碑 M1（配置、扫描、自检）。
 
 1. 先按 docs/v2/CODEX_HANDOFF.md 第 1.1 节的顺序阅读文档，并遵守第 1 节全部规则。检查 progress.md：M0 未完成，或有未答复的“待确认”，就停下来告诉我。
 2. 按 05 的 T1.1 → T1.8 执行，每个任务一个提交。
@@ -115,7 +115,7 @@
 ### M2 缺陷读取与部署计划
 
 ```text
-你在 devops-context-engine 仓库（当前工作目录）的 feature/v2-bugfix-loop 分支上工作，执行 DCE 2.0 的里程碑 M2（缺陷读取与部署计划）。
+你在 devops-context-engine 仓库（当前工作目录）的 feature/v2.0.0 分支上工作，执行 DCE 2.0 的里程碑 M2（缺陷读取与部署计划）。
 
 1. 先按 docs/v2/CODEX_HANDOFF.md 第 1.1 节的顺序阅读文档，并遵守第 1 节全部规则。检查 progress.md：M1 的现场验收 R1 没有标 PASS，或有未答复的“待确认”，就停下来告诉我。
 2. 按 05 的 T2.1 → T2.5 执行，每个任务一个提交。
@@ -132,7 +132,7 @@
 ### M3 合并与构建
 
 ```text
-你在 devops-context-engine 仓库（当前工作目录）的 feature/v2-bugfix-loop 分支上工作，执行 DCE 2.0 的里程碑 M3（合并与构建）。
+你在 devops-context-engine 仓库（当前工作目录）的 feature/v2.0.0 分支上工作，执行 DCE 2.0 的里程碑 M3（合并与构建）。
 
 1. 先按 docs/v2/CODEX_HANDOFF.md 第 1.1 节的顺序阅读文档，并遵守第 1 节全部规则。检查 progress.md：R2 没有标 PASS，或有未答复的“待确认”，就停下来告诉我。
 2. 按 05 的 T3.1 → T3.5 执行，每个任务一个提交。
@@ -151,7 +151,7 @@
 ### M4 部署与核验
 
 ```text
-你在 devops-context-engine 仓库（当前工作目录）的 feature/v2-bugfix-loop 分支上工作，执行 DCE 2.0 的里程碑 M4（部署与核验）。
+你在 devops-context-engine 仓库（当前工作目录）的 feature/v2.0.0 分支上工作，执行 DCE 2.0 的里程碑 M4（部署与核验）。
 
 1. 先按 docs/v2/CODEX_HANDOFF.md 第 1.1 节的顺序阅读文档，并遵守第 1 节全部规则。检查 progress.md：R3 没有标 PASS，或有未答复的“待确认”，就停下来告诉我。
 2. 按 05 的 T4.1 → T4.3 执行，每个任务一个提交。
@@ -167,7 +167,7 @@
 ### M5 验证、记录、禅道与 Playbook
 
 ```text
-你在 devops-context-engine 仓库（当前工作目录）的 feature/v2-bugfix-loop 分支上工作，执行 DCE 2.0 的里程碑 M5（验证、记录、禅道与 Playbook）。
+你在 devops-context-engine 仓库（当前工作目录）的 feature/v2.0.0 分支上工作，执行 DCE 2.0 的里程碑 M5（验证、记录、禅道与 Playbook）。
 
 1. 先按 docs/v2/CODEX_HANDOFF.md 第 1.1 节的顺序阅读文档（本次还要读 docs/v2/07-Playbook.md），并遵守第 1 节全部规则。检查 progress.md：R4 没有标 PASS，或有未答复的“待确认”，就停下来告诉我。
 2. 按 05 的 T5.1 → T5.5 执行，每个任务一个提交。
@@ -188,7 +188,7 @@
 ### 中途接续（上一个 Codex 会话中断）
 
 ```text
-你在 devops-context-engine 仓库（当前工作目录）的 feature/v2-bugfix-loop 分支上继续 DCE 2.0 的里程碑 M<N>，上一个会话中途中断了。
+你在 devops-context-engine 仓库（当前工作目录）的 feature/v2.0.0 分支上继续 DCE 2.0 的里程碑 M<N>，上一个会话中途中断了。
 
 1. 按 docs/v2/CODEX_HANDOFF.md 第 1.1 节阅读文档，遵守第 1 节全部规则。
 2. 查看 docs/v2/progress.md、git log --oneline -20、git status，判断 M<N> 最后完成的是哪个任务。
@@ -199,7 +199,7 @@
 ### 现场验收失败后修复
 
 ```text
-DCE 2.0 现场验收 R<N> 没有通过。在 feature/v2-bugfix-loop 分支上处理，遵守 docs/v2/CODEX_HANDOFF.md 第 1 节全部规则。
+DCE 2.0 现场验收 R<N> 没有通过。在 feature/v2.0.0 分支上处理，遵守 docs/v2/CODEX_HANDOFF.md 第 1 节全部规则。
 
 现象：<粘贴我看到的现象，以及哪一步失败>
 DCE 返回：<粘贴工具返回的 JSON 或 CLI 输出；把其中的真实主机名、IP 和账号换成占位符>

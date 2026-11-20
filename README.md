@@ -1,4 +1,4 @@
-# DCE 2.0
+# DCE 2.0.0
 
 给 Cursor / Codex 的 MCP 工具集，连接禅道、GitLab 和 Portainer，支撑测试环境的缺陷修复闭环。
 
@@ -13,13 +13,22 @@ flowchart LR
   G --> H[禅道已解决]
 ```
 
+## 版本与分支
+
+| 分支或标签 | 用途 |
+|---|---|
+| `main` | 默认分支，当前稳定版本为 DCE 2.0.0 |
+| `feature/v2.0.0` | DCE 2.0.0 分支 |
+| `feature/v1.0.0` | DCE 1.x 历史分支，保留 1.2.0 的实现和文档 |
+| `v2.0.0` | DCE 2.0.0 的固定发布快照 |
+
 ## 安装
 
-需要 Python 3.12 和 uv。以下命令在 DCE 仓库目录运行。
+需要 Python 3.12 和 uv。以下命令在本仓库目录运行。
 
 ### 使用
 
-构建并安装固定版本的 wheel。
+从 `main` 构建并安装固定版本的 wheel。
 
 ```sh
 uv build --wheel
@@ -29,7 +38,7 @@ dce --version
 
 ### 开发
 
-同步锁定的开发依赖并检查版本。
+在 `main` 或 `feature/v2.0.0` 上同步锁定的开发依赖并检查版本。
 
 ```sh
 uv sync --locked --dev
