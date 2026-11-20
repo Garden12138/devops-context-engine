@@ -37,6 +37,7 @@
 | 2026-11-19 | R5.1 | 0529d79 | 433 passed / 91.84% | R5.1 PASS（2026-11-19，用户确认） | pytest、ruff、mypy、公开数据检查通过。非测试代码 5120 行。根据现场验收调整：Docker 回退使用构建 digest 固定镜像，digest_unverified 时提示继续浏览器验证。现场通过 docker_update 部署，运行 digest 与预期 digest 完全一致。耗时未记录。 |
 | 2026-11-19 | DCE 2.0.0 发版 | `v2.0.0` | 433 passed / 91.84% | R1–R5、R5.1 PASS | pytest、ruff、mypy、公开数据检查通过。非测试代码 5120 行。仅授权向 `origin` 普通推送 `feature/v2-bugfix-loop` 和 `v2.0.0`，联网推送前须另行确认。 |
 | 2026-11-20 | 发布分支整理与 README 更新 | — | 433 passed / 91.84% | — | ruff、mypy、公开数据及 README 链接检查通过。`main` 和 `feature/v2.0.0` 使用 2.0.0，`feature/v1.0.0` 保留 1.2.0。 |
+| 2026-11-20 | 使用指南补充上手示例 | — | 433 passed / 91.84% | — | ruff、mypy、公开数据检查通过。核对初始化、自检、处理缺陷和恢复进度示例，CLI 扫描与自检命令入口检查通过。 |
 
 2026-11-18 M4 离线结果：T4.1–T4.3 按顺序各一个本地任务提交（a1e3914、e3bfa4b、19a6286）。全部 386 tests passed，覆盖率 92.06%（workspace 94.40%、loop 97.14%、platforms 82.92%，deploy.py 100%）；ruff、mypy、公开数据检查通过。非测试代码 4694 行，各源文件不超过 400 行，无范围偏差、无新增待确认。测试仅用 MockTransport、本地 bare git 和假时钟；未访问真实平台或业务工作区，未 push。R4 现场验收待用户执行，未开始 M5。本提交仅归档最终任务 SHA 与离线结果。
 
