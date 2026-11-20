@@ -1,6 +1,6 @@
-# DevOps Context Engine（DCE）
+# DevOps Context Engine（DCE 1.x 历史版）
 
-DCE 把 ZenTao 缺陷、GitLab 代码/CI 和 Portainer/Swarm 部署事实连接到 Cursor 等 Agent，减少每次排查时重复查平台、猜项目关系的工作。当前本地体验版：**1.2.0**；后续开发分支：`feature/upgrade-chatgpt`。
+DCE 把 ZenTao 缺陷、GitLab 代码/CI 和 Portainer/Swarm 部署事实连接到 Cursor 等 Agent，减少每次排查时重复查平台、猜项目关系的工作。本分支 `feature/v1.0.0` 保留 DCE 1.x 的最后一个实现，包版本为 **1.2.0**。当前稳定版 DCE 2.0.0 位于 `main`，对应分支为 `feature/v2.0.0`。
 
 DCE 提供安全只读能力，Host Agent 使用当前业务源码和自己的模型提出关系，经用户审核后维护 `.dce/project.yaml`。关系可跨仓库、模块、镜像和服务；来源实例和各平台 ID 分开，不因同名或同数字自动确认。未知关系保持 proposed/unresolved，环境和部署版本要有证据。
 
@@ -24,17 +24,11 @@ flowchart LR
 
 ## 快速开始
 
-Python >=3.12、uv、Git。统一使用 `feature/upgrade-chatgpt`；首次获取代码：
+需要 Python 3.12 或更高版本、uv 和 Git。克隆本仓库后，在仓库目录运行以下命令：
 
 ```sh
-git clone --single-branch --branch feature/upgrade-chatgpt https://github.com/Garden12138/devops-context-engine.git
-cd devops-context-engine
-```
-
-已有交付仓库可直接进入目录，然后运行：
-
-```sh
-git switch feature/upgrade-chatgpt
+git fetch origin
+git switch feature/v1.0.0
 uv sync --locked --dev --python 3.12
 uv run --offline dce --help
 uv run --offline dce doctor --mock
