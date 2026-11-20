@@ -1,0 +1,4 @@
+compile_demo_unknown:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  script: ["mvn -pl demo-common-core deploy"]

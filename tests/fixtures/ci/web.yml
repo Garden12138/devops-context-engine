@@ -1,0 +1,17 @@
+variables:
+  REPOSITORY: demo
+  DOCKER_IMAGE: demo-web
+compile_demo_web:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      when: manual
+  script: ["npm run build"]
+build_demo_web:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+  needs: [compile_demo_web]
+  script: ["docker push $REGISTRY_DEV/$REPOSITORY/$DOCKER_IMAGE:latest"]
+build_other_dev:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+  script: ["docker push $REGISTRY_DEV/demo/demo-other:latest"]

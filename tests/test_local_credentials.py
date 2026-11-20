@@ -5,8 +5,8 @@ from pathlib import Path
 import httpx
 import pytest
 
-from dce.common.config import load_settings
-from dce.common.errors import DceError
+from dce.errors import DceError
+from dce.settings import load_settings
 
 
 def files(tmp_path: Path, text: str):
@@ -29,9 +29,9 @@ CREDENTIALS = (
 
 
 def test_explicit_local_v1_login_keeps_secrets_in_process(tmp_path, caplog):
-    from dce.connectors.http import Reader
-    from dce.connectors.zentao import ZenTao
-    from dce.security.local_credentials import local_settings
+    from dce.platforms.http import PlatformClient
+    from dce.platforms.zentao import ZenTao
+    from dce.settings import local_settings
 
     config, credentials = files(tmp_path, CREDENTIALS)
     requests = []
@@ -60,7 +60,7 @@ def test_explicit_local_v1_login_keeps_secrets_in_process(tmp_path, caplog):
             environment={},
             zentao_transport=transport,
         )
-        with Reader(settings.platform("zentao"), settings, transport=transport) as reader:
+        with PlatformClient(settings.platform("zentao"), settings, transport=transport) as reader:
             assert ZenTao(reader).bug("b")["id"] == "b"
     assert dict(os.environ) == before
     assert settings.gitlab.token.get_secret_value() == "fake-git"
@@ -74,7 +74,7 @@ def test_explicit_local_v1_login_keeps_secrets_in_process(tmp_path, caplog):
 
 
 def test_v1_auth_failure_is_single_attempt_without_get_or_persistence(tmp_path):
-    from dce.security.local_credentials import local_settings
+    from dce.settings import local_settings
 
     config, credentials = files(tmp_path, CREDENTIALS)
     requests = []
@@ -92,11 +92,11 @@ def test_v1_auth_failure_is_single_attempt_without_get_or_persistence(tmp_path):
         zentao_transport=httpx.MockTransport(deny),
     )
     assert requests == []
-    from dce.connectors.http import Reader
-    from dce.connectors.zentao import ZenTao
+    from dce.platforms.http import PlatformClient
+    from dce.platforms.zentao import ZenTao
 
     with pytest.raises(DceError) as error:
-        with Reader(settings.zentao, settings) as reader:
+        with PlatformClient(settings.zentao, settings) as reader:
             ZenTao(reader).bug("demo")
     assert error.value.code == "AUTH_FAILED" and len(requests) == 1
     assert "fake-pass" not in str(error.value)
@@ -104,7 +104,7 @@ def test_v1_auth_failure_is_single_attempt_without_get_or_persistence(tmp_path):
 
 
 def test_literal_parser_private_file_and_alias_conflicts(tmp_path):
-    from dce.security.local_credentials import credential_environment
+    from dce.settings import credential_environment
 
     _, credentials = files(tmp_path, CREDENTIALS + 'IGNORED="$(touch /tmp/never-run)"\n')
     values, account, password = credential_environment(credentials)
@@ -133,7 +133,7 @@ def test_literal_parser_private_file_and_alias_conflicts(tmp_path):
 
 
 def test_readonly_and_http_gates_happen_before_login(tmp_path):
-    from dce.security.local_credentials import local_settings
+    from dce.settings import local_settings
 
     config, credentials = files(tmp_path, CREDENTIALS)
     requests = []
@@ -158,7 +158,7 @@ def test_readonly_and_http_gates_happen_before_login(tmp_path):
             environment={},
             zentao_transport=transport,
         )
-    assert error.value.code == "UNSAFE_URL" and requests == []
+    assert error.value.code == "CONFIG_INVALID" and requests == []
 
 
 def test_default_settings_does_not_load_credentials_and_environment_is_injectable(
@@ -177,7 +177,7 @@ def test_default_settings_does_not_load_credentials_and_environment_is_injectabl
 
 
 def test_explicit_loader_supports_independent_platform_and_direct_token(tmp_path):
-    from dce.security.local_credentials import local_settings
+    from dce.settings import local_settings
 
     config, credentials = files(tmp_path, CREDENTIALS)
     config.write_text('[gitlab]\nbase_url="https://gitlab.example.invalid"\n')
@@ -191,38 +191,14 @@ def test_explicit_loader_supports_independent_platform_and_direct_token(tmp_path
     with pytest.raises(DceError, match="addresses are missing"):
         local_settings(config, credentials, live=True, read_only=True, environment={})
     credentials.write_text("ZEN_USER=reader\n")
-    from dce.security.local_credentials import credential_environment
+    from dce.settings import credential_environment
 
     with pytest.raises(DceError):
         credential_environment(credentials)
 
 
-def test_local_launcher_failure_stays_off_stdout(tmp_path):
-    import subprocess
-
-    config, credentials = files(tmp_path, CREDENTIALS)
-    result = subprocess.run(
-        [
-            str(Path(".venv/bin/python").absolute()),
-            str(Path("scripts/serve_dce_local.py").resolve()),
-            "--config",
-            str(config),
-            "--credentials-file",
-            str(credentials),
-            "--catalog",
-            str(tmp_path / "cache.sqlite3"),
-        ],
-        capture_output=True,
-        text=True,
-        timeout=10,
-    )
-    assert result.returncode == 2 and result.stdout == ""
-    assert json.loads(result.stderr)["error"]["code"] == "PERMISSION_DENIED"
-    assert "fake-pass" not in result.stderr
-
-
 def test_url_aliases_are_literal_and_conflicts_fail_closed(tmp_path):
-    from dce.security.local_credentials import credential_environment
+    from dce.settings import credential_environment
 
     _, credentials = files(
         tmp_path,
@@ -242,7 +218,7 @@ def test_url_aliases_are_literal_and_conflicts_fail_closed(tmp_path):
 
 
 def test_explicit_process_address_overrides_local_file_alias(tmp_path):
-    from dce.security.local_credentials import local_settings
+    from dce.settings import local_settings
 
     config, credentials = files(
         tmp_path, "DCE_ZENTAO_TOKEN=fixture\nZEN_URL=https://site.example.invalid\n"
@@ -256,3 +232,31 @@ def test_explicit_process_address_overrides_local_file_alias(tmp_path):
         environment={"DCE_ZENTAO_URL": "https://site.example.invalid/application"},
     )
     assert settings.zentao.base_url == "https://site.example.invalid/application"
+
+
+def test_connection_example_loads_for_test_platforms():
+    settings = load_settings(
+        Path("examples/connections.example.toml"),
+        environ={f"DCE_{name}_TOKEN": "synthetic" for name in ("ZENTAO", "GITLAB", "PORTAINER")},
+    )
+    assert settings.allow_http is True
+    assert settings.timeout == 15 and settings.max_retries == 1
+    assert settings.zentao.base_url == "http://zentao.example.invalid/zentao"
+    assert settings.gitlab.base_url == "http://gitlab.example.invalid"
+    assert settings.portainer.base_url == "http://portainer.example.invalid:9000"
+
+
+def test_migrated_settings_and_error_contract():
+    from dce.errors import ErrorCode
+    from dce.settings import Settings
+
+    settings = Settings()
+    assert settings.output_budget == 24000
+    assert {"catalog_path", "ai_enabled", "image_output_budget"}.isdisjoint(Settings.model_fields)
+    error = DceError(ErrorCode.CONFIG_INVALID, "demo setting", "edit connections.toml", True)
+    assert error.as_dict() == {
+        "code": "CONFIG_INVALID",
+        "message": "demo setting",
+        "hint": "edit connections.toml",
+        "retryable": True,
+    }

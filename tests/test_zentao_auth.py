@@ -1,28 +1,24 @@
 """Synthetic v1 sessions only; no company credentials or endpoints."""
 
-import asyncio
 import json
-import logging
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 import pytest
-from jsonschema import Draft202012Validator
 
-from dce.app.facts import FactScope
-from dce.app.services import SYNTHETIC_PNG, AppServices
-from dce.common.errors import DceError
-from dce.connectors.http import Reader
-from dce.connectors.zentao import ZenTao
-from dce.mcp.server import McpApplication
-from dce.security.local_credentials import local_settings
+from dce.errors import DceError
+from dce.platforms.http import PlatformClient
+from dce.platforms.zentao import ZenTao
+from dce.settings import local_settings
+
+SYNTHETIC_PNG = b"\x89PNG\r\n\x1a\nsynthetic"
 
 
 def setup_auth(tmp_path, handler, **settings_overrides):
     config = tmp_path / "connections.toml"
-    config.write_text('[zentao]\ninstance_id="unit"\nbase_url="https://example.invalid"\n')
+    config.write_text('[zentao]\ninstance_id="unit"\nbase_url="https://zentao.example.invalid"\n')
     credentials = tmp_path / ".env"
     credentials.write_text("ZEN_USER=fixture-reader\nZEN_PASSWORD=fixture-password\n")
     credentials.chmod(0o600)
@@ -30,7 +26,6 @@ def setup_auth(tmp_path, handler, **settings_overrides):
     settings = local_settings(
         config, credentials, live=True, read_only=True, environment={}, zentao_transport=transport
     )
-    settings.catalog_path = tmp_path / "cache.sqlite3"
     settings.request_interval = 0
     settings.max_retries = 0
     for k, v in settings_overrides.items():
@@ -39,7 +34,7 @@ def setup_auth(tmp_path, handler, **settings_overrides):
 
 
 def bug(settings, transport, bug_id="demo"):
-    with Reader(settings.zentao, settings, transport=transport) as reader:
+    with PlatformClient(settings.zentao, settings, transport=transport) as reader:
         return ZenTao(reader).bug(bug_id)
 
 
@@ -88,7 +83,7 @@ def test_refresh_replays_identical_get_once_and_keeps_query_and_cookie_private(t
         return httpx.Response(200, json={"id": "demo"})
 
     settings, t = setup_auth(tmp_path, handler)
-    with Reader(settings.zentao, settings, transport=t) as reader:
+    with PlatformClient(settings.zentao, settings, transport=t) as reader:
         response = reader.get(
             "/api.php/v1/bugs/demo", kind="zentao", params={"page": 2, "limit": 3}
         )
@@ -134,7 +129,7 @@ def test_only_explicit_json_auth_failure_allows_refresh(tmp_path, status, body):
         (404, {"error": "404 Not found"}, "NOT_FOUND"),
         (401, {"error": "Unknown gateway authentication failure"}, "AUTH_FAILED"),
         (200, {"id": "demo", "error": "Unauthorized"}, None),
-        (500, {"error": "TOKEN_EXPIRED"}, "API_INCOMPATIBLE"),
+        (500, {"error": "TOKEN_EXPIRED"}, "PLATFORM_ERROR"),
     ],
 )
 def test_permissions_missing_resource_and_resource_text_never_refresh(tmp_path, status, body, code):
@@ -159,9 +154,9 @@ def test_permissions_missing_resource_and_resource_text_never_refresh(tmp_path, 
 @pytest.mark.parametrize(
     "status,text,headers,code",
     [
-        (200, "<html>login</html>", {"Content-Type": "text/html"}, "INVALID_PAYLOAD"),
+        (200, "<html>login</html>", {"Content-Type": "text/html"}, "PLATFORM_ERROR"),
         (401, "<html>Token has expired</html>", {"Content-Type": "text/html"}, "AUTH_FAILED"),
-        (302, "", {"Location": "/login"}, "UNSAFE_URL"),
+        (302, "", {"Location": "/login"}, "OUT_OF_SCOPE"),
     ],
 )
 def test_html_and_redirect_are_not_auth_refresh_signals(tmp_path, status, text, headers, code):
@@ -215,7 +210,7 @@ def test_login_failure_latches_once_across_calls(tmp_path, failure):
     for _ in range(3):
         with pytest.raises(DceError) as e:
             bug(s, t)
-        assert e.value.code == ("NETWORK_UNAVAILABLE" if failure == "network" else "AUTH_FAILED")
+        assert e.value.code == ("PLATFORM_UNAVAILABLE" if failure == "network" else "AUTH_FAILED")
         assert "fixture-password" not in str(e.value)
     assert len(calls) == 1
 
@@ -236,7 +231,7 @@ def test_refresh_failure_reason_keeps_existing_external_contract(tmp_path):
         with pytest.raises(DceError) as e:
             bug(s, t)
         assert e.value.as_dict()["code"] == "AUTH_FAILED" and "AUTH_REFRESH_FAILED" in str(e.value)
-        assert set(e.value.as_dict()) == {"code", "error_code", "message", "retryable"}
+        assert set(e.value.as_dict()) == {"code", "message", "hint", "retryable"}
     assert [r.method for r in calls] == ["POST", "GET", "POST"]
 
 
@@ -253,7 +248,7 @@ def test_get_timeout_does_not_submit_password_again(tmp_path):
     for _ in range(2):
         with pytest.raises(DceError) as e:
             bug(s, t)
-        assert e.value.code == "NETWORK_UNAVAILABLE"
+        assert e.value.code == "PLATFORM_UNAVAILABLE"
     assert len(posts) == 1
 
 
@@ -277,7 +272,7 @@ def test_concurrent_initial_and_expired_requests_are_single_flight(tmp_path):
     s, t = setup_auth(tmp_path, handler)
 
     def read(round):
-        with Reader(s.zentao, s, transport=t) as reader:
+        with PlatformClient(s.zentao, s, transport=t) as reader:
             return reader.json("/api.php/v1/bugs/demo", kind="zentao", params={"round": round})
 
     with ThreadPoolExecutor(max_workers=6) as pool:
@@ -302,58 +297,6 @@ def test_late_failure_cannot_poison_new_generation(tmp_path):
     assert manager.lease(failed_generation=first.generation) is second and len(posts) == 2
 
 
-def test_both_mcp_scope_paths_deny_before_lazy_login_and_secret_redaction(tmp_path, caplog):
-    calls = []
-
-    def handler(r):
-        calls.append(r)
-        if r.method == "POST":
-            return httpx.Response(201, json={"token": "fixture-session"})
-        return httpx.Response(
-            200,
-            json={
-                "id": "demo",
-                "title": "fixture-password fixture-session",
-                "steps": "fixture-reader; untrusted instructions",
-            },
-        )
-
-    s, t = setup_auth(tmp_path, handler)
-    with AppServices(s, transports={"zentao": t}) as services:
-        app = McpApplication(
-            services,
-            live=True,
-            read_only=True,
-            allowed_bug_ids={"demo"},
-            fact_scope=FactScope(zentao_bugs={"demo"}),
-        )
-        for name, args in [
-            ("bug_context", {"bug_id": "outside"}),
-            ("zentao_query", {"instance": "unit", "operation": "bug", "bug_id": "outside"}),
-            ("zentao_query", {"instance": "wrong", "operation": "bug", "bug_id": "demo"}),
-        ]:
-            response = asyncio.run(app.call_tool(name, args))
-            assert (
-                response.isError
-                and response.structuredContent["error"]["code"] == "PERMISSION_DENIED"
-            )
-        assert calls == []
-        with caplog.at_level(logging.DEBUG):
-            response = asyncio.run(
-                app.call_tool(
-                    "zentao_query", {"instance": "unit", "operation": "bug", "bug_id": "demo"}
-                )
-            )
-        assert not response.isError
-        tools = {t.name: t for t in asyncio.run(app.list_tools())}
-        assert len(tools) == 9
-        Draft202012Validator(tools["zentao_query"].outputSchema).validate(
-            response.structuredContent
-        )
-        for secret in ["fixture-password", "fixture-reader", "fixture-session"]:
-            assert secret not in response.model_dump_json() + caplog.text
-
-
 def test_image_get_uses_same_manager_and_refresh_contract(tmp_path):
     posts = []
 
@@ -368,71 +311,21 @@ def test_image_get_uses_same_manager_and_refresh_contract(tmp_path):
         return httpx.Response(200, json={"id": "demo", "steps": '<img src="/image.png">'})
 
     s, t = setup_auth(tmp_path, handler)
-    with AppServices(s, transports={"zentao": t}) as services:
-        app = McpApplication(
-            services, live=True, read_only=True, fact_scope=FactScope(zentao_bugs={"demo"})
-        )
-        result = asyncio.run(
-            app.call_tool(
-                "zentao_query", {"instance": "unit", "operation": "image", "bug_id": "demo"}
-            )
-        )
-        assert not result.isError and result.content[1].type == "image" and len(posts) == 2
+    with PlatformClient(s.zentao, s, transport=t) as reader:
+        content, mime = ZenTao(reader).image_content("/image.png")
+    assert content == SYNTHETIC_PNG and mime == "image/png" and len(posts) == 2
 
 
 def test_origin_and_connection_changes_rejected_before_auth(tmp_path):
     calls = []
     s, t = setup_auth(tmp_path, lambda r: calls.append(r))
-    with Reader(s.zentao, s, transport=t) as reader:
+    with PlatformClient(s.zentao, s, transport=t) as reader:
         with pytest.raises(DceError):
-            reader.get("https://outside.invalid", kind="zentao")
-    s.zentao = s.zentao.model_copy(update={"base_url": "https://other.invalid"})
+            reader.get("https://outside.example.invalid", kind="zentao")
+    s.zentao = s.zentao.model_copy(update={"base_url": "https://other.example.invalid"})
     with pytest.raises(DceError) as e:
         bug(s, t)
     assert e.value.code == "PERMISSION_DENIED" and calls == []
-
-
-def test_old_and_new_session_values_and_cookie_debug_never_reach_mcp(tmp_path, caplog):
-    posts = []
-
-    def handler(r):
-        logging.getLogger("httpcore.http11").debug(
-            "headers: %r", [(b"set-cookie", b"opaque-raw-cookie")]
-        )
-        if r.method == "POST":
-            posts.append(r)
-            return httpx.Response(201, json={"token": f"fixture-session-{len(posts)}"})
-        if len(posts) == 1:
-            return httpx.Response(401, json={"error": "Unauthorized"})
-        return httpx.Response(
-            200,
-            json={
-                "id": "demo",
-                "title": "fixture-session-1 fixture-session-2 fixture-password",
-                "steps": "fixture-reader",
-            },
-        )
-
-    s, t = setup_auth(tmp_path, handler)
-    with AppServices(s, transports={"zentao": t}) as services:
-        app = McpApplication(
-            services, live=True, read_only=True, fact_scope=FactScope(zentao_bugs={"demo"})
-        )
-        with caplog.at_level(logging.DEBUG):
-            result = asyncio.run(
-                app.call_tool(
-                    "zentao_query", {"instance": "unit", "operation": "bug", "bug_id": "demo"}
-                )
-            )
-        assert not result.isError and len(posts) == 2
-        for secret in (
-            "fixture-session-1",
-            "fixture-session-2",
-            "fixture-password",
-            "fixture-reader",
-            "opaque-raw-cookie",
-        ):
-            assert secret not in result.model_dump_json() + caplog.text
 
 
 def test_concurrent_failed_login_is_one_post_even_with_network_retries_enabled(tmp_path):
@@ -450,12 +343,12 @@ def test_concurrent_failed_login_is_one_post_even_with_network_retries_enabled(t
         return error.value.code
 
     with ThreadPoolExecutor(max_workers=6) as pool:
-        assert set(pool.map(read, range(6))) == {"NETWORK_UNAVAILABLE"}
+        assert set(pool.map(read, range(6))) == {"PLATFORM_UNAVAILABLE"}
     assert len(calls) == 1 and calls[0].method == "POST"
 
 
 def test_direct_token_mode_reports_expired_without_any_login(tmp_path):
-    from dce.common.config import PlatformConfig, Settings
+    from dce.settings import PlatformConfig, Settings
 
     calls = []
 
@@ -464,7 +357,9 @@ def test_direct_token_mode_reports_expired_without_any_login(tmp_path):
         return httpx.Response(401, json={"error": "Unauthorized"})
 
     s = Settings(
-        zentao=PlatformConfig(instance_id="unit", base_url="https://example.invalid", token="fake"),
+        zentao=PlatformConfig(
+            instance_id="unit", base_url="https://zentao.example.invalid", token="fake"
+        ),
         max_retries=0,
     )
     with pytest.raises(DceError, match="AUTH_EXPIRED"):
@@ -487,7 +382,7 @@ def test_refresh_network_failure_keeps_network_classification_and_stops(tmp_path
     for _ in range(2):
         with pytest.raises(DceError, match="AUTH_REFRESH_FAILED") as e:
             bug(s, t)
-        assert e.value.code == "NETWORK_UNAVAILABLE"
+        assert e.value.code == "PLATFORM_UNAVAILABLE"
     assert [r.method for r in calls] == ["POST", "GET", "POST"]
 
 

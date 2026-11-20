@@ -1,3 +1,3 @@
-"""DevOps Context Engine: offline by default, platform read-only."""
+"""ZenTao→GitLab→Portainer bug-fix loop tools for coding agents."""
 
-__version__ = "1.1.1"
+__version__ = "2.0.0"

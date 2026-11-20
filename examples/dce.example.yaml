@@ -1,0 +1,80 @@
+version: 2
+name: demo-platform
+
+zentao:
+  product: 100                 # 只处理该产品的缺陷
+  account: dev01               # “指派给我”的账号；缺省取凭证里的账号
+  resolve:
+    resolution: fixed
+    resolved_build: trunk
+    assign_to: opener          # opener = 缺陷的 openedBy；也可写具体账号
+
+portainer:
+  endpoint: 1
+  registry_id: 2               # 私有镜像仓库在 Portainer 中的 ID；scan 自动发现
+
+environment:                   # 本期只有测试环境
+  name: test
+  stack: demo_test             # Swarm stack namespace（服务标签 com.docker.stack.namespace）
+  swarm_id: abc123def456       # 部署前比对当前集群 ID
+  urls:
+    main: http://test.example.invalid/main/
+  test_notes: .dce/test-notes.md   # 浏览器测试知识（入口、iframe、账号要求、参照系统）
+
+records:
+  repo: demo-pm                # 修复记录所在仓库（repos 中的 name）
+  branch: main
+  file: projects/demo/V1.2.0/缺陷修复记录.md   # 相对 repo 根目录
+  assets_dir: assets           # 相对 file 所在目录
+
+gates:
+  fix_plan: when_unclear       # always | when_unclear
+  merge: always                # 本期只允许 always
+
+protected_branches: [master, main, "release*", "prod*", "uat*"]   # 合并目标永远不能匹配；只能追加
+
+build_order: []                # 可选，按仓库名覆盖默认拓扑顺序
+
+repos:
+  - name: demo-common
+    path: demo-common          # 相对工作区根目录
+    gitlab: { project: demo/demo-common, id: 11 }
+    feature_branch: feature/1.2.0
+    test_branch: develop
+    ci: { mode: direct, file: .gitlab-ci-dev.yml }
+    modules:
+      - path: demo-common-core
+        kind: library          # library | service | web
+        artifact: com.demo:demo-common-core
+        compile_job: deploy_common_core
+  - name: demo-cloud
+    path: demo-cloud
+    gitlab: { project: demo/demo-cloud, id: 12 }
+    feature_branch: feature/1.2.0
+    test_branch: develop_v2    # TODO(确认): 远端同时存在 develop 与 develop_v2，CI 规则只引用 develop
+    ci: { mode: child, trigger_job: trigger_dev, file: .gitlab-ci-dev.yml }
+    modules:
+      - path: demo-modules/demo-order
+        kind: service
+        artifact: com.demo:demo-modules-order
+        compile_job: compile_demo_order
+        build_job: build_demo_order
+        image: demo/demo-modules-order
+        services: [demo_test_demo-modules-order]
+        uses: [com.demo:demo-common-core]
+  - name: demo-web
+    path: demo-web
+    gitlab: { project: demo/demo-web, id: 13 }
+    feature_branch: feature/1.2.0
+    test_branch: develop
+    ci: { mode: direct, file: .gitlab-ci.yml }
+    modules:
+      - path: .
+        kind: web
+        compile_job: compile_demo_web
+        build_job: build_demo_web
+        image: demo/demo-web
+        services: [demo_test_demo-web]
+  - name: demo-pm               # 没有 modules 的仓库不可部署（例如文档仓库）
+    path: demo-pm
+    gitlab: { project: demo/demo-pm, id: 14 }

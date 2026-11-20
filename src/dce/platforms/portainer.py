@@ -1,0 +1,316 @@
+import base64
+import json
+import re
+from copy import deepcopy
+from typing import Any
+from urllib.parse import urlsplit, urlunsplit
+
+from dce.errors import DceError, ErrorCode
+from dce.platforms.docker_logs import (
+    DockerLogDecoder,
+    LogControls,
+    project_logs,
+    read_logs,
+    timestamp_ns,
+)
+from dce.platforms.gitlab import key
+from dce.platforms.http import PlatformClient
+from dce.redact import redact
+
+
+def safe_stack(stack: dict[str, Any]) -> dict[str, Any]:
+    # No raw auth/URL payload is retained; repository identity is verified separately.
+    result = {
+        name: stack[name]
+        for name in ("Id", "Name", "Type", "EndpointId", "SwarmId", "Status", "Namespace")
+        if name in stack
+    }
+    git = stack.get("GitConfig") or {}
+    if not isinstance(git, dict):
+        raise DceError(ErrorCode.PLATFORM_ERROR, "Unexpected GitConfig structure.")
+    result["GitConfig"] = {
+        name: git[name] for name in ("ReferenceName", "ConfigHash", "ConfigFilePath") if name in git
+    }
+    if isinstance(git.get("URL"), str):
+        try:
+            url = urlsplit(git["URL"])
+            if url.scheme in {"https", "http"} and url.hostname:
+                result["GitConfig"]["URL"] = urlunsplit(
+                    (url.scheme, url.netloc.rsplit("@", 1)[-1], url.path, "", "")
+                )
+        except ValueError:
+            pass  # Unsupported repository address remains unresolved.
+    return result
+
+
+class Portainer:
+    def __init__(self, reader: PlatformClient) -> None:
+        self.reader = reader
+
+    def stacks(self) -> list[dict[str, Any]]:
+        return [
+            safe_stack(s) for s in self.reader.json("/api/stacks", kind="portainer", expected=list)
+        ]
+
+    def registries(self) -> list[dict[str, Any]]:
+        data = self.reader.json('/api/registries', kind='portainer', expected=list)
+        return [{k: item[k] for k in ('Id', 'Name', 'URL') if k in item} for item in data]
+
+    def swarm_id(self, endpoint: int) -> str:
+        swarm = self.docker_info(str(endpoint))['Swarm']
+        cluster = swarm.get('Cluster')
+        if not isinstance(cluster, dict) or not isinstance(cluster.get('ID'), str):
+            raise DceError(
+                ErrorCode.PLATFORM_ERROR,
+                f'Portainer endpoint {endpoint} HTTP 200: 缺少 Swarm.Cluster.ID。',
+                '选择运行中的 Swarm endpoint，然后重新检查配置。',
+            )
+        return str(cluster['ID'])
+
+    def stack(self, stack: str) -> dict[str, Any]:
+        return safe_stack(self.reader.json(f"/api/stacks/{key(stack)}", kind="portainer"))
+
+    def stack_file(self, stack: str, endpoint: str) -> str:
+        data = self.reader.json(
+            f"/api/stacks/{key(stack)}/file", kind="portainer", params={"endpointId": endpoint}
+        )
+        if not isinstance(data.get("StackFileContent"), str):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "StackFileContent is missing.")
+        return str(data["StackFileContent"])
+
+    def endpoints(self) -> list[dict[str, Any]]:
+        data = self.reader.json("/api/endpoints", kind="portainer", expected=list)
+        return [
+            {k: item[k] for k in ("Id", "Name", "Type", "Status") if k in item} for item in data
+        ]
+
+    def docker_info(self, endpoint: str) -> dict[str, Any]:
+        data = self.reader.json(f"/api/endpoints/{key(endpoint)}/docker/info", kind="portainer")
+        if not isinstance(data.get("Swarm"), dict):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Docker Swarm info is missing.")
+        return {"Swarm": data["Swarm"]}
+
+    def services(self, endpoint: str, namespace: str | None = None) -> list[dict[str, Any]]:
+        data: list[dict[str, Any]] = self.reader.json(
+            f"/api/endpoints/{key(endpoint)}/docker/services", kind="portainer", expected=list
+        )
+        for service in data:
+            spec = service.get("Spec", {})
+            if not isinstance(spec, dict) or not isinstance(spec.get("Labels", {}), dict):
+                raise DceError(ErrorCode.PLATFORM_ERROR, "Unexpected service labels.")
+        return [
+            service
+            for service in data
+            if namespace is None
+            or service.get("Spec", {}).get("Labels", {}).get("com.docker.stack.namespace")
+            == namespace
+        ]
+
+    def endpoint(self, endpoint: str) -> dict[str, Any]:
+        return {
+            k: v
+            for k, v in self.reader.json(
+                f"/api/endpoints/{key(endpoint)}", kind="portainer"
+            ).items()
+            if k in {"Id", "Name", "Type", "Status"}
+        }
+
+    def service(self, endpoint: str, service: str) -> dict[str, Any]:
+        return dict(
+            self.reader.json(
+                f"/api/endpoints/{key(endpoint)}/docker/services/{key(service)}", kind="portainer"
+            )
+        )
+
+    @staticmethod
+    def _registry_auth(registry_id: int | None) -> dict[str, str]:
+        if registry_id is None:
+            return {}
+        value = base64.b64encode(json.dumps({'registryId': registry_id}).encode()).decode()
+        return {'X-Registry-Auth': value}
+
+    def force_update(self, endpoint: int, service_id: str, registry_id: int | None) -> int:
+        return self.reader.put(
+            f'/api/endpoints/{endpoint}/forceupdateservice',
+            {'ServiceID': service_id, 'PullImage': True}, self._registry_auth(registry_id),
+            accepted_statuses=(404, 405),
+        ).status_code
+
+    def docker_update(self, endpoint: int, service_id: str, version: int,
+                      spec: dict[str, Any], registry_id: int | None,
+                      digest: str | None = None) -> None:
+        updated = deepcopy(spec)
+        task = updated['TaskTemplate']
+        task['ForceUpdate'] = task.get('ForceUpdate', 0) + 1
+        container = task['ContainerSpec']
+        image = container['Image'].split('@sha256:', 1)[0]
+        if isinstance(digest, str) and re.fullmatch(r'sha256:[0-9a-f]{64}', digest):
+            image = f'{image}@{digest}'
+        container['Image'] = image
+        self.reader.post(f'/api/endpoints/{endpoint}/docker/services/{key(service_id)}/update',
+                         updated, self._registry_auth(registry_id), kind='portainer',
+                         params={'version': version})
+
+    def tasks(self, endpoint: int, service_id: str) -> list[dict[str, Any]]:
+        return list(self.reader.json(
+            f'/api/endpoints/{endpoint}/docker/tasks', kind='portainer', expected=list,
+            params={'filters': json.dumps({'service': [service_id]})},
+        ))
+
+    def service_logs_since(self, endpoint: int, service_id: str, since: str | None,
+                           tail: int) -> list[str]:
+        if not 1 <= tail <= 300:
+            raise DceError(ErrorCode.CONFIG_INVALID, 'service_status.logs_tail 必须在 0–300 之间。',
+                           '使用 0 跳过日志，或选择 1–300 行。')
+        start = timestamp_ns(since) // 1_000_000_000 if since else 0
+        service = self.service(str(endpoint), service_id)
+        tty = service.get('Spec', {}).get('TaskTemplate', {}).get('ContainerSpec', {}).get(
+            'TTY', False)
+        response = self.reader.get(
+            f'/api/endpoints/{endpoint}/docker/services/{key(service_id)}/logs', kind='portainer',
+            params={'since': str(start), 'tail': str(tail), 'stdout': '1', 'stderr': '1',
+                    'timestamps': '1'},
+        )
+        try:
+            decoder = DockerLogDecoder(tty=tty, cap=self.reader.max_bytes)
+            decoder.feed(response.content)
+            entries = decoder.finish(partial=False)
+            if decoder.error:
+                raise DceError(decoder.error, 'Docker 日志流返回错误帧。')
+        except DceError as exc:
+            raise DceError(exc.code, f'Portainer service {service_id} 日志 HTTP 200: {exc.message}',
+                           '检查服务日志驱动及 Docker 日志响应格式后重试。') from None
+        return [redact(line.decode('utf-8', errors='replace'), self.reader.secrets())
+                for _, line in entries[-tail:]]
+
+    async def service_logs(
+        self,
+        endpoint: str,
+        stack_id: str,
+        *,
+        service_id: str | None,
+        service_name: str | None,
+        controls: LogControls,
+    ) -> dict[str, Any]:
+        controls.bounds()
+        if bool(service_id) == bool(service_name):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Exactly one service selector is required.")
+        stack = self.stack(stack_id)
+        if (
+            str(stack.get("Id")) != stack_id
+            or str(stack.get("EndpointId")) != endpoint
+            or stack.get("Type") != 1
+        ):
+            raise DceError(ErrorCode.PERMISSION_DENIED, "Stack identity or endpoint mismatch.")
+        swarm = self.docker_info(endpoint)["Swarm"]
+        cluster = swarm.get("Cluster")
+        if (
+            not isinstance(cluster, dict)
+            or not cluster.get("ID")
+            or cluster["ID"] != stack.get("SwarmId")
+            or not isinstance(cluster["ID"], str)
+            or not re.fullmatch(r"[a-z0-9]{1,64}", cluster["ID"])
+        ):
+            raise DceError(ErrorCode.OUT_OF_SCOPE, "Stack does not match the current Swarm.")
+        namespace = stack.get("Namespace") or stack.get("Name")
+        if not isinstance(namespace, str) or not re.fullmatch(
+            r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", namespace
+        ):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Stack namespace is unavailable.")
+        if service_name is not None:
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", service_name):
+                raise DceError(ErrorCode.PLATFORM_ERROR, "Invalid Compose service key.")
+            exact_name = namespace + "_" + service_name
+            candidates = self.reader.json(
+                f"/api/endpoints/{key(endpoint)}/docker/services",
+                kind="portainer",
+                expected=list,
+                params={
+                    "filters": json.dumps(
+                        {"name": [exact_name], "label": [f"com.docker.stack.namespace={namespace}"]}
+                    )
+                },
+            )
+            selected = [
+                s
+                for s in candidates
+                if isinstance(s.get("Spec"), dict) and s["Spec"].get("Name") == exact_name
+            ]
+            if len(selected) != 1:
+                raise DceError(ErrorCode.NOT_FOUND, "Service selector is absent or ambiguous.")
+            service_id = selected[0].get("ID")
+        if not isinstance(service_id, str) or not re.fullmatch(r"[a-z0-9]{1,64}", service_id):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Full Docker service ID is required.")
+        service = self.service(endpoint, service_id)
+        spec = service.get("Spec")
+        if not isinstance(spec, dict) or not isinstance(spec.get("Labels"), dict):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Service scope labels are unavailable.")
+        name = spec.get("Name")
+        if (
+            service.get("ID") != service_id
+            or spec["Labels"].get("com.docker.stack.namespace") != namespace
+            or not isinstance(name, str)
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,399}", name)
+            or not name.startswith(namespace + "_")
+            or (service_name is not None and name != namespace + "_" + service_name)
+        ):
+            raise DceError(ErrorCode.PERMISSION_DENIED, "Service is outside the requested Stack.")
+        version_info = service.get("Version")
+        if (
+            not isinstance(version_info, dict)
+            or type(version_info.get("Index")) is not int
+            or version_info["Index"] < 0
+        ):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Service version is unavailable.")
+        task = spec.get("TaskTemplate")
+        if not isinstance(task, dict) or not isinstance(task.get("ContainerSpec"), dict):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Container service metadata is required.")
+        tty = task["ContainerSpec"].get("TTY", False)
+        if not isinstance(tty, bool):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Invalid service TTY metadata.")
+        driver = task.get("LogDriver") or {}
+        if not isinstance(driver, dict):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Invalid log driver metadata.")
+        if driver.get("Name") not in (None, "", "json-file", "journald"):
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Service log driver is unsupported.")
+        version = self.reader.json(
+            f"/api/endpoints/{key(endpoint)}/docker/version", kind="portainer"
+        )
+        api = version.get("ApiVersion", "")
+        if not isinstance(api, str) or not re.fullmatch(r"1\.\d{1,3}", api) or int(api[2:]) < 30:
+            raise DceError(ErrorCode.PLATFORM_ERROR, "Service logs require Docker API 1.30+.")
+        start, _ = controls.bounds()
+        since = start // 1_000_000_000
+        raw = await read_logs(
+            self.reader,
+            f"/api/endpoints/{key(endpoint)}/docker/v{api}/services/{key(service_id)}/logs",
+            {
+                "since": str(since),
+                "tail": str(controls.max_lines),
+                "follow": "false",
+                "stdout": "true",
+                "stderr": "true",
+                "timestamps": "true",
+                "details": "true",
+            },
+            controls,
+        )
+        record = project_logs(raw, controls, tty=tty, service_id=service_id)
+        # A concurrent update invalidates the pinned service identity/version, not just its name.
+        current = self.service(endpoint, service_id)
+        if (
+            current.get("ID") != service_id
+            or current.get("Version") != service.get("Version")
+            or current.get("Spec") != spec
+        ):
+            raise DceError(ErrorCode.OUT_OF_SCOPE, "Service changed during log retrieval.")
+        record["identity"] = {
+            "endpoint_id": endpoint,
+            "stack_id": stack_id,
+            "service_id": service_id,
+            "service_name": name,
+            "namespace": namespace,
+            "swarm_id": cluster["ID"],
+            "service_version": {"Index": version_info["Index"]},
+        }
+        return record

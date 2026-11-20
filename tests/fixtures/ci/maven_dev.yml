@@ -1,0 +1,33 @@
+variables:
+  REPOSITORY: demo
+.compile_template:
+  stage: compile
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+      changes: ["demo-modules/$DIR_NAME/**/*"]
+      when: manual
+    - when: never
+  script:
+    - mvn -pl demo-modules/$DIR_NAME -am package
+.build_template:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+  script:
+    - export IMAGE_NAME=$MODULE_NAME
+    - docker build -t $REGISTRY_DEV/$REPOSITORY/${IMAGE_NAME}:latest .
+    - docker push $REGISTRY_DEV/$REPOSITORY/$IMAGE_NAME:latest
+compile_demo_order:
+  extends: .compile_template
+  variables: {DIR_NAME: demo-order, MODULE_NAME: demo-modules-order}
+build_demo_order:
+  extends: .build_template
+  variables: {DIR_NAME: demo-order, MODULE_NAME: demo-modules-order}
+  needs: [compile_demo_order]
+compile_demo_report:
+  extends: .compile_template
+  variables: {DIR_NAME: demo-report, MODULE_NAME: demo-modules-report}
+build_demo_report:
+  extends: .build_template
+  variables: {DIR_NAME: demo-report, MODULE_NAME: demo-modules-report}
+  needs: [{job: compile_demo_report}]
